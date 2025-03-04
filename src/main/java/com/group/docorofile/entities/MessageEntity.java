@@ -4,24 +4,36 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "messages")
-@Getter @Setter @Builder
-@NoArgsConstructor @AllArgsConstructor
 public class MessageEntity {
     @Id
-    private UUID messageId = UuidCreator.getTimeOrdered();
+    private UUID messageId;
+
+    @ManyToOne
+    private MemberEntity sender;
+
+    @ManyToOne
+    private ChatRoomEntity chatRoom;
+
     private String content;
-    private Date sentAt;
+    private LocalDateTime sentAt;
 
-    @ManyToOne
-    @JoinColumn(name = "chat_id")
-    private ChatEntity chat;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity sender;
+    @PrePersist
+    public void prePersist() {
+        if (this.messageId == null) {
+            this.messageId = UuidCreator.getTimeOrdered();
+        }
+        if (this.sentAt == null) {
+            this.sentAt = LocalDateTime.now();
+        }
+    }
 }

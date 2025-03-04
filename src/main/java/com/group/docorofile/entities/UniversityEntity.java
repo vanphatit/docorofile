@@ -6,13 +6,23 @@ import lombok.*;
 
 import java.util.UUID;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "universities")
-@Getter @Setter @Builder
-@NoArgsConstructor @AllArgsConstructor
 public class UniversityEntity {
     @Id
-    private UUID uniId = UuidCreator.getTimeOrdered();
-    private String uniName;
+    private UUID univId;
+
+    private String univName;
     private String address;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.univId == null) {
+            this.univId = UuidCreator.getTimeOrdered();
+        }
+    }
 }

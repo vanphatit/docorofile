@@ -5,6 +5,7 @@ import com.group.docorofile.enums.EReportStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 
@@ -14,18 +15,31 @@ import java.util.UUID;
 @NoArgsConstructor @AllArgsConstructor
 public class ReportEntity {
     @Id
-    private UUID reportId = UuidCreator.getTimeOrdered();
-    @Enumerated(EnumType.STRING)
-    private EReportStatus status;
-    private String detail;
-    private Date createdOn;
-    private Date modifiedOn;
+    private UUID reportId;
 
-    @ManyToOne
-    @JoinColumn(name = "document_id")
+    @ManyToOne(optional = false)
     private DocumentEntity reportedDoc;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity reporter;
+    @ManyToOne(optional = false)
+    private MemberEntity reporter;
+
+    @Enumerated(EnumType.STRING)
+    private EReportStatus status;
+
+    private String detail;
+    private LocalDateTime createdOn;
+    private LocalDateTime updatedOn;
+
+    @ManyToOne(optional = false)
+    private ReportReasonEntity reportReason;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.reportId == null) {
+            this.reportId = UuidCreator.getTimeOrdered();
+        }
+        if (this.createdOn == null) {
+            this.createdOn = LocalDateTime.now();
+        }
+    }
 }

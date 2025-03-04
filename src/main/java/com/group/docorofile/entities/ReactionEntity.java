@@ -4,6 +4,7 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 
@@ -13,17 +14,28 @@ import java.util.UUID;
 @NoArgsConstructor @AllArgsConstructor
 public class ReactionEntity {
     @Id
-    private UUID reactionId = UuidCreator.getTimeOrdered();
-    private boolean isLike;
-    private boolean isDisLike;
-    private Date createdOn;
-    private Date modifiedOn;
+    private UUID reactionId;
 
-    @ManyToOne
-    @JoinColumn(name = "document_id")
+    @ManyToOne(optional = false)
+    private MemberEntity author;
+
+    @ManyToOne(optional = false)
     private DocumentEntity document;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    private boolean isLike;
+    private boolean isDislike;
+
+    private LocalDateTime createdOn;
+    private LocalDateTime modifiedOn;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.reactionId == null) {
+            this.reactionId = UuidCreator.getTimeOrdered();
+        }
+
+        if (this.createdOn == null) {
+            this.createdOn = LocalDateTime.now();
+        }
+    }
 }

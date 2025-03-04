@@ -5,6 +5,7 @@ import com.group.docorofile.enums.EPaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 
@@ -14,14 +15,26 @@ import java.util.UUID;
 @NoArgsConstructor @AllArgsConstructor
 public class PaymentEntity {
     @Id
-    private UUID paymentId = UuidCreator.getTimeOrdered();
+    private UUID paymentId;
+
     private double amount;
     private String currency;
-    private Date paymentDate;
+
     @Enumerated(EnumType.STRING)
     private EPaymentStatus status;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    private LocalDateTime paymentDate;
+
+    @ManyToOne(optional = false)
+    private MemberEntity payer;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.paymentId == null) {
+            this.paymentId = UuidCreator.getTimeOrdered();
+        }
+        if (this.paymentDate == null) {
+            this.paymentDate = LocalDateTime.now();
+        }
+    }
 }

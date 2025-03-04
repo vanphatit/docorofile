@@ -1,12 +1,10 @@
 package com.group.docorofile.entities;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import com.group.docorofile.enums.EUserRole;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.UUID;
 
 @Getter
@@ -14,23 +12,21 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "users")
-@Inheritance(strategy = InheritanceType.JOINED)
-public abstract class UserEntity {
+@Table(name = "chatrooms")
+public class ChatRoomEntity {
     @Id
-    private UUID userId;
+    private UUID chatId;
 
-    private String fullName;
-    private String email;
-    private String password;
-    private boolean isActive;
+    private String title;
     private LocalDateTime createdOn;
-    private LocalDateTime modifiedOn;
+
+    @ManyToOne
+    private CourseEntity course;
 
     @PrePersist
     public void prePersist() {
-        if (this.userId == null) {
-            this.userId = UuidCreator.getTimeOrdered();
+        if (this.chatId == null) {
+            this.chatId = UuidCreator.getTimeOrdered();
         }
         if (this.createdOn == null) {
             this.createdOn = LocalDateTime.now();

@@ -4,6 +4,7 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 
@@ -13,15 +14,24 @@ import java.util.UUID;
 @NoArgsConstructor @AllArgsConstructor
 public class FollowCourseEntity {
     @Id
-    private UUID followId = UuidCreator.getTimeOrdered();
-    private Date followDate;
-    private Date unFollowDate;
+    private UUID followId;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    @ManyToOne(optional = false)
+    private MemberEntity follower;
 
-    @ManyToOne
-    @JoinColumn(name = "course_id")
+    @ManyToOne(optional = false)
     private CourseEntity course;
+
+    private LocalDateTime followDate;
+    private LocalDateTime unfollowDate;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.followId == null) {
+            this.followId = UuidCreator.getTimeOrdered();
+        }
+        if (this.followDate == null) {
+            this.followDate = LocalDateTime.now();
+        }
+    }
 }

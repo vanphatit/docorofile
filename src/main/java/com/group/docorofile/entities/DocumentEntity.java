@@ -5,7 +5,9 @@ import com.group.docorofile.enums.EDocumentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -17,17 +19,35 @@ import java.util.UUID;
 @AllArgsConstructor
 public class DocumentEntity {
     @Id
-    private UUID documentId = UuidCreator.getTimeOrdered();
+    private UUID documentId;
     private String title;
     private String description;
     private String fileUrl;
     @Enumerated(EnumType.STRING)
     private EDocumentStatus status;
     private int reportCount;
-    private Date uploadedDate;
-    private Date modifiedOn;
+    private LocalDateTime uploadedDate;
+    private LocalDateTime modifiedOn;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    @ManyToOne(optional = false)
+    private MemberEntity author;
+
+    @ManyToOne(optional = false)
+    private CourseEntity course;
+
+    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL)
+    private List<CommentEntity> comments;
+
+    @OneToMany(mappedBy = "reportedDoc", cascade = CascadeType.ALL)
+    private List<ReportEntity> reports;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.documentId == null) {
+            this.documentId = UuidCreator.getTimeOrdered();
+        }
+        if (this.uploadedDate == null) {
+            this.uploadedDate = LocalDateTime.now();
+        }
+    }
 }

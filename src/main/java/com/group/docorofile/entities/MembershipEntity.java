@@ -5,25 +5,29 @@ import com.group.docorofile.enums.EMembershipLevel;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 
-@Entity
-@Table(name = "memberships")
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name = "membership")
 public class MembershipEntity {
     @Id
-    private UUID membershipId = UuidCreator.getTimeOrdered();
+    private UUID membershipId;
+
     @Enumerated(EnumType.STRING)
     private EMembershipLevel level;
-    private Date startDate;
-    private Date endDate;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
 
-    @OneToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    @PrePersist
+    public void prePersist() {
+        if (this.membershipId == null) {
+            this.membershipId = UuidCreator.getTimeOrdered();
+        }
+    }
 }

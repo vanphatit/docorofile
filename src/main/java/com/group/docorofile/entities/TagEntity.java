@@ -12,6 +12,14 @@ import java.util.UUID;
 @NoArgsConstructor @AllArgsConstructor
 public class TagEntity {
     @Id
-    private UUID tagId = UuidCreator.getTimeOrdered();
+    private UUID tagId;
+
     private String tagName;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.tagId == null) {
+            this.tagId = UuidCreator.getTimeOrdered();
+        }
+    }
 }

@@ -5,6 +5,7 @@ import com.group.docorofile.enums.ENotificationType;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 
@@ -14,15 +15,25 @@ import java.util.UUID;
 @NoArgsConstructor @AllArgsConstructor
 public class NotificationEntity {
     @Id
-    private UUID notificationId = UuidCreator.getTimeOrdered();
-    @Enumerated(EnumType.STRING)
-    private ENotificationType type;
-    private boolean isSeen;
-    private String message;
-    private Date createdOn;
-    private Date seenDate;
+    private UUID notificationId;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    @ManyToOne(optional = false)
+    private UserEntity receiver;
+
+    private String type;
+    private String message;
+    private boolean isSeen;
+
+    private LocalDateTime createdOn;
+    private LocalDateTime seenOn;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.notificationId == null) {
+            this.notificationId = UuidCreator.getTimeOrdered();
+        }
+        if (this.createdOn == null) {
+            this.createdOn = LocalDateTime.now();
+        }
+    }
 }

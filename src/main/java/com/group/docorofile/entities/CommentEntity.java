@@ -5,6 +5,7 @@ import com.group.docorofile.enums.EUserRole;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 
@@ -14,17 +15,28 @@ import java.util.UUID;
 @NoArgsConstructor @AllArgsConstructor
 public class CommentEntity {
     @Id
-    private UUID commentId = UuidCreator.getTimeOrdered();
-    private String content;
-    private boolean isDeleted;
-    private Date createdOn;
-    private Date modifiedOn;
+    private UUID commentId;
 
-    @ManyToOne
-    @JoinColumn(name = "document_id")
+    private String content;
+    private boolean isLike;
+    private boolean isDislike;
+
+    @ManyToOne(optional = false)
+    private MemberEntity author;
+
+    @ManyToOne(optional = false)
     private DocumentEntity document;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    private LocalDateTime createdOn;
+    private LocalDateTime modifiedOn;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.commentId == null) {
+            this.commentId = UuidCreator.getTimeOrdered();
+        }
+        if (this.createdOn == null) {
+            this.createdOn = LocalDateTime.now();
+        }
+    }
 }

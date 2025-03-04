@@ -13,10 +13,20 @@ import java.util.UUID;
 @NoArgsConstructor @AllArgsConstructor
 public class ReportReasonEntity {
     @Id
-    private UUID reasonId = UuidCreator.getTimeOrdered();
+    private UUID reasonId;
+
     private String reasonName;
+
     @Enumerated(EnumType.STRING)
     private EReasonType reasonType;
+
     private String description;
     private boolean isActive;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.reasonId == null) {
+            this.reasonId = UuidCreator.getTimeOrdered();
+        }
+    }
 }

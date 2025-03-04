@@ -1,7 +1,6 @@
 package com.group.docorofile.entities;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import com.group.docorofile.enums.EUserRole;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,23 +13,23 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "users")
-@Inheritance(strategy = InheritanceType.JOINED)
-public abstract class UserEntity {
+@Table(name = "activity_logs")
+public class ActivityLogEntity {
     @Id
-    private UUID userId;
+    private UUID logId;
 
-    private String fullName;
-    private String email;
-    private String password;
-    private boolean isActive;
+    private String action;
+
+    @ManyToOne(optional = false)
+    private UserEntity actor;
+
+    private String detail;
     private LocalDateTime createdOn;
-    private LocalDateTime modifiedOn;
 
     @PrePersist
     public void prePersist() {
-        if (this.userId == null) {
-            this.userId = UuidCreator.getTimeOrdered();
+        if (this.logId == null) {
+            this.logId = UuidCreator.getTimeOrdered();
         }
         if (this.createdOn == null) {
             this.createdOn = LocalDateTime.now();
