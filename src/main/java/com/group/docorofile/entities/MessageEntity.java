@@ -3,7 +3,9 @@ package com.group.docorofile.entities;
 import com.github.f4b6a3.uuid.UuidCreator;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
@@ -13,8 +15,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@SuperBuilder
 @Table(name = "messages")
-public class MessageEntity {
+public class MessageEntity implements Serializable {
     @Id
     private UUID messageId;
 

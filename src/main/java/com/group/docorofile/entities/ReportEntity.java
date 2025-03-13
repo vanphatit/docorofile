@@ -4,16 +4,18 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import com.group.docorofile.enums.EReportStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 
 @Entity
 @Table(name = "reports")
-@Getter @Setter @Builder
+@Getter @Setter @SuperBuilder
 @NoArgsConstructor @AllArgsConstructor
-public class ReportEntity {
+public class ReportEntity implements Serializable {
     @Id
     private UUID reportId;
 
