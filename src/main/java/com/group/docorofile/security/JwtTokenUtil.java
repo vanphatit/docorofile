@@ -43,7 +43,6 @@ public class JwtTokenUtil {
         if(isModerator) {
             ModeratorEntity moderator = (ModeratorEntity) userDetails.getUser();
             builder.claim("isReportManage", moderator.isReportManage());
-            builder.claim("isChatManage", moderator.isChatManage());
         }
 
         return builder.signWith(KEY, SignatureAlgorithm.HS256).compact();

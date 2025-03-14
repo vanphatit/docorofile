@@ -37,12 +37,10 @@ public class AuthAPIController {
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
         String token = jwtTokenUtil.generateToken(userDetails);
 
-        // Tạo cookie chứa JWT
         Cookie jwtCookie = new Cookie("JWT", token);
         jwtCookie.setHttpOnly(true); // Không cho phép truy cập từ JavaScript để giảm rủi ro XSS
         jwtCookie.setPath("/"); // Áp dụng cho toàn bộ ứng dụng
 
-        // Thêm cookie vào response
         response.addCookie(jwtCookie);
 
         SuccessResponse successResponse  = new SuccessResponse("Login successful", HttpStatus.OK.value(), token, LocalDateTime.now());
@@ -54,8 +52,8 @@ public class AuthAPIController {
         // Tạo cookie mới có tên "JWT" với giá trị rỗng và maxAge = 0 để xóa cookie khỏi trình duyệt
         Cookie jwtCookie = new Cookie("JWT", null);
         jwtCookie.setHttpOnly(true);
-        jwtCookie.setPath("/");      // Áp dụng cho toàn bộ ứng dụng
-        jwtCookie.setMaxAge(0);      // Set maxAge = 0 để xóa cookie
+        jwtCookie.setPath("/");
+        jwtCookie.setMaxAge(0);
 
         response.addCookie(jwtCookie);
 

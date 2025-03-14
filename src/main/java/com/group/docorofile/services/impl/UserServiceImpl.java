@@ -51,7 +51,6 @@ public class UserServiceImpl implements iUserService {
                     .password(request.getPassword())
                     .isActive(true)
                     .isReportManage(request.getIsReportManage() != null ? request.getIsReportManage() : false)
-                    .isChatManage(request.getIsChatManage() != null ? request.getIsChatManage() : false)
                     .build();
         } else if ("MEMBER".equalsIgnoreCase(userType)) {
             user = MemberEntity.builder()
@@ -109,7 +108,6 @@ public class UserServiceImpl implements iUserService {
         if (user instanceof ModeratorEntity) {
             ModeratorEntity mod = (ModeratorEntity) user;
             mod.setReportManage(request.getIsReportManage() != null ? request.getIsReportManage() : mod.isReportManage());
-            mod.setChatManage(request.getIsChatManage() != null ? request.getIsChatManage() : mod.isChatManage());
         } else if (user instanceof MemberEntity) {
             MemberEntity member = (MemberEntity) user;
             member.setDownloadLimit(request.getDownloadLimit() != null ? request.getDownloadLimit() : member.getDownloadLimit());

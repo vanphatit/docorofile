@@ -1,6 +1,8 @@
 package com.group.docorofile.security;
 
 import com.group.docorofile.entities.UserEntity;
+import com.group.docorofile.exceptions.CustomAccessDeniedHandler;
+import com.group.docorofile.exceptions.CustomAuthenticationEntryPoint;
 import com.group.docorofile.models.users.CreateUserRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +24,12 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Autowired
+    private CustomAccessDeniedHandler customAccessDeniedHandler;
+
+    @Autowired
+    private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
@@ -31,6 +39,9 @@ public class SecurityConfig {
                         .requestMatchers("/v1/api/users/new").permitAll()
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler))
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")
