@@ -12,5 +12,4 @@ import lombok.experimental.SuperBuilder;
 @Table(name = "moderators")
 public class ModeratorEntity extends UserEntity {
     private boolean isReportManage;
-    private boolean isChatManage;
 }
