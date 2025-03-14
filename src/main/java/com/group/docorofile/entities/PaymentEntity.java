@@ -20,7 +20,6 @@ public class PaymentEntity implements Serializable {
     private UUID paymentId;
 
     private double amount;
-    private String currency;
 
     @Enumerated(EnumType.STRING)
     private EPaymentStatus status;

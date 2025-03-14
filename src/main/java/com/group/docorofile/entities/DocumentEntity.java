@@ -27,7 +27,6 @@ public class DocumentEntity implements Serializable {
     private String fileUrl;
     @Enumerated(EnumType.STRING)
     private EDocumentStatus status;
-    private int reportCount;
     private LocalDateTime uploadedDate;
     private LocalDateTime modifiedOn;
 
