@@ -2,12 +2,14 @@ package com.group.docorofile.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@SuperBuilder
 @Table(name = "members")
 public class MemberEntity extends UserEntity {
     @OneToOne

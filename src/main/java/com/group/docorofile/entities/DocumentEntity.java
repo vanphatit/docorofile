@@ -4,7 +4,9 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import com.group.docorofile.enums.EDocumentStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -14,10 +16,10 @@ import java.util.UUID;
 @Table(name = "documents")
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DocumentEntity {
+public class DocumentEntity implements Serializable {
     @Id
     private UUID documentId;
     private String title;

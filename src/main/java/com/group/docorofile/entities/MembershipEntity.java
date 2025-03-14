@@ -4,7 +4,9 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import com.group.docorofile.enums.EMembershipLevel;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
@@ -14,8 +16,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@SuperBuilder
 @Table(name = "membership")
-public class MembershipEntity {
+public class MembershipEntity implements Serializable {
     @Id
     private UUID membershipId;
 

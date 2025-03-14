@@ -1,22 +1,24 @@
 package com.group.docorofile.entities;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import com.group.docorofile.enums.EUserRole;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 
 @Getter
 @Setter
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "users")
 @Inheritance(strategy = InheritanceType.JOINED)
-public abstract class UserEntity {
+public abstract class UserEntity implements Serializable {
     @Id
     private UUID userId;
 
@@ -34,6 +36,7 @@ public abstract class UserEntity {
         }
         if (this.createdOn == null) {
             this.createdOn = LocalDateTime.now();
+            this.modifiedOn = LocalDateTime.now();
         }
     }
 }
