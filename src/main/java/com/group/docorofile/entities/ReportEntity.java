@@ -32,9 +32,6 @@ public class ReportEntity implements Serializable {
     private LocalDateTime createdOn;
     private LocalDateTime updatedOn;
 
-    @ManyToOne(optional = false)
-    private ReportReasonEntity reportReason;
-
     @PrePersist
     public void prePersist() {
         if (this.reportId == null) {
