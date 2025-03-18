@@ -1,5 +1,6 @@
 package com.group.docorofile.configs;
 
+import com.group.docorofile.exceptions.UserNotFoundException;
 import com.group.docorofile.response.ErrorResponse;
 import com.group.docorofile.response.ForbiddenError;
 import com.group.docorofile.response.UnauthorizedError;
@@ -39,4 +40,11 @@ public class GlobalExceptionHandler {
         ForbiddenError error = new ForbiddenError("Access Denied");
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException ex) {
+        ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
 }

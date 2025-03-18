@@ -20,7 +20,9 @@ public class NotificationEntity implements Serializable {
     private UUID notificationId;
 
     @ManyToOne(optional = false)
+    @JoinColumn(name = "receiver_user_id", referencedColumnName = "userId", nullable = false)
     private UserEntity receiver;
+
 
     private String type;
     private String message;
