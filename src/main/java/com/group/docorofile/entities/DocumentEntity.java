@@ -29,6 +29,8 @@ public class DocumentEntity implements Serializable {
     private EDocumentStatus status;
     private LocalDateTime uploadedDate;
     private LocalDateTime modifiedOn;
+    private int reportCount;
+    private int viewCount;
 
     @ManyToOne(optional = false)
     private MemberEntity author;

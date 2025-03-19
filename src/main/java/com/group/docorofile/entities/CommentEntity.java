@@ -1,5 +1,7 @@
 package com.group.docorofile.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.github.f4b6a3.uuid.UuidCreator;
 import jakarta.persistence.*;
 import lombok.*;
@@ -7,7 +9,9 @@ import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -20,8 +24,6 @@ public class CommentEntity implements Serializable {
     private UUID commentId;
 
     private String content;
-    private boolean isLike;
-    private boolean isDislike;
 
     @ManyToOne(optional = false)
     private MemberEntity author;
@@ -30,7 +32,19 @@ public class CommentEntity implements Serializable {
     private DocumentEntity document;
 
     private LocalDateTime createdOn;
-    private LocalDateTime modifiedOn;
+    private LocalDateTime deletedOn;
+
+    // Quan hệ đệ quy: Bình luận có thể có cha (optional)
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "parent_comment_id")
+    @ToString.Exclude
+    @JsonBackReference
+    private CommentEntity parentComment;
+
+    // Danh sách các bình luận con (replies)
+    @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<CommentEntity> replies = new ArrayList<>();
 
     @PrePersist
     public void prePersist() {
@@ -40,5 +54,19 @@ public class CommentEntity implements Serializable {
         if (this.createdOn == null) {
             this.createdOn = LocalDateTime.now();
         }
+    }
+
+    public void softDelete() {
+        this.deletedOn = LocalDateTime.now();
+    }
+
+    // Thêm một bình luận con
+    public void addReply(CommentEntity reply) {
+        this.replies.add(reply);
+        reply.setParentComment(this);
+    }
+
+    public boolean isDeleted() {
+        return this.deletedOn != null;
     }
 }

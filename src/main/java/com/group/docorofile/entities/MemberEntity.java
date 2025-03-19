@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,6 +16,9 @@ import lombok.experimental.SuperBuilder;
 public class MemberEntity extends UserEntity {
     @OneToOne
     private MembershipEntity membership;
+
+    @OneToMany(mappedBy = "member")
+    private List<DocumentEntity> docViewed;
 
     private int downloadLimit;
     private boolean isChat;
