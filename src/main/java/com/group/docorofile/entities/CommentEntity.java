@@ -55,18 +55,4 @@ public class CommentEntity implements Serializable {
             this.createdOn = LocalDateTime.now();
         }
     }
-
-    public void softDelete() {
-        this.deletedOn = LocalDateTime.now();
-    }
-
-    // Thêm một bình luận con
-    public void addReply(CommentEntity reply) {
-        this.replies.add(reply);
-        reply.setParentComment(this);
-    }
-
-    public boolean isDeleted() {
-        return this.deletedOn != null;
-    }
 }
