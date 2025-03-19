@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -24,6 +25,9 @@ public class CourseEntity implements Serializable {
 
     @ManyToOne
     private UniversityEntity university;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FollowCourseEntity> followers;
 
     @PrePersist
     public void prePersist() {
