@@ -29,6 +29,8 @@ public class DocumentEntity implements Serializable {
     private EDocumentStatus status;
     private LocalDateTime uploadedDate;
     private LocalDateTime modifiedOn;
+    private int reportCount;
+    private int viewCount;
 
     @ManyToOne(optional = false)
     private MemberEntity author;
@@ -41,6 +43,9 @@ public class DocumentEntity implements Serializable {
 
     @OneToMany(mappedBy = "reportedDoc", cascade = CascadeType.ALL)
     private List<ReportEntity> reports;
+
+    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DocumentViewEntity> viewers;
 
     @PrePersist
     public void prePersist() {

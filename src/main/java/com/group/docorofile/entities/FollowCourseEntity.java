@@ -24,16 +24,11 @@ public class FollowCourseEntity implements Serializable {
     @ManyToOne(optional = false)
     private CourseEntity course;
 
-    private LocalDateTime followDate;
-    private LocalDateTime unfollowDate;
 
     @PrePersist
     public void prePersist() {
         if (this.followId == null) {
             this.followId = UuidCreator.getTimeOrdered();
-        }
-        if (this.followDate == null) {
-            this.followDate = LocalDateTime.now();
         }
     }
 }

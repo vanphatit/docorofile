@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,6 +16,12 @@ import lombok.experimental.SuperBuilder;
 public class MemberEntity extends UserEntity {
     @OneToOne
     private MembershipEntity membership;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DocumentViewEntity> docViewed;
+
+    @OneToMany(mappedBy = "follower", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FollowCourseEntity> followedCourses;
 
     private int downloadLimit;
     private boolean isChat;
