@@ -9,6 +9,7 @@ import com.group.docorofile.services.impl.NotificationServiceImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,7 @@ public class NotificationController {
         this.notificationService = notificationService;
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     @PostMapping("/create")
     public ResponseEntity<SuccessResponse> createNotification(@RequestBody CreateNotificationRequest request) {
         NotificationDTO notification = notificationService.createNotification(
@@ -43,7 +45,7 @@ public class NotificationController {
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
-
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_MEMBER')")
     @GetMapping("")
     public ResponseEntity<ResultPaginationDTO> getAllNotifications(Pageable pageable) {
 
@@ -52,6 +54,7 @@ public class NotificationController {
         return ResponseEntity.ok().body(notificationService.fetchNotifications(email, pageable));
     }
 
+    @PreAuthorize("hasRole('ROLE_MEMBER')")
     @PatchMapping("/{id}/mark-as-read")
     public ResponseEntity<SuccessResponse> markAsRead(@PathVariable UUID id) {
         notificationService.markAsRead(id);
