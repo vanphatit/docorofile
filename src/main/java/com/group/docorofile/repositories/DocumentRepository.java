@@ -17,9 +17,9 @@ public interface DocumentRepository extends JpaRepository<DocumentEntity, UUID>,
     int countDocumentUploadInDay (LocalDate date, UUID memberId);
 
     // Kiểm tra xem user đã tải lên tài liệu này chưa
-    boolean existsByTitleAndAuthor_MemberId(String title, UUID memberId);
+    boolean existsByTitleAndAuthor_UserId(String title, UUID userId);
 
     // Tìm tài liệu trùng lặp của cùng một user
-    List<DocumentEntity> findByTitleAndAuthor_MemberId(String title, UUID memberId);
+    List<DocumentEntity> findByTitleAndAuthor_UserId(String title, UUID memberId);
 }
 

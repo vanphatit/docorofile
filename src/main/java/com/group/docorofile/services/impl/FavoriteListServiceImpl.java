@@ -3,9 +3,12 @@ package com.group.docorofile.services.impl;
 import com.group.docorofile.entities.DocumentEntity;
 import com.group.docorofile.entities.FavoriteListEntity;
 import com.group.docorofile.entities.MemberEntity;
+import com.group.docorofile.models.dto.UserDocumentDTO;
+import com.group.docorofile.models.mappers.DocumentMapper;
 import com.group.docorofile.repositories.DocumentRepository;
 import com.group.docorofile.repositories.FavoriteListRepository;
-import com.group.docorofile.repositories.MemberRepository;
+import com.group.docorofile.repositories.UserRepository;
+import com.group.docorofile.response.NotFoundError;
 import com.group.docorofile.services.iFavoriteListService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,16 +25,16 @@ public class FavoriteListServiceImpl implements iFavoriteListService {
     private DocumentRepository documentRepository;
 
     @Autowired
-    private MemberRepository memberRepository;
+    private UserRepository memberRepository;
 
     // Thêm tài liệu vào danh sách yêu thích
     @Override
     public String addToFavorites(UUID memberId, UUID documentId) {
-        if (favoriteListRepository.existsByMember_MemberIdAndDocument_DocumentId(memberId, documentId)) {
+        if (favoriteListRepository.existsByMember_UserIdAndDocument_DocumentId(memberId, documentId)) {
             return "Tài liệu đã có trong danh sách yêu thích.";
         }
 
-        MemberEntity member = memberRepository.findById(memberId)
+        MemberEntity member = (MemberEntity) memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
 
         DocumentEntity document = documentRepository.findById(documentId)
@@ -49,7 +52,7 @@ public class FavoriteListServiceImpl implements iFavoriteListService {
     // Xóa tài liệu khỏi danh sách yêu thích
     @Override
     public String removeFromFavorites(UUID memberId, UUID documentId) {
-        List<FavoriteListEntity> favoriteList = favoriteListRepository.findByMember_MemberId(memberId);
+        List<FavoriteListEntity> favoriteList = favoriteListRepository.findByMember_UserId(memberId);
         for (FavoriteListEntity favorite : favoriteList) {
             if (favorite.getDocument().getDocumentId().equals(documentId)) {
                 favoriteListRepository.delete(favorite);
@@ -61,8 +64,23 @@ public class FavoriteListServiceImpl implements iFavoriteListService {
 
     // Lấy danh sách tài liệu yêu thích của user
     @Override
-    public List<DocumentEntity> getFavorites(UUID memberId) {
-        List<FavoriteListEntity> favoriteList = favoriteListRepository.findByMember_MemberId(memberId);
-        return favoriteList.stream().map(FavoriteListEntity::getDocument).toList();
+    public List<UserDocumentDTO> getFavorites(UUID memberId) {
+        // Kiểm tra xem thành viên có tồn tại không
+        MemberEntity member = (MemberEntity) memberRepository.findById(memberId)
+                .orElseThrow(() -> new NotFoundError("Người dùng không tồn tại!"));
+
+        // Lấy danh sách yêu thích của người dùng
+        List<FavoriteListEntity> favoriteList = favoriteListRepository.findByMember_UserId(memberId);
+
+        // Kiểm tra nếu danh sách rỗng
+        if (favoriteList.isEmpty()) {
+            throw new NotFoundError("Danh sách yêu thích trống!");
+        }
+
+        // Chuyển đổi sang UserDocumentDTO
+        return favoriteList.stream()
+                .map(favorite -> DocumentMapper.toUserDTO(favorite.getDocument()))
+                .toList();
     }
+
 }

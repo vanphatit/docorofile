@@ -4,8 +4,8 @@ import com.group.docorofile.entities.DocumentEntity;
 import com.group.docorofile.entities.MemberEntity;
 import com.group.docorofile.entities.ReactionEntity;
 import com.group.docorofile.repositories.DocumentRepository;
-import com.group.docorofile.repositories.MemberRepository;
 import com.group.docorofile.repositories.ReactionRepository;
+import com.group.docorofile.repositories.UserRepository;
 import com.group.docorofile.services.iReactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,7 +23,7 @@ public class ReactionServiceImpl implements iReactionRepository {
     private DocumentRepository documentRepository;
 
     @Autowired
-    private MemberRepository memberRepository;
+    private UserRepository memberRepository;
 
     @Override
     public String updateReact(UUID userId, UUID documentId, boolean isLike, boolean isDislike) {
@@ -37,7 +37,7 @@ public class ReactionServiceImpl implements iReactionRepository {
                 .orElseThrow(() -> new RuntimeException("Tài liệu không tồn tại!"));
 
         // Kiểm tra người dùng có tồn tại không
-        MemberEntity member = memberRepository.findById(userId)
+        MemberEntity member = (MemberEntity) memberRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại!"));
 
         // Tìm phản ứng của người dùng trên tài liệu

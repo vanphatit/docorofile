@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Repository
 public interface DocumentViewRepository extends JpaRepository<DocumentViewEntity, UUID> {
-    boolean existsByDocument_DocumentIdAndMember_MemberId(UUID documentId, UUID memberId);
+    boolean existsByDocument_DocumentIdAndMember_UserId(UUID documentId, UUID memberId);
 
     @Query("SELECT dv.document.documentId FROM DocumentViewEntity dv WHERE dv.member.userId = :memberId")
     List<UUID> findViewedDocumentsByMemberId (UUID memberId);

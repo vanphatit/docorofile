@@ -1,11 +1,13 @@
 package com.group.docorofile.models.dto;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class UserDocumentDTO extends DocumentDTO {
 }
+
 

@@ -18,8 +18,13 @@ public class DocumentMapper {
         userDocumentDTO.setViewCount(document.getViewCount());
         userDocumentDTO.setAuthor(document.getAuthor());
         userDocumentDTO.setCourse(document.getCourse());
+        userDocumentDTO.setUniversity(document.getCourse().getUniversity());
         userDocumentDTO.setComments(document.getComments());
         userDocumentDTO.setCoverImageUrl(PDFUtils.getCoverImageFromPDF(document.getFileUrl())); // Lấy trang bìa từ fileUrl
+        userDocumentDTO.setLikes((int) document.getReactions().stream().filter(reaction -> reaction.isLike()).count());
+        userDocumentDTO.setDislikes((int) document.getReactions().stream().filter(reaction -> reaction.isDislike()).count());
+        userDocumentDTO.setViews(document.getViewCount());
+        userDocumentDTO.setFavorites(document.getFavoritedBy().size());
         return userDocumentDTO;
     }
 
@@ -35,6 +40,10 @@ public class DocumentMapper {
         adminDocumentDTO.setCourse(document.getCourse());
         adminDocumentDTO.setComments(document.getComments());
         adminDocumentDTO.setCoverImageUrl(PDFUtils.getCoverImageFromPDF(document.getFileUrl())); // Lấy trang bìa từ fileUrl
+        adminDocumentDTO.setLikes((int) document.getReactions().stream().filter(reaction -> reaction.isLike()).count());
+        adminDocumentDTO.setDislikes((int) document.getReactions().stream().filter(reaction -> reaction.isDislike()).count());
+        adminDocumentDTO.setViews(document.getViewCount());
+        adminDocumentDTO.setFavorites(document.getFavoritedBy().size());
         adminDocumentDTO.setFileUrl(document.getFileUrl());
         adminDocumentDTO.setStatus(document.getStatus());
         adminDocumentDTO.setModifiedOn(document.getModifiedOn());

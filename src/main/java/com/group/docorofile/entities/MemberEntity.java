@@ -30,6 +30,9 @@ public class MemberEntity extends UserEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FavoriteListEntity> favoriteDocuments;
 
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReactionEntity> reactions;
+
     private int downloadLimit;
     private boolean isChat;
     private boolean isComment;

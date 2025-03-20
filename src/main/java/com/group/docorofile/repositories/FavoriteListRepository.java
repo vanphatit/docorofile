@@ -8,6 +8,6 @@ import java.util.UUID;
 
 @Repository
 public interface FavoriteListRepository extends JpaRepository<FavoriteListEntity, UUID> {
-    List<FavoriteListEntity> findByMember_MemberId(UUID memberId); // Lấy danh sách yêu thích của user
-    boolean existsByMember_MemberIdAndDocument_DocumentId(UUID memberId, UUID documentId); // Kiểm tra xem user đã thích tài liệu chưa
+    List<FavoriteListEntity> findByMember_UserId(UUID memberId); // Lấy danh sách yêu thích của user
+    boolean existsByMember_UserIdAndDocument_DocumentId(UUID memberId, UUID documentId); // Kiểm tra xem user đã thích tài liệu chưa
 }

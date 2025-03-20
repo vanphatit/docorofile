@@ -3,15 +3,19 @@ package com.group.docorofile.services.impl;
 import com.group.docorofile.entities.CommentEntity;
 import com.group.docorofile.entities.DocumentEntity;
 import com.group.docorofile.entities.MemberEntity;
+import com.group.docorofile.models.dto.CommentDTO;
 import com.group.docorofile.repositories.CommentRepository;
 import com.group.docorofile.repositories.DocumentRepository;
-import com.group.docorofile.repositories.MemberRepository;
+import com.group.docorofile.repositories.UserRepository;
 import com.group.docorofile.services.iCommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentServiceImpl implements iCommentService {
@@ -22,13 +26,13 @@ public class CommentServiceImpl implements iCommentService {
     private DocumentRepository documentRepository;
 
     @Autowired
-    private MemberRepository memberRepository;
+    private UserRepository memberRepository;
 
     // Thêm bình luận
     @Override
     public String addComment(UUID memberId, UUID documentId, String content, UUID parentCommentId) {
         // Kiểm tra thành viên có quyền bình luận không
-        MemberEntity member = memberRepository.findById(memberId)
+        MemberEntity member = (MemberEntity) memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại!"));
 
         if (!member.isComment()) {
@@ -72,5 +76,33 @@ public class CommentServiceImpl implements iCommentService {
 
         commentRepository.delete(comment);
         return "Bình luận đã được xóa!";
+    }
+
+    public List<CommentDTO> getCommentsByDocumentTree(UUID documentId) {
+        // Lấy tất cả bình luận của tài liệu
+        List<CommentEntity> allComments = commentRepository.findCommentEntitiesByDocument_DocumentId(documentId);
+
+        // Tạo danh sách bình luận cha (Cấp 1)
+        List<CommentDTO> parentComments = allComments.stream()
+                .filter(comment -> comment.getParentComment() == null) // Chỉ lấy bình luận không có cha
+                .map(CommentDTO::fromEntity)
+                .collect(Collectors.toList());
+
+        // Ánh xạ bình luận theo ID để xử lý nhanh hơn
+        Map<UUID, CommentDTO> commentMap = parentComments.stream()
+                .collect(Collectors.toMap(CommentDTO::getCommentId, comment -> comment));
+
+        // Xử lý bình luận cấp 2 (bao gồm cả cấp 3 trở đi, gom vào cấp 2)
+        for (CommentEntity comment : allComments) {
+            if (comment.getParentComment() != null) {
+                UUID parentId = comment.getParentComment().getCommentId();
+                CommentDTO parentDTO = commentMap.get(parentId);
+                if (parentDTO != null) {
+                    parentDTO.getReplies().add(CommentDTO.fromEntity(comment));
+                }
+            }
+        }
+
+        return parentComments;
     }
 }

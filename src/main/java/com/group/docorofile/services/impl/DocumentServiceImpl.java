@@ -7,6 +7,8 @@ import com.group.docorofile.models.dto.AdminDocumentDTO;
 import com.group.docorofile.models.dto.UserDocumentDTO;
 import com.group.docorofile.models.mappers.DocumentMapper;
 import com.group.docorofile.repositories.*;
+import com.group.docorofile.response.NotFoundError;
+import com.group.docorofile.response.UnauthorizedError;
 import com.group.docorofile.services.iDocumentService;
 import com.group.docorofile.services.specifications.DocumentSpecification;
 import com.group.docorofile.services.utils.FileStorageService;
@@ -37,13 +39,13 @@ public class DocumentServiceImpl implements iDocumentService {
     private DocumentViewRepository documentViewRepository;
 
     @Autowired
-    private MemberRepository memberRepository;
-
-    @Autowired
     private FileStorageService fileStorageService;
 
     @Autowired
     private CourseRepository courseRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private UniversityRepository universityRepository;
@@ -66,7 +68,9 @@ public class DocumentServiceImpl implements iDocumentService {
 
     @Override
     public void deleteDocument(UUID documentId) {
-        documentRepository.deleteById(documentId);
+        DocumentEntity document = documentRepository.findById(documentId)
+                .orElseThrow(() -> new RuntimeException("Tài liệu không tồn tại"));
+        documentRepository.delete(document);
     }
 
     @Override
@@ -90,13 +94,73 @@ public class DocumentServiceImpl implements iDocumentService {
     }
 
     @Override
-    public List<DocumentEntity> searchDocuments(String keyword) {
-        return documentRepository.findAll(DocumentSpecification.searchByKeyword(keyword));
+    public Object viewDocumentByIdForUI(UUID documentId, String role, String userName) {
+        // Kiểm tra tài liệu có tồn tại không
+        var document = documentRepository.findById(documentId)
+                .orElseThrow(() -> new NotFoundError("Tài liệu không tồn tại!"));
+
+        // Tăng viewCount
+        document.setViewCount(document.getViewCount() + 1);
+        documentRepository.save(document);
+
+        try {
+            if (role.equals("ROLE_MEMBER")) {
+                // Kiểm tra xem user này đã xem tài liệu chưa
+                MemberEntity currentMem = (MemberEntity) userRepository.findByEmail(userName).get();
+                boolean alreadyViewed = documentViewRepository.existsByDocument_DocumentIdAndMember_UserId(documentId, currentMem.getUserId());
+
+                if (!alreadyViewed) {
+                    // Ghi lại lượt xem vào DocumentViewEntity
+                    DocumentViewEntity view = DocumentViewEntity.builder()
+                            .document(document)
+                            .member(currentMem)
+                            .viewedAt(LocalDateTime.now())
+                            .downloadedAt(null)
+                            .build();
+
+                }
+            }
+            // Kiểm tra vai trò từ token
+            if (role.equals("ROLE_ADMIN") || role.equals("ROLE_MODERATOR")) {
+                return DocumentMapper.toAdminDTO(document);
+            } else {
+                return DocumentMapper.toUserDTO(document);
+            }
+        } catch (RuntimeException e) {
+            return new UnauthorizedError(e.getMessage());
+        }
     }
 
     @Override
-    public List<DocumentEntity> filterDocuments(UUID courseId, UUID universityId, LocalDateTime uploadDate, boolean sortByViews, boolean sortByLikes, boolean sortByDisLike, String status, boolean isAdmin) {
-        return documentRepository.findAll(DocumentSpecification.filterDocuments(courseId, universityId, uploadDate, sortByViews, sortByLikes, sortByDisLike, status, isAdmin));
+    public Object searchDocuments(String keyword, String role) {
+        try {
+            List<DocumentEntity> documents = documentRepository.findAll(DocumentSpecification.searchByKeyword(keyword));
+            if (documents.isEmpty()) {
+                return new NotFoundError("Không tìm thấy tài liệu nào!");
+            }
+
+            if (role.equals("ROLE_ADMIN") || role.equals("ROLE_MODERATOR")) {
+                return documents.stream().map(DocumentMapper::toAdminDTO).collect(Collectors.toList());
+            } else {
+                return documents.stream().map(DocumentMapper::toUserDTO).collect(Collectors.toList());
+            }
+        } catch (RuntimeException e) {
+            return new UnauthorizedError(e.getMessage());
+        }
+    }
+
+    @Override
+    public Object filterDocuments(UUID courseId, UUID universityId, LocalDateTime uploadDate, boolean sortByViews, boolean sortByLikes, boolean sortByDisLike, String status, boolean isAdmin) {
+        try {
+            List<DocumentEntity> documents = documentRepository.findAll(DocumentSpecification.filterDocuments(courseId, universityId, uploadDate, sortByViews, sortByLikes, sortByDisLike, status, isAdmin));
+            if (isAdmin) {
+                return documents.stream().map(DocumentMapper::toAdminDTO).collect(Collectors.toList());
+            } else {
+                return documents.stream().map(DocumentMapper::toUserDTO).collect(Collectors.toList());
+            }
+        } catch (RuntimeException e) {
+            return new UnauthorizedError(e.getMessage());
+        }
     }
 
     @Override
@@ -109,15 +173,24 @@ public class DocumentServiceImpl implements iDocumentService {
     }
 
     @Override
+    public boolean softDeleteDocument(UUID documentId) {
+        DocumentEntity document = documentRepository.findById(documentId)
+                .orElseThrow(() -> new RuntimeException("Tài liệu không tồn tại"));
+        document.setStatus(EDocumentStatus.DELETED);
+        documentRepository.save(document);
+        return true;
+    }
+
+    @Override
     public void updateViews(UUID documentId, UUID memberId) {
         DocumentEntity document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new RuntimeException("Tài liệu không tồn tại"));
 
-        MemberEntity member = memberRepository.findById(memberId)
+        MemberEntity member = (MemberEntity) userRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
 
         // Kiểm tra xem user này đã xem tài liệu chưa
-        boolean alreadyViewed = documentViewRepository.existsByDocument_DocumentIdAndMember_MemberId(documentId, memberId);
+        boolean alreadyViewed = documentViewRepository.existsByDocument_DocumentIdAndMember_UserId(documentId, memberId);
 
         if (!alreadyViewed) {
             // Tăng viewCount
@@ -142,19 +215,19 @@ public class DocumentServiceImpl implements iDocumentService {
     @Override
     public String uploadDocument(UUID memberId, MultipartFile file, String title, String description, String nameCourse, String nameUniversity) {
         // Kiểm tra xem người dùng có tồn tại không
-        MemberEntity member = memberRepository.findById(memberId)
+        MemberEntity member = (MemberEntity) userRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
 
         if (!courseRepository.existsByCourseName(nameCourse)) {
             return "Không tìm thấy khóa học!";
         }
 
-        if (!universityRepository.existsByUniversityName(nameUniversity)) {
+        if (!universityRepository.existsByUnivName(nameUniversity)) {
             return "Không tìm thấy trường học!";
         }
 
         // Kiểm tra tài liệu trùng của chính user
-        if (documentRepository.existsByTitleAndAuthor_MemberId(title, memberId)) {
+        if (documentRepository.existsByTitleAndAuthor_UserId(title, memberId)) {
             return "Bạn đã tải lên tài liệu này trước đó. Hãy cập nhật thay vì tạo mới.";
         }
 
@@ -185,7 +258,7 @@ public class DocumentServiceImpl implements iDocumentService {
         int uploadCount = documentRepository.countDocumentUploadInDay(LocalDate.now(), memberId);
         if (uploadCount == 1 || uploadCount == 3 || uploadCount % 5 == 0) {
             member.setDownloadLimit(member.getDownloadLimit() + 1);
-            memberRepository.save(member);
+            userRepository.save(member);
             return "Bạn đã tải lên đủ " + uploadCount + " tài liệu! Hệ thống đã cộng thêm 1 lượt tải miễn phí.";
         }
 
@@ -199,7 +272,7 @@ public class DocumentServiceImpl implements iDocumentService {
                 .orElseThrow(() -> new RuntimeException("Tài liệu không tồn tại"));
 
         // Kiểm tra xem người dùng có tồn tại không
-        MemberEntity member = memberRepository.findById(memberId)
+        MemberEntity member = (MemberEntity) userRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
 
         // Nếu người dùng là Member thì kiểm tra số lượt tải
@@ -210,7 +283,7 @@ public class DocumentServiceImpl implements iDocumentService {
         // Nếu là Member, trừ đi 1 lượt tải
         if (member.getMembership().getLevel() == EMembershipLevel.FREE) {
             member.setDownloadLimit(member.getDownloadLimit() - 1);
-            memberRepository.save(member);
+            userRepository.save(member);
         }
 
         // Cập nhật số lượt tải xuống của tài liệu
@@ -252,7 +325,7 @@ public class DocumentServiceImpl implements iDocumentService {
     @Override
     public List<DocumentEntity> getRecommendedDocuments(UUID memberId) {
         // Kiểm tra người dùng có tồn tại không
-        MemberEntity member = memberRepository.findById(memberId)
+        MemberEntity member = (MemberEntity) userRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
 
         // Lấy danh sách khóa học mà người dùng đang theo dõi

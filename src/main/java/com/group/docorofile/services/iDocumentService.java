@@ -26,11 +26,15 @@ public interface iDocumentService {
 
     List<AdminDocumentDTO> getAllAdminDocuments();
 
-    List<DocumentEntity> searchDocuments(String keyword);
+    Object viewDocumentByIdForUI(UUID documentId, String role, String userName);
 
-    List<DocumentEntity> filterDocuments(UUID courseId, UUID universityId, LocalDateTime uploadDate, boolean sortByViews, boolean sortByLikes, boolean sortByDisLike, String status, boolean isAdmin);
+    Object searchDocuments(String keyword, String role);
+
+    Object filterDocuments(UUID courseId, UUID universityId, LocalDateTime uploadDate, boolean sortByViews, boolean sortByLikes, boolean sortByDisLike, String status, boolean isAdmin);
 
     void updateStatus(UUID documentId, String status);
+
+    boolean softDeleteDocument(UUID documentId);
 
     void updateViews(UUID documentId, UUID memberId);
 
