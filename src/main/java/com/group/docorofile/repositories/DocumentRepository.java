@@ -1,0 +1,25 @@
+package com.group.docorofile.repositories;
+
+import com.group.docorofile.entities.DocumentEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+@Repository
+public interface DocumentRepository extends JpaRepository<DocumentEntity, UUID>, JpaSpecificationExecutor<DocumentEntity> {
+    @Query("SELECT COUNT(d) FROM DocumentEntity d WHERE DATE(d.uploadedDate) = :date AND d.author.userId = :memberId")
+    int countDocumentUploadInDay (LocalDate date, UUID memberId);
+
+    // Kiểm tra xem user đã tải lên tài liệu này chưa
+    boolean existsByTitleAndAuthor_MemberId(String title, UUID memberId);
+
+    // Tìm tài liệu trùng lặp của cùng một user
+    List<DocumentEntity> findByTitleAndAuthor_MemberId(String title, UUID memberId);
+}
+

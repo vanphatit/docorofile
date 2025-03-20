@@ -28,6 +28,8 @@ public class DocumentViewEntity implements Serializable {
 
     private LocalDateTime viewedAt;
 
+    private LocalDateTime downloadedAt;
+
     @PrePersist
     public void prePersist() {
         if (this.id == null) {

@@ -30,6 +30,13 @@ public class ReactionEntity implements Serializable {
     private LocalDateTime createdOn;
     private LocalDateTime modifiedOn;
 
+    @PreUpdate
+    private void validateReaction() {
+        if (this.isLike && this.isDislike) {
+            throw new IllegalStateException("Không thể vừa like vừa dislike!");
+        }
+    }
+
     @PrePersist
     public void prePersist() {
         if (this.reactionId == null) {
@@ -38,6 +45,14 @@ public class ReactionEntity implements Serializable {
 
         if (this.createdOn == null) {
             this.createdOn = LocalDateTime.now();
+        }
+
+        if (this.modifiedOn == null) {
+            this.modifiedOn = LocalDateTime.now();
+        }
+
+        if (this.isLike && this.isDislike) {
+            throw new IllegalStateException("Không thể vừa like vừa dislike!");
         }
     }
 }
