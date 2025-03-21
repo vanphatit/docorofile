@@ -1,5 +1,7 @@
 package com.group.docorofile.configs;
 
+import com.group.docorofile.exceptions.DocumentNotFoundException;
+import com.group.docorofile.exceptions.DuplicateReportException;
 import com.group.docorofile.exceptions.UserNotFoundException;
 import com.group.docorofile.response.ErrorResponse;
 import com.group.docorofile.response.ForbiddenError;
@@ -43,6 +45,18 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException ex) {
+        ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(DuplicateReportException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateReportException(DuplicateReportException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DocumentNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleDocumentNotFoundException(DocumentNotFoundException ex) {
         ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
