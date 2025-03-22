@@ -7,7 +7,6 @@ import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.UUID;
 
 @Getter
@@ -18,16 +17,22 @@ import java.util.UUID;
 @SuperBuilder
 @Table(name = "messages")
 public class MessageEntity implements Serializable {
+
     @Id
     private UUID messageId;
 
     @ManyToOne
+    @JoinColumn(name = "sender_id", nullable = false) // Khóa ngoại trỏ đến MemberEntity
     private MemberEntity sender;
 
     @ManyToOne
+    @JoinColumn(name = "chatroom_id", nullable = false) // Khóa ngoại trỏ đến ChatRoomEntity
     private ChatRoomEntity chatRoom;
 
+    @Column(nullable = false, columnDefinition = "TEXT") // Lưu nội dung tin nhắn
     private String content;
+
+    @Column(nullable = false)
     private LocalDateTime sentAt;
 
     @PrePersist

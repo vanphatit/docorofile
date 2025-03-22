@@ -47,6 +47,12 @@ public class DocumentEntity implements Serializable {
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DocumentViewEntity> viewers;
 
+    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FavoriteListEntity> favoritedBy;
+
+    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReactionEntity> reactions;
+
     @PrePersist
     public void prePersist() {
         if (this.documentId == null) {

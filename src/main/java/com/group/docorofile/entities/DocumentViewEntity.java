@@ -1,6 +1,7 @@
 package com.group.docorofile.entities;
 
 import com.github.f4b6a3.uuid.UuidCreator;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -27,6 +28,9 @@ public class DocumentViewEntity implements Serializable {
     private DocumentEntity document;
 
     private LocalDateTime viewedAt;
+
+    @Nullable
+    private LocalDateTime downloadedAt;
 
     @PrePersist
     public void prePersist() {
