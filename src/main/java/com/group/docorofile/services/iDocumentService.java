@@ -47,4 +47,20 @@ public interface iDocumentService {
     List<DocumentEntity> getRelatedDocuments(UUID documentId);
 
     List<DocumentEntity> getRecommendedDocuments(UUID memberId);
+
+    List<DocumentEntity> getHistoryDocuments(UUID memberId);
+
+    List<UserDocumentDTO> getHistoryDocumentsForUI(UUID memberId);
+
+    List<DocumentEntity> getDocumentByCourseId(UUID courseId);
+
+    List<DocumentEntity> getDocumentByUniversityId(String univName);
+
+    List<DocumentEntity> getDocumentByUniversityAndCourse(String univName, String courseName);
+
+    List<DocumentEntity> getDocumentByCourseAndFollowedByMember(UUID memberId);
+
+    List<UserDocumentDTO> getDocumentByCourseAndFollowedByMemberForUI(UUID memberId);
+
+    List<UserDocumentDTO> getDocumentByAuthor(UUID authorId);
 }

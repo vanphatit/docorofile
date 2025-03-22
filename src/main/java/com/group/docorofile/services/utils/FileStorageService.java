@@ -43,10 +43,16 @@ public class FileStorageService {
         Files.createDirectories(Paths.get(uploadDir));
 
         // Lưu file vào thư mục
-        file.transferTo(new File(filePath));
+        try {
+            file.transferTo(new File(filePath));
+        } catch (IOException e) {
+            System.err.println("❌ Lỗi khi ghi file: " + e.getMessage());
+            e.printStackTrace(); // in chi tiết ra log
+            throw new IOException("Lỗi khi lưu tài liệu! Vui lòng thử lại.");
+        }
 
         // Trả về đường dẫn file
-        return "/static/uploads/documents/" + filename;
+        return uploadDir + filename;
     }
 
     // Lấy file từ đường dẫn

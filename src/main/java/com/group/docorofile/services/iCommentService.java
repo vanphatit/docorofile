@@ -1,5 +1,8 @@
 package com.group.docorofile.services;
 
+import com.group.docorofile.models.dto.CommentDTO;
+
+import java.util.List;
 import java.util.UUID;
 
 public interface iCommentService {
@@ -8,4 +11,6 @@ public interface iCommentService {
 
     // Xóa bình luận
     String deleteComment(UUID commentId, UUID memberId);
+
+    List<CommentDTO> getCommentsByDocumentTree(UUID documentId);
 }

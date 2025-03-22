@@ -14,4 +14,12 @@ public interface DocumentViewRepository extends JpaRepository<DocumentViewEntity
 
     @Query("SELECT dv.document.documentId FROM DocumentViewEntity dv WHERE dv.member.userId = :memberId")
     List<UUID> findViewedDocumentsByMemberId (UUID memberId);
+
+    @Query("SELECT dv FROM DocumentViewEntity dv WHERE dv.document.documentId = :documentId AND dv.member.userId = :memberId")
+    DocumentViewEntity findByDocument_DocumentIdAndMember_UserId(UUID documentId, UUID memberId);
+
+    @Query("SELECT dv FROM DocumentViewEntity dv WHERE dv.member.userId = :memberId ORDER BY dv.viewedAt DESC")
+    List<DocumentViewEntity> findHistoryDocumentsByMemberId(UUID memberId);
+
+
 }

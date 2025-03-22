@@ -3,10 +3,13 @@ package com.group.docorofile.models.mappers;
 import com.group.docorofile.models.dto.AdminDocumentDTO;
 import com.group.docorofile.models.dto.UserDocumentDTO;
 import com.group.docorofile.entities.DocumentEntity;
-import com.group.docorofile.utils.PDFUtils;
-import org.springframework.context.annotation.Bean;
+import com.group.docorofile.utils.FilePreviewUtils;
+import org.springframework.beans.factory.annotation.Value;
 
 public class DocumentMapper {
+
+    @Value("${document.upload.dir}") // Lấy từ application.properties
+    private static String uploadDir;
 
     // Chuyển đổi cho User
     public static UserDocumentDTO toUserDTO(DocumentEntity document) {
@@ -20,7 +23,12 @@ public class DocumentMapper {
         userDocumentDTO.setCourse(document.getCourse());
         userDocumentDTO.setUniversity(document.getCourse().getUniversity());
         userDocumentDTO.setComments(document.getComments());
-        userDocumentDTO.setCoverImageUrl(PDFUtils.getCoverImageFromPDF(document.getFileUrl())); // Lấy trang bìa từ fileUrl
+
+        System.out.println("🧾 fileUrl = " + document.getFileUrl());
+        String preview = FilePreviewUtils.getCoverImageBase64(uploadDir, document.getFileUrl());
+        System.out.println("🖼️ preview result = " + preview);
+        userDocumentDTO.setCoverImageUrl(preview); // Lấy trang bìa từ fileUrl
+
         userDocumentDTO.setLikes((int) document.getReactions().stream().filter(reaction -> reaction.isLike()).count());
         userDocumentDTO.setDislikes((int) document.getReactions().stream().filter(reaction -> reaction.isDislike()).count());
         userDocumentDTO.setViews(document.getViewCount());
@@ -39,7 +47,8 @@ public class DocumentMapper {
         adminDocumentDTO.setAuthor(document.getAuthor());
         adminDocumentDTO.setCourse(document.getCourse());
         adminDocumentDTO.setComments(document.getComments());
-        adminDocumentDTO.setCoverImageUrl(PDFUtils.getCoverImageFromPDF(document.getFileUrl())); // Lấy trang bìa từ fileUrl
+        String preview = FilePreviewUtils.getCoverImageBase64(uploadDir, document.getFileUrl());
+        adminDocumentDTO.setCoverImageUrl(preview); // Lấy trang bìa từ fileUrl
         adminDocumentDTO.setLikes((int) document.getReactions().stream().filter(reaction -> reaction.isLike()).count());
         adminDocumentDTO.setDislikes((int) document.getReactions().stream().filter(reaction -> reaction.isDislike()).count());
         adminDocumentDTO.setViews(document.getViewCount());

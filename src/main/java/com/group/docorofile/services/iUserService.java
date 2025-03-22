@@ -26,4 +26,6 @@ public interface iUserService {
     void deleteUser(UUID id);
 
     Optional<UserEntity> findByEmail(String email);
+
+    boolean courseFollowedByMember(UUID memberId);
 }

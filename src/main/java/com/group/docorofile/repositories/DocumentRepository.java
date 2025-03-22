@@ -21,5 +21,18 @@ public interface DocumentRepository extends JpaRepository<DocumentEntity, UUID>,
 
     // Tìm tài liệu trùng lặp của cùng một user
     List<DocumentEntity> findByTitleAndAuthor_UserId(String title, UUID memberId);
+
+    @Query("SELECT d FROM DocumentEntity d WHERE d.course.courseId = :courseId")
+    List<DocumentEntity> findByCourse_CourseId(UUID courseId);
+
+    List<DocumentEntity> findByCourse_University_UnivName(String universityName);
+
+    List<DocumentEntity> findByCourse_University_UnivNameAndCourse_CourseName(String universityName, String courseName);
+
+    List<DocumentEntity> findByUploadedDate(LocalDateTime uploadedDate);
+
+    List<DocumentEntity> findByStatus(String status);
+
+    List<DocumentEntity> findByAuthor_UserId(UUID userId);
 }
 

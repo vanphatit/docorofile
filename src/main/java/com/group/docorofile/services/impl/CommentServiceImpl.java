@@ -78,6 +78,7 @@ public class CommentServiceImpl implements iCommentService {
         return "Bình luận đã được xóa!";
     }
 
+    @Override
     public List<CommentDTO> getCommentsByDocumentTree(UUID documentId) {
         // Lấy tất cả bình luận của tài liệu
         List<CommentEntity> allComments = commentRepository.findCommentEntitiesByDocument_DocumentId(documentId);

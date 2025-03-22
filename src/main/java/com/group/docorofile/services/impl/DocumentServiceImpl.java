@@ -7,6 +7,7 @@ import com.group.docorofile.models.dto.AdminDocumentDTO;
 import com.group.docorofile.models.dto.UserDocumentDTO;
 import com.group.docorofile.models.mappers.DocumentMapper;
 import com.group.docorofile.repositories.*;
+import com.group.docorofile.response.InternalServerError;
 import com.group.docorofile.response.NotFoundError;
 import com.group.docorofile.response.UnauthorizedError;
 import com.group.docorofile.services.iDocumentService;
@@ -52,8 +53,12 @@ public class DocumentServiceImpl implements iDocumentService {
 
     @Override
     public DocumentEntity createDocument(DocumentEntity document) {
-        document.setUploadedDate(LocalDateTime.now());
-        return documentRepository.save(document);
+        try {
+            document.setUploadedDate(LocalDateTime.now());
+            return documentRepository.save(document);
+        } catch (RuntimeException e) {
+            throw new InternalServerError("Lỗi khi tạo tài liệu!");
+        }
     }
 
     @Override
@@ -99,11 +104,10 @@ public class DocumentServiceImpl implements iDocumentService {
         var document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new NotFoundError("Tài liệu không tồn tại!"));
 
-        // Tăng viewCount
-        document.setViewCount(document.getViewCount() + 1);
-        documentRepository.save(document);
-
         try {
+            // Tăng viewCount
+            document.setViewCount(document.getViewCount() + 1);
+            documentRepository.save(document);
             if (role.equals("ROLE_MEMBER")) {
                 // Kiểm tra xem user này đã xem tài liệu chưa
                 MemberEntity currentMem = (MemberEntity) userRepository.findByEmail(userName).get();
@@ -118,6 +122,7 @@ public class DocumentServiceImpl implements iDocumentService {
                             .downloadedAt(null)
                             .build();
 
+                    documentViewRepository.save(view);
                 }
             }
             // Kiểm tra vai trò từ token
@@ -286,21 +291,31 @@ public class DocumentServiceImpl implements iDocumentService {
             userRepository.save(member);
         }
 
-        // Cập nhật số lượt tải xuống của tài liệu
-        DocumentViewEntity documentView = DocumentViewEntity.builder()
-                .document(document)
-                .member(member)
-                .downloadedAt(java.time.LocalDateTime.now())
-                .build();
+        // Kiem tra xem nguoi dung da xem tai lieu chua
+        boolean alreadyViewed = documentViewRepository.existsByDocument_DocumentIdAndMember_UserId(documentId, memberId);
+        if (!alreadyViewed) {
+            // Ghi lại lượt xem vào DocumentViewEntity
+            DocumentViewEntity documentView = DocumentViewEntity.builder()
+                    .document(document)
+                    .member(member)
+                    .viewedAt(java.time.LocalDateTime.now())
+                    .downloadedAt(java.time.LocalDateTime.now())
+                    .build();
 
-        documentViewRepository.save(documentView);
+            documentViewRepository.save(documentView);
+        } else {
+            // Cập nhật lượt tải
+            DocumentViewEntity documentView = documentViewRepository.findByDocument_DocumentIdAndMember_UserId(documentId, memberId);
+            documentView.setDownloadedAt(java.time.LocalDateTime.now());
+            documentViewRepository.save(documentView);
+        }
 
         // Lấy file từ server
-        String fileName = document.getFileUrl().replace("/static/uploads/documents/", "");
+        String fileName = document.getFileUrl();
         Path filePath = fileStorageService.getFilePath(fileName);
         Resource resource;
         try {
-            resource = new UrlResource(filePath.toUri());
+            resource = new UrlResource(filePath.toUri());  // Tạo resource từ đường dẫn file
             if (!resource.exists()) {
                 throw new RuntimeException("Tài liệu không tồn tại trong hệ thống.");
             }
@@ -335,5 +350,78 @@ public class DocumentServiceImpl implements iDocumentService {
         List<UUID> viewedDocumentIds = documentViewRepository.findViewedDocumentsByMemberId(memberId);
 
         return documentRepository.findAll(DocumentSpecification.recommendDocuments(courseIds, viewedDocumentIds));
+    }
+
+    @Override
+    public List<DocumentEntity> getHistoryDocuments(UUID memberId) {
+        try {
+            MemberEntity member = (MemberEntity) userRepository.findById(memberId)
+                    .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+            List<DocumentViewEntity> historyViewDocuments = documentViewRepository.findHistoryDocumentsByMemberId(memberId);
+            return historyViewDocuments.stream().map(DocumentViewEntity::getDocument).collect(Collectors.toList());
+        } catch (RuntimeException e) {
+            throw new InternalServerError(e.getMessage());
+        }
+    }
+
+    @Override
+    public List<UserDocumentDTO> getHistoryDocumentsForUI(UUID memberId) {
+        try {
+            MemberEntity member = (MemberEntity) userRepository.findById(memberId)
+                    .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+            List<DocumentEntity> historyViewDocuments = getHistoryDocuments(memberId);
+            return historyViewDocuments.stream().map(DocumentMapper::toUserDTO).collect(Collectors.toList());
+        } catch (RuntimeException e) {
+            throw new InternalServerError(e.getMessage());
+        }
+    }
+
+    @Override
+    public List<DocumentEntity> getDocumentByCourseId(UUID courseId) {
+        return documentRepository.findByCourse_CourseId(courseId);
+    }
+
+    @Override
+    public List<DocumentEntity> getDocumentByUniversityId(String univName) {
+        return documentRepository.findByCourse_University_UnivName(univName);
+    }
+
+    @Override
+    public List<DocumentEntity> getDocumentByUniversityAndCourse(String univName, String courseName) {
+        return documentRepository.findByCourse_University_UnivNameAndCourse_CourseName(univName, courseName);
+    }
+
+    @Override
+    public List<DocumentEntity> getDocumentByCourseAndFollowedByMember(UUID memberId) {
+        try {
+            MemberEntity member = (MemberEntity) userRepository.findById(memberId)
+                    .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+            List<UUID> courseIds = courseRepository.findFollowedCoursesByMemberId(memberId);
+            return documentRepository.findAll(DocumentSpecification.recommendDocuments(courseIds, null));
+        } catch (RuntimeException e) {
+            throw new InternalServerError(e.getMessage());
+        }
+    }
+
+    @Override
+    public List<UserDocumentDTO> getDocumentByCourseAndFollowedByMemberForUI(UUID memberId) {
+        try {
+            MemberEntity member = (MemberEntity) userRepository.findById(memberId)
+                    .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+            List<DocumentEntity> documents = getDocumentByCourseAndFollowedByMember(memberId);
+            return documents.stream().map(DocumentMapper::toUserDTO).collect(Collectors.toList());
+        } catch (RuntimeException e) {
+            throw new InternalServerError(e.getMessage());
+        }
+    }
+
+    @Override
+    public List<UserDocumentDTO> getDocumentByAuthor(UUID authorId) {
+        try {
+            List<DocumentEntity> documents = documentRepository.findByAuthor_UserId(authorId);
+            return documents.stream().map(DocumentMapper::toUserDTO).collect(Collectors.toList());
+        } catch (RuntimeException e) {
+            throw new InternalServerError(e.getMessage());
+        }
     }
 }

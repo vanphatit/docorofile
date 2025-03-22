@@ -8,6 +8,7 @@ import com.group.docorofile.security.JwtTokenUtil;
 import com.group.docorofile.services.iUserService;
 import com.group.docorofile.services.impl.CommentServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -26,6 +27,7 @@ public class CommentAPIController {
     @Autowired
     private JwtTokenUtil jwtUtils;
 
+    @PreAuthorize("hasRole('ROLE_MEMBER')")
     @PostMapping("/add")
     public Object addComment(@RequestParam UUID documentId,
                              @RequestParam String content,
@@ -49,6 +51,7 @@ public class CommentAPIController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/delete/{commentId}")
     public Object deleteComment(@PathVariable UUID commentId,
                                 @CookieValue(value = "jwtToken", required = false) String token) {
@@ -67,6 +70,15 @@ public class CommentAPIController {
             return new SuccessResponse(message, 200, null, LocalDateTime.now());
         } catch (RuntimeException e) {
             return new ForbiddenError(e.getMessage());
+        }
+    }
+
+    @GetMapping("/getComments/{documentId}")
+    public Object getComments(@PathVariable UUID documentId) {
+        try {
+            return new SuccessResponse("Lấy danh sách comment thành công!", 200, commentService.getCommentsByDocumentTree(documentId), LocalDateTime.now());
+        } catch (RuntimeException e) {
+            return new BadRequestError(e.getMessage());
         }
     }
 }
