@@ -66,9 +66,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     }
                 }
             } catch (Exception e) {
-                // Log exception but don't send response here
                 throw new InternalServerError("Internal server error occurred");
-                // Don't set security context
             }
         }
 
@@ -79,6 +77,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final List<String> EXCLUDED_PATHS = Arrays.asList(
             "/v1/api/auth/login",
             "/v1/api/auth/logout",
-            "/v1/api/users/newMember"
+            "/v1/api/users/newMember",
+            "/v1/api/auth/verify-email",
+            "/v1/api/auth/request-reset-password",
+            "/v1/api/auth/reset-password"
     );
 }
