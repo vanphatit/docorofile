@@ -1,10 +1,13 @@
 package com.group.docorofile.controllers.v1.api.auth;
 
 import com.group.docorofile.models.users.LoginRequest;
+import com.group.docorofile.repositories.UserRepository;
 import com.group.docorofile.response.UnauthorizedError;
 import com.group.docorofile.security.CustomUserDetails;
 import com.group.docorofile.security.JwtTokenUtil;
 import com.group.docorofile.response.SuccessResponse;
+import com.group.docorofile.services.EmailService;
+import com.group.docorofile.services.impl.UserServiceImpl;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +31,15 @@ public class AuthAPIController {
 
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
+
+    @Autowired
+    private EmailService emailVerificationService;
+
+    @Autowired
+    private UserServiceImpl userServiceImpl;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
@@ -58,6 +70,39 @@ public class AuthAPIController {
         response.addCookie(jwtCookie);
 
         SuccessResponse successResponse = new SuccessResponse("Logout successful", HttpStatus.OK.value(), null, LocalDateTime.now());
+        return ResponseEntity.ok(successResponse);
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestParam("email") String email, @RequestParam("code") String code) {
+        String storedCode = emailVerificationService.getVerificationCode(email);
+        if(storedCode == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Không tìm thấy mã xác thực cho email này. Có thể đã hết hạn hoặc chưa đăng ký?");
+        }
+
+        if(!storedCode.equals(code)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Mã xác thực không chính xác, vui lòng thử lại.");
+        }
+
+        var optionalUser = userServiceImpl.findByEmail(email);
+        if(optionalUser.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Không tìm thấy user với email: " + email);
+        }
+
+        var user = optionalUser.get();
+        if(user.isActive()) {
+            return ResponseEntity.ok("Tài khoản này đã được kích hoạt trước đó.");
+        }
+
+        user.setActive(true);
+        userRepository.save(user);
+
+        emailVerificationService.removeVerificationCode(email);
+
+        SuccessResponse successResponse = new SuccessResponse("Xác thực email thành công, tài khoản đã được kích hoạt!", HttpStatus.OK.value(), null, LocalDateTime.now());
         return ResponseEntity.ok(successResponse);
     }
 }
