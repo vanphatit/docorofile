@@ -1,5 +1,6 @@
 package com.group.docorofile.security;
 
+import com.group.docorofile.response.InternalServerError;
 import com.group.docorofile.services.security.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -24,13 +27,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
+    // In JwtAuthenticationFilter - improve error handling
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain)
-            throws ServletException, IOException {
+                                    FilterChain filterChain) throws ServletException, IOException {
+
+        if (EXCLUDED_PATHS.contains(request.getRequestURI())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String token = null;
 
+        // Extract token from cookies
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
                 if ("JWT".equals(cookie.getName())) {
@@ -40,29 +50,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        try {
-            final String username = jwtTokenUtil.getUsernameFromToken(token);
+        // Only process if token exists
+        if (token != null) {
+            try {
+                final String username = jwtTokenUtil.getUsernameFromToken(token);
 
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                var userDetails = customUserDetailsService.loadUserByUsername(username);
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    var userDetails = customUserDetailsService.loadUserByUsername(username);
 
-                if(jwtTokenUtil.isTokenValid(token, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-
-                    System.out.println("===================================");
-                    System.out.println("Username: " + username);
-                    System.out.println("Role: " + userDetails.getAuthorities());
-                    System.out.println("===================================");
+                    if (jwtTokenUtil.isTokenValid(token, userDetails)) {
+                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
                 }
+            } catch (Exception e) {
+                // Log exception but don't send response here
+                throw new InternalServerError("Internal server error occurred");
+                // Don't set security context
             }
+        }
 
-            filterChain.doFilter(request, response);
-        }
-        catch (Exception e) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-        }
+        // Always continue filter chain
+        filterChain.doFilter(request, response);
     }
+
+    private static final List<String> EXCLUDED_PATHS = Arrays.asList(
+            "/v1/api/auth/login",
+            "/v1/api/auth/logout",
+            "/v1/api/users/newMember"
+    );
 }

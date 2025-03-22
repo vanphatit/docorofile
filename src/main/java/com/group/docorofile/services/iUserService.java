@@ -10,7 +10,9 @@ import java.util.UUID;
 
 public interface iUserService {
     // Tạo user dựa trên loại được chỉ định trong request
-    UserEntity createUser(CreateUserRequest request);
+    UserEntity createMember(CreateUserRequest request);
+
+    UserEntity createManager(CreateUserRequest request);
 
     Optional<UserEntity> getUserById(UUID id);
 
@@ -24,4 +26,8 @@ public interface iUserService {
     UserEntity updateUser(UUID id, CreateUserRequest request);
 
     void deleteUser(UUID id);
+
+    boolean courseFollowedByMember(UUID memberId);
+
+    Optional<UserEntity> findByEmail(String email);
 }

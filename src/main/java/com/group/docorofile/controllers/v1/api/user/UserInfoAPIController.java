@@ -24,15 +24,23 @@ public class UserInfoAPIController {
     private UserServiceImpl userService;
 
     // Tạo user mới, trả về CreatedResponse (status 201)
-    @PostMapping("/new")
+    @PostMapping("/newMember")
     public ResponseEntity<SuccessResponse> createUser(@RequestBody CreateUserRequest request) {
-        UserEntity user = userService.createUser(request);
+        UserEntity user = userService.createMember(request);
+        CreatedResponse response = new CreatedResponse("User created successfully", user);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping("/newManager")
+    public ResponseEntity<SuccessResponse> createManager(@RequestBody CreateUserRequest request) {
+        UserEntity user = userService.createManager(request);
         CreatedResponse response = new CreatedResponse("User created successfully", user);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     // Lấy 1 user theo ID
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<SuccessResponse> getUser(@PathVariable UUID id) {
         UserEntity user = userService.getUserById(id)
@@ -50,8 +58,8 @@ public class UserInfoAPIController {
         return ResponseEntity.ok(response);
     }
 
-    // Cập nhật user
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MEMBER')")
+    // Cập nhật user theo ID
+    @PreAuthorize("hasRole('ROLE_ADMIN)')")
     @PutMapping("/{id}")
     public ResponseEntity<SuccessResponse> updateUser(@PathVariable UUID id, @RequestBody CreateUserRequest request) {
         UserEntity user = userService.updateUser(id, request);
@@ -59,7 +67,16 @@ public class UserInfoAPIController {
         return ResponseEntity.ok(response);
     }
 
+//    @PreAuthorize("hasRole('ROLE_MEMBER')")
+//    @PutMapping("/updateMyProfile")
+//    public ResponseEntity<SuccessResponse> updateMyProfile(@PathVariable UUID id, @RequestBody CreateUserRequest request) {
+//        UserEntity user = userService.updateUser(id, request);
+//        SuccessResponse response = new SuccessResponse("User updated successfully", HttpStatus.OK.value(), user, LocalDateTime.now());
+//        return ResponseEntity.ok(response);
+//    }
+
     // Xóa user
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<SuccessResponse> deactivateUser(@PathVariable UUID id) {
         userService.deleteUser(id);
