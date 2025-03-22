@@ -1,11 +1,10 @@
 package com.group.docorofile.services.impl;
 
-import com.group.docorofile.entities.AdminEntity;
-import com.group.docorofile.entities.MemberEntity;
-import com.group.docorofile.entities.ModeratorEntity;
-import com.group.docorofile.entities.UserEntity;
+import com.group.docorofile.entities.*;
+import com.group.docorofile.enums.EMembershipLevel;
 import com.group.docorofile.models.users.CreateUserRequest;
 import com.group.docorofile.repositories.FollowCourseRepository;
+import com.group.docorofile.repositories.MembershipRepository;
 import com.group.docorofile.repositories.UserRepository;
 import com.group.docorofile.response.BadRequestError;
 import com.group.docorofile.response.ConflictError;
@@ -15,9 +14,12 @@ import com.group.docorofile.services.EmailService;
 import com.group.docorofile.services.iUserService;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,6 +31,9 @@ public class UserServiceImpl implements iUserService {
     private UserRepository userRepository;
 
     @Autowired
+    private MembershipRepository membershipRepository;
+
+    @Autowired
     private FollowCourseRepository followCourseRepository;
 
     @Autowired
@@ -37,15 +42,18 @@ public class UserServiceImpl implements iUserService {
     @Autowired
     private EmailService emailService;
 
-    // Tạo user dựa trên loại được chỉ định trong request
     @Override
     public UserEntity createMember(CreateUserRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new ConflictError("User already exists with email: " + request.getEmail());
         }
 
-        UserEntity user;
-        user = MemberEntity.builder()
+        MembershipEntity membershipEntity = MembershipEntity.builder()
+                .level(EMembershipLevel.FREE)
+                .startDate(LocalDateTime.now())
+                .build();
+
+        MemberEntity user = MemberEntity.builder()
                 .fullName(request.getFullName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -53,6 +61,7 @@ public class UserServiceImpl implements iUserService {
                 .downloadLimit(request.getDownloadLimit() != null ? request.getDownloadLimit() : 0)
                 .isChat(request.getIsChat() != null ? request.getIsChat() : false)
                 .isComment(request.getIsComment() != null ? request.getIsComment() : false)
+                .membership(membershipEntity)
                 .build();
 
         try {
@@ -106,8 +115,8 @@ public class UserServiceImpl implements iUserService {
     }
 
     @Override
-    public List<UserEntity> getAllUsers() {
-        return userRepository.findAll();
+    public Page<UserEntity> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable);
     }
 
     @Override
