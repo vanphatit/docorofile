@@ -7,7 +7,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.*;
 
 @Getter
 @Setter
@@ -25,6 +25,17 @@ public class ChatRoomEntity implements Serializable {
 
     @ManyToOne
     private CourseEntity course;
+
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MessageEntity> messages = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "chatroom_members", // Tên bảng trung gian
+            joinColumns = @JoinColumn(name = "chatroom_id"), // Khóa ngoại trỏ đến ChatRoom
+            inverseJoinColumns = @JoinColumn(name = "member_id") // Khóa ngoại trỏ đến Member
+    )
+    private Set<MemberEntity> members = new HashSet<>();
 
     @PrePersist
     public void prePersist() {
