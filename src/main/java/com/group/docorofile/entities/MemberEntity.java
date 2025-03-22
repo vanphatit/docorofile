@@ -7,8 +7,10 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -32,6 +34,12 @@ public class MemberEntity extends UserEntity {
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReactionEntity> reactions;
+  
+    @ManyToMany(mappedBy = "members")
+    private Set<ChatRoomEntity> chatRooms = new HashSet<>();
+
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MessageEntity> messagesSent = new ArrayList<>();
 
     private int downloadLimit;
     private boolean isChat;
