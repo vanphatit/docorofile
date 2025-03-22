@@ -1,6 +1,8 @@
 package com.group.docorofile.repositories;
 
 import com.group.docorofile.entities.UniversityEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 import com.group.docorofile.models.university.UniversityNameDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

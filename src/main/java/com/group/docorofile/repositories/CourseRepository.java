@@ -12,7 +12,6 @@ import java.util.UUID;
 
 @Repository
 public interface CourseRepository extends JpaRepository<CourseEntity, UUID> {
-
     Optional<CourseEntity> findByCourseName(String courseName);
     Boolean existsByCourseName(String courseName);
 
@@ -28,4 +27,3 @@ public interface CourseRepository extends JpaRepository<CourseEntity, UUID> {
     List<CourseEntity> findAllByUniversityName(@Param("univName") String univName);
 
 }
-

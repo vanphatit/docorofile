@@ -24,4 +24,8 @@ public interface iUserService {
     UserEntity updateUser(UUID id, CreateUserRequest request);
 
     void deleteUser(UUID id);
+
+    Optional<UserEntity> findByEmail(String email);
+
+    boolean courseFollowedByMember(UUID memberId);
 }

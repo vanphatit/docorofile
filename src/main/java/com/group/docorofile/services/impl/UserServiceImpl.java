@@ -5,10 +5,10 @@ import com.group.docorofile.entities.MemberEntity;
 import com.group.docorofile.entities.ModeratorEntity;
 import com.group.docorofile.entities.UserEntity;
 import com.group.docorofile.models.users.CreateUserRequest;
+import com.group.docorofile.repositories.FollowCourseRepository;
 import com.group.docorofile.repositories.UserRepository;
 import com.group.docorofile.response.BadRequestError;
 import com.group.docorofile.response.ConflictError;
-import com.group.docorofile.response.InternalServerError;
 import com.group.docorofile.response.NotFoundError;
 import com.group.docorofile.services.iUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +27,9 @@ public class UserServiceImpl implements iUserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private FollowCourseRepository followCourseRepository;
 
     // Tạo user dựa trên loại được chỉ định trong request
     @Override
@@ -128,5 +131,15 @@ public class UserServiceImpl implements iUserService {
         UserEntity user = optUser.get();
         user.setActive(false);
         userRepository.save(user);
+    }
+
+    @Override
+    public Optional<UserEntity> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    @Override
+    public boolean courseFollowedByMember(UUID memberId) {
+        return followCourseRepository.existsByFollower(memberId);
     }
 }
