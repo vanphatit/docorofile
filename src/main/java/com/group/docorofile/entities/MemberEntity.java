@@ -20,7 +20,8 @@ import java.util.Set;
 @SuperBuilder
 @Table(name = "members")
 public class MemberEntity extends UserEntity {
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "membership_id") // cột membership_id ở bảng members
     private MembershipEntity membership;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)

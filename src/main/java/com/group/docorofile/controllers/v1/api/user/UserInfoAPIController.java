@@ -7,13 +7,18 @@ import com.group.docorofile.response.SuccessResponse;
 import com.group.docorofile.response.NotFoundError;
 import com.group.docorofile.services.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -24,15 +29,23 @@ public class UserInfoAPIController {
     private UserServiceImpl userService;
 
     // Tạo user mới, trả về CreatedResponse (status 201)
-    @PostMapping("/new")
+    @PostMapping("/newMember")
     public ResponseEntity<SuccessResponse> createUser(@RequestBody CreateUserRequest request) {
-        UserEntity user = userService.createUser(request);
+        UserEntity user = userService.createMember(request);
+        CreatedResponse response = new CreatedResponse("User created successfully", user);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PostMapping("/newManager")
+    public ResponseEntity<SuccessResponse> createManager(@RequestBody CreateUserRequest request) {
+        UserEntity user = userService.createManager(request);
         CreatedResponse response = new CreatedResponse("User created successfully", user);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     // Lấy 1 user theo ID
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<SuccessResponse> getUser(@PathVariable UUID id) {
         UserEntity user = userService.getUserById(id)
@@ -41,17 +54,33 @@ public class UserInfoAPIController {
         return ResponseEntity.ok(response);
     }
 
-    // Lấy danh sách tất cả user
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping
-    public ResponseEntity<SuccessResponse> getAllUsers() {
-        List<UserEntity> users = userService.getAllUsers();
-        SuccessResponse response = new SuccessResponse("Users retrieved successfully", HttpStatus.OK.value(), users, LocalDateTime.now());
+    public ResponseEntity<SuccessResponse> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<UserEntity> usersPage = userService.getAllUsers(pageable);
+
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("content", usersPage.getContent());         // Danh sách user
+        responseData.put("currentPage", usersPage.getNumber());      // Chỉ số trang hiện tại (0-based)
+        responseData.put("totalItems", usersPage.getTotalElements());
+        responseData.put("totalPages", usersPage.getTotalPages());
+
+        SuccessResponse response = new SuccessResponse(
+                "Users retrieved successfully",
+                HttpStatus.OK.value(),
+                responseData,
+                LocalDateTime.now()
+        );
         return ResponseEntity.ok(response);
     }
 
-    // Cập nhật user
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MEMBER')")
+    // Cập nhật user theo ID
+    @PreAuthorize("hasRole('ROLE_ADMIN)')")
     @PutMapping("/{id}")
     public ResponseEntity<SuccessResponse> updateUser(@PathVariable UUID id, @RequestBody CreateUserRequest request) {
         UserEntity user = userService.updateUser(id, request);
@@ -59,7 +88,16 @@ public class UserInfoAPIController {
         return ResponseEntity.ok(response);
     }
 
+//    @PreAuthorize("hasRole('ROLE_MEMBER')")
+//    @PutMapping("/updateMyProfile")
+//    public ResponseEntity<SuccessResponse> updateMyProfile(@PathVariable UUID id, @RequestBody CreateUserRequest request) {
+//        UserEntity user = userService.updateUser(id, request);
+//        SuccessResponse response = new SuccessResponse("User updated successfully", HttpStatus.OK.value(), user, LocalDateTime.now());
+//        return ResponseEntity.ok(response);
+//    }
+
     // Xóa user
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<SuccessResponse> deactivateUser(@PathVariable UUID id) {
         userService.deleteUser(id);
