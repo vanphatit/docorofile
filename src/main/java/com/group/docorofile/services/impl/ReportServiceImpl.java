@@ -12,6 +12,7 @@ import com.group.docorofile.repositories.DocumentRepository;
 import com.group.docorofile.repositories.ReportRepository;
 import com.group.docorofile.repositories.UserRepository;
 import com.group.docorofile.request.CreateReportRequest;
+import com.group.docorofile.services.iReportService;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +23,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class ReportServiceImpl {
+public class ReportServiceImpl implements iReportService {
     private final ReportRepository reportRepository;
     private final DocumentRepository documentRepository;
     private final UserRepository userRepository;
@@ -72,7 +73,6 @@ public class ReportServiceImpl {
 
         return resultPaginationDTO;
     }
-
 
     @Transactional
     public void updateReportsStatusByDocumentId(UUID documentId, EReportStatus newStatus) {
