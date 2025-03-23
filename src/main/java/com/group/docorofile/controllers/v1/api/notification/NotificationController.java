@@ -2,10 +2,9 @@ package com.group.docorofile.controllers.v1.api.notification;
 
 import com.group.docorofile.models.dto.NotificationDTO;
 import com.group.docorofile.models.dto.ResultPaginationDTO;
-import com.group.docorofile.models.users.CreateNotificationRequest;
+import com.group.docorofile.request.CreateNotificationRequest;
 import com.group.docorofile.response.SuccessResponse;
 import com.group.docorofile.services.iNotificationService;
-import com.group.docorofile.services.impl.NotificationServiceImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,4 +1,4 @@
-package com.group.docorofile.models.users;
+package com.group.docorofile.request;
 
 import com.group.docorofile.enums.ENotificationType;
 import lombok.Getter;

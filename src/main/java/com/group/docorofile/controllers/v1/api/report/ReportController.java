@@ -4,7 +4,7 @@ import com.group.docorofile.enums.EReportStatus;
 import com.group.docorofile.models.dto.ResultPaginationDTO;
 import com.group.docorofile.request.CreateReportRequest;
 import com.group.docorofile.response.SuccessResponse;
-import com.group.docorofile.services.impl.ReportServiceImpl;
+import com.group.docorofile.services.iReportService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -19,9 +19,9 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/v1/api/reports")
 public class ReportController {
-    private final ReportServiceImpl reportService;
+    private final iReportService reportService;
 
-    public ReportController(ReportServiceImpl reportService) {
+    public ReportController(iReportService reportService) {
         this.reportService = reportService;
     }
 
