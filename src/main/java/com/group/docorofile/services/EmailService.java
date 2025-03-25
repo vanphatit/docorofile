@@ -28,7 +28,7 @@ public class EmailService {
         helper.setTo(to);
         helper.setSubject("Xác thực tài khoản - DoCoroFile");
         helper.setText("<h3>Xin chào!</h3>" +
-                "<p>Link xác thực của bạn: <b>" + verificationCode + "</b></p>" +
+                "<p>Mã xác thực của bạn: <b>" + verificationCode + "</b></p>" +
                 "<p>Vui lòng nhập mã này để kích hoạt tài khoản.</p>", true);
         mailSender.send(mimeMessage);
 
