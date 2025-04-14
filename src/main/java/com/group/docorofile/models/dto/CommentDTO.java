@@ -27,7 +27,7 @@ public class CommentDTO {
                 .content(entity.getContent())
                 .createdOn(entity.getCreatedOn())
                 .authorId(entity.getAuthor().getUserId())
-                .authorName(entity.getAuthor().getMyProfile().get("firstname") + " " + entity.getAuthor().getMyProfile().get("lastname"))
+                .authorName(entity.getAuthor().getFullName())
                 .build();
     }
 }

@@ -3,6 +3,7 @@ package com.group.docorofile.services;
 
 import com.group.docorofile.entities.UserEntity;
 import com.group.docorofile.models.users.CreateUserRequest;
+import com.group.docorofile.models.users.UpdateProfileRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -24,10 +25,11 @@ public interface iUserService {
 
     boolean existsByUserIdAndIsActive(UUID userId, boolean isActive);
 
-    // Dùng lại CreateUserRequest để update (có thể tạo riêng DTO UpdateUserRequest nếu cần)
-    UserEntity updateUser(UUID id, CreateUserRequest request);
+    UserEntity updateMyProfile(UUID id, UpdateProfileRequest request);
 
-    void deleteUser(UUID id);
+    UserEntity updateUserByID(UUID id, CreateUserRequest request);
+
+    void deactivateUser(UUID id);
 
     boolean courseFollowedByMember(UUID memberId);
 

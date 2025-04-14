@@ -1,8 +1,8 @@
 package com.group.docorofile.services.impl;
 
 import com.group.docorofile.entities.*;
-import com.group.docorofile.enums.EMembershipLevel;
 import com.group.docorofile.models.users.CreateUserRequest;
+import com.group.docorofile.models.users.UpdateProfileRequest;
 import com.group.docorofile.repositories.FollowCourseRepository;
 import com.group.docorofile.repositories.MembershipRepository;
 import com.group.docorofile.repositories.UserRepository;
@@ -11,36 +11,50 @@ import com.group.docorofile.response.ConflictError;
 import com.group.docorofile.response.InternalServerError;
 import com.group.docorofile.response.NotFoundError;
 import com.group.docorofile.services.EmailService;
+import com.group.docorofile.services.factories.iUserFactory;
 import com.group.docorofile.services.iUserService;
+import com.group.docorofile.services.strategies.iUserUpdateStrategy;
 import jakarta.mail.MessagingException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements iUserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private MembershipRepository membershipRepository;
+    private final MembershipRepository membershipRepository;
 
-    @Autowired
-    private FollowCourseRepository followCourseRepository;
+    private final FollowCourseRepository followCourseRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private EmailService emailService;
+    private final EmailService emailService;
+
+    private final List<iUserFactory> userFactories;
+    private final List<iUserUpdateStrategy> updateStrategies;
+
+    private iUserFactory getFactory(String userType) {
+        return userFactories.stream()
+                .filter(factory -> factory.supports(userType))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestError("Invalid user type: " + userType));
+    }
+
+    private iUserUpdateStrategy getUpdateStrategy(UserEntity user) {
+        return updateStrategies.stream()
+                .filter(strategy -> strategy.supports(user))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestError("Unsupported user type"));
+    }
 
     @Override
     public UserEntity createMember(CreateUserRequest request) {
@@ -48,21 +62,8 @@ public class UserServiceImpl implements iUserService {
             throw new ConflictError("User already exists with email: " + request.getEmail());
         }
 
-        MembershipEntity membershipEntity = MembershipEntity.builder()
-                .level(EMembershipLevel.FREE)
-                .startDate(LocalDateTime.now())
-                .build();
-
-        MemberEntity user = MemberEntity.builder()
-                .fullName(request.getFullName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .isActive(false)
-                .downloadLimit(request.getDownloadLimit() != null ? request.getDownloadLimit() : 0)
-                .isChat(request.getIsChat() != null ? request.getIsChat() : false)
-                .isComment(request.getIsComment() != null ? request.getIsComment() : false)
-                .membership(membershipEntity)
-                .build();
+        iUserFactory factory = getFactory("MEMBER");
+        MemberEntity user = (MemberEntity) factory.createUser(request);
 
         try {
             // random 6 chữ số
@@ -84,28 +85,8 @@ public class UserServiceImpl implements iUserService {
             throw new ConflictError("User already exists with email: " + request.getEmail());
         }
 
-        UserEntity user;
-        String userType = request.getUserType();
-        if ("ADMIN".equalsIgnoreCase(userType)) {
-            user = AdminEntity.builder()
-                    .fullName(request.getFullName())
-                    .email(request.getEmail())
-                    .password(request.getPassword()) // sẽ mã hoá sau
-                    .isActive(true)
-                    .build();
-        } else if ("MODERATOR".equalsIgnoreCase(userType)) {
-            user = ModeratorEntity.builder()
-                    .fullName(request.getFullName())
-                    .email(request.getEmail())
-                    .password(request.getPassword())
-                    .isActive(true)
-                    .isReportManage(request.getIsReportManage() != null ? request.getIsReportManage() : false)
-                    .build();
-        } else {
-            throw new BadRequestError("Invalid user type: " + userType);
-        }
-        // Mã hoá password trước khi lưu
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        iUserFactory factory = getFactory(request.getUserType());
+        UserEntity user = factory.createUser(request);
         return userRepository.save(user);
     }
 
@@ -131,33 +112,28 @@ public class UserServiceImpl implements iUserService {
 
     // Dùng lại CreateUserRequest để update
     @Override
-    public UserEntity updateUser(UUID id, CreateUserRequest request) {
+    public UserEntity updateMyProfile(UUID id, UpdateProfileRequest request) {
         Optional<UserEntity> optUser = userRepository.findById(id);
         if (!optUser.isPresent()) {
             throw new NotFoundError("User not found with id: " + id);
         }
+        iUserUpdateStrategy updateStrategy = getUpdateStrategy(optUser.get());
         UserEntity user = optUser.get();
-        // Cập nhật các field chung
-        user.setFullName(request.getFullName());
-        user.setEmail(request.getEmail());
-        // Mã hoá password khi update
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        // Cập nhật các field riêng tùy theo loại
-        if (user instanceof ModeratorEntity) {
-            ModeratorEntity mod = (ModeratorEntity) user;
-            mod.setReportManage(request.getIsReportManage() != null ? request.getIsReportManage() : mod.isReportManage());
-        } else if (user instanceof MemberEntity) {
-            MemberEntity member = (MemberEntity) user;
-            member.setDownloadLimit(request.getDownloadLimit() != null ? request.getDownloadLimit() : member.getDownloadLimit());
-            member.setChat(request.getIsChat() != null ? request.getIsChat() : member.isChat());
-            member.setComment(request.getIsComment() != null ? request.getIsComment() : member.isComment());
-            member.setMyProfile(request.getMyProfile() != null ? request.getMyProfile() : member.getMyProfile());
-        }
+        updateStrategy.updateProfile(user, request);
         return userRepository.save(user);
     }
 
     @Override
-    public void deleteUser(UUID id) {
+    public UserEntity updateUserByID(UUID id, CreateUserRequest request) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundError("User not found with id: " + id));
+
+        getUpdateStrategy(user).update(user, request);
+        return userRepository.save(user);
+    }
+
+    @Override
+    public void deactivateUser(UUID id) {
         // Soft delete user by setting isActive to false
         Optional<UserEntity> optUser = userRepository.findById(id);
         if (!optUser.isPresent()) {

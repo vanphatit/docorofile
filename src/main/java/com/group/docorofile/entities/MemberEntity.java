@@ -46,25 +46,8 @@ public class MemberEntity extends UserEntity {
     private boolean isChat;
     private boolean isComment;
 
-    // Chỉ lưu profile với các key hợp lệ: firstname, lastname, studyat
-    @ElementCollection
-    @CollectionTable(name = "member_profile", joinColumns = @JoinColumn(name = "member_id"))
-    @MapKeyColumn(name = "profile_key")
-    @Column(name = "profile_value")
-    @JsonIgnore
-    private Map<String, String> myProfile = new HashMap<>();
+    @ManyToOne
+    @JoinColumn(name = "university_id")
+    private UniversityEntity studyAt;
 
-    // Chỉ cho phép lưu các key hợp lệ
-    public void setProfileValue(String key, String value) {
-        if (key.equals("firstname") || key.equals("lastname") || key.equals("studyat")) {
-            this.myProfile.put(key, value);
-        } else {
-            throw new IllegalArgumentException("Chỉ được phép cập nhật firstname, lastname, studyat");
-        }
-    }
-
-    // Lấy giá trị từ profile theo key
-    public String getProfileValue(String key) {
-        return this.myProfile.get(key);
-    }
 }
