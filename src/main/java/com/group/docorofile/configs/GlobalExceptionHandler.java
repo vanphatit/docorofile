@@ -3,6 +3,7 @@ package com.group.docorofile.configs;
 import com.group.docorofile.exceptions.DocumentNotFoundException;
 import com.group.docorofile.exceptions.DuplicateReportException;
 import com.group.docorofile.exceptions.UserNotFoundException;
+import com.group.docorofile.response.BadRequestError;
 import com.group.docorofile.response.ErrorResponse;
 import com.group.docorofile.response.ForbiddenError;
 import com.group.docorofile.response.UnauthorizedError;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -48,6 +50,16 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .findFirst()
+                .orElse("Invalid request data");
+        return ResponseEntity.badRequest().body(new BadRequestError(message));
+    }
+
 
     @ExceptionHandler(DuplicateReportException.class)
     public ResponseEntity<ErrorResponse> handleDuplicateReportException(DuplicateReportException ex) {

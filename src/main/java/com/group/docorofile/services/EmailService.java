@@ -24,7 +24,6 @@ public class EmailService {
     public void sendVerificationEmail(String to, String verificationCode) throws MessagingException {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
-        helper.setFrom("hello@demomailtrap.com");
         helper.setTo(to);
         helper.setSubject("Xác thực tài khoản - DoCoroFile");
         helper.setText("<h3>Xin chào!</h3>" +
