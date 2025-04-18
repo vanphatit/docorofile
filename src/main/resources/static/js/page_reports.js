@@ -1,3 +1,4 @@
+var token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBleGFtcGxlLmNvbSIsInJvbGUiOlt7ImF1dGhvcml0eSI6IlJPTEVfQURNSU4ifV0sImlhdCI6MTc0NDkzOTIzNywiZXhwIjoxNzQ0OTQyODM3fQ.fD6KzzzBgSQsrJ2AsAPTaRHkDMZlEyvepm7TqA6kf4E'
 function loadReports(page = 0, size = 1) {
     $.ajax({
         url: `/v1/api/reports?page=${page}&size=${size}`,
@@ -85,7 +86,24 @@ function showReportModal(documentId) {
         dataType: 'json',
         success: function (doc) {
             // Gán dữ liệu vào modal
-            $("#modalTitle").text(doc.data.title);
+            $.ajax({
+                url: `/v1/api/reports/${documentId}`, // Gọi API lấy danh sách chi tiết
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    if (Array.isArray(response.result)) {
+                        const details = response.result; // Dữ liệu chi tiết từ response.result
+                        const detailListHtml = details.map(detail => `<li>${detail}</li>`).join('');
+                        $("#detailList").html(detailListHtml); // Đưa danh sách chi tiết vào modal
+                        renderPaginationControls(documentId, response.meta);
+                    } else {
+                        showToast("Dữ liệu chi tiết không hợp lệ.", "danger");
+                    }
+                },
+                error: function() {
+                    showToast("Không thể tải chi tiết tài liệu", "danger");
+                }
+            });
             $("#modalImage").attr("src", doc.data.coverImageUrl);
 
             $("#updateStatusBtn").off('click').on('click', function () {
@@ -94,7 +112,7 @@ function showReportModal(documentId) {
                     url: `/v1/api/reports/${documentId}`,
                     type: 'PUT',
                     contentType: 'application/json',
-                    data: JSON.stringify({ status: newStatus }), // gửi map {status: "..."}
+                    data: JSON.stringify({ status: newStatus }), // gửi map {status: "..."},
                     success: function () {
                         showToast("Cập nhật trạng thái thành công!")
                         $("#reportModal").modal('hide');
@@ -105,6 +123,7 @@ function showReportModal(documentId) {
                     }
                 });
             });
+
             $("#deleteDocBtn").off('click').on('click', function () {
                 Swal.fire({
                     title: 'Bạn có chắc chắn?',
@@ -125,7 +144,7 @@ function showReportModal(documentId) {
                                     url: `/v1/api/reports/${documentId}`,
                                     type: 'PUT',
                                     contentType: 'application/json',
-                                    data: JSON.stringify({ status: "RESOLVED" }), // nhớ có dấu ""
+                                    data: JSON.stringify({ status: "RESOLVED" }),
                                     success: function () {
                                         loadReports();
                                         showToast("Xoá tài liệu và cập nhật báo cáo thành công!", "success");
@@ -172,6 +191,38 @@ function showToast(message, type = "success") {
     bsToast.show();
 }
 
+function renderPaginationControls(documentId, meta) {
+    const paginationContainer = $("#paginationControls");
+    paginationContainer.empty();
+
+    for (let i = 0; i < meta.pages; i++) {
+        const pageBtn = $(`<button class="btn btn-sm ${i === meta.page ? 'btn-secondary' : 'btn-outline-secondary'} me-2">${i + 1}</button>`);
+        pageBtn.click(() => loadReportDetails(documentId, i, meta.pageSize));
+        paginationContainer.append(pageBtn);
+    }
+}
+
+function loadReportDetails(documentId, page = 0, size = 5) {
+    $.ajax({
+        url: `/v1/api/reports/${documentId}?page=${page}&size=${size}`,
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            if (Array.isArray(response.result)) {
+                const details = response.result;
+                const detailListHtml = details.map(detail => `<li>${detail}</li>`).join('');
+                $("#detailList").html(`<ul>${detailListHtml}</ul>`);
+                renderPaginationControls(documentId, response.meta);
+            } else {
+                $("#detailList").html(`<p>Không có chi tiết nào.</p>`);
+            }
+        },
+        error: function () {
+            showToast("Không thể tải chi tiết tài liệu", "danger");
+        }
+    });
+}
+
 const colorMap = {
     "IN_PROGRESS": "info",
     "PENDING": "warning",
@@ -182,3 +233,4 @@ const colorMap = {
 $(document).ready(function () {
     loadReports();
 });
+

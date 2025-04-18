@@ -39,6 +39,7 @@ public class ReportAPIController {
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     @GetMapping("")
     public ResponseEntity<ResultPaginationDTO> getAllReports(
@@ -68,5 +69,16 @@ public class ReportAPIController {
         );
 
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
+    @GetMapping("/{documentId}")
+    public ResponseEntity<ResultPaginationDTO> getDetailReportByDocumentId(
+            @PathVariable UUID documentId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok().body(reportService.getReportDetailsByDocumentId(documentId, pageable));
     }
 }
