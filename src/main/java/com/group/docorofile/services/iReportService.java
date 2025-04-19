@@ -11,4 +11,5 @@ public interface iReportService {
     void createReport(CreateReportRequest reportRequest);
     ResultPaginationDTO getTopReportedDocuments(Pageable pageable);
     void updateReportsStatusByDocumentId(UUID documentId, EReportStatus newStatus);
+    ResultPaginationDTO getReportDetailsByDocumentId(UUID documentId, Pageable pageable);
 }
