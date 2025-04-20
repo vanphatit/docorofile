@@ -8,14 +8,19 @@ import com.group.docorofile.models.dto.NotificationDTO;
 import com.group.docorofile.models.dto.ResultPaginationDTO;
 import com.group.docorofile.repositories.NotificationRepository;
 import com.group.docorofile.repositories.UserRepository;
+import com.group.docorofile.request.CreateNotificationMultiRequest;
+import com.group.docorofile.request.CreateNotificationRequest;
 import com.group.docorofile.services.iNotificationService;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class NotificationServiceImpl implements iNotificationService {
@@ -30,21 +35,68 @@ public class NotificationServiceImpl implements iNotificationService {
     }
 
     @Override
-    public NotificationDTO createNotification(UUID receiverId, ENotificationType type, String message) {
-        UserEntity receiver = userRepository.findById(receiverId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + receiverId));
+    public void createNotification(CreateNotificationRequest request, String email) {
+        Optional<UserEntity> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            throw new UserNotFoundException("User not found with email: " + email);
+        }
+
+        UserEntity receiver = userRepository.findById(request.getReceiverId())
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + request.getReceiverId()));
 
         NotificationEntity notification = NotificationEntity.builder()
                 .receiver(receiver)
-                .type(type.name())
-                .message(message)
+                .author(userOpt.get().getFullName())
+                .title(request.getTitle())
+                .content(request.getContent())
+                .type(request.getType())
                 .isSeen(false)
                 .createdOn(LocalDateTime.now())
                 .build();
-
         notificationRepository.save(notification);
+    }
 
-        return convertToDTO(notification);
+    public void notifyFromSystem(CreateNotificationRequest request) {
+        UserEntity receiver = userRepository.findById(request.getReceiverId())
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + request.getReceiverId()));
+
+        NotificationEntity notification = NotificationEntity.builder()
+                .receiver(receiver)
+                .author("SYSTEM")
+                .title(request.getTitle())
+                .content(request.getContent())
+                .type(ENotificationType.SYSTEM)
+                .isSeen(false)
+                .createdOn(LocalDateTime.now())
+                .build();
+        notificationRepository.save(notification);
+    }
+
+    @Transactional
+    public void sendSystemNotificationToUsers(CreateNotificationMultiRequest request, String email) {
+        Optional<UserEntity> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            throw new UserNotFoundException("User not found with email: " + email);
+        }
+
+        List<UserEntity> receivers = userRepository.findAllById(request.getReceiverIds());
+
+        if (receivers.size() != request.getReceiverIds().size()) {
+            throw new UserNotFoundException("Một hoặc nhiều người dùng không tồn tại.");
+        }
+
+        List<NotificationEntity> notifications = receivers.stream()
+                .map(user -> NotificationEntity.builder()
+                        .receiver(user)
+                        .title(request.getTitle())
+                        .content(request.getContent())
+                        .type(request.getType())
+                        .author(userOpt.get().getFullName())
+                        .isSeen(false)
+                        .build())
+                .collect(Collectors.toList());
+
+        notificationRepository.saveAll(notifications);
     }
 
     @Override
@@ -52,24 +104,24 @@ public class NotificationServiceImpl implements iNotificationService {
 
         Optional<UserEntity> userOpt = userRepository.findByEmail(email);
         if (userOpt.isEmpty()) {
-            throw new RuntimeException("User not found with email: " + email);
+            throw new UserNotFoundException("User not found with email: " + email);
         }
         UUID receiverId = userOpt.get().getUserId();
 
-
         Page<NotificationEntity> pageNotification = notificationRepository.findAllByReceiverId(receiverId, pageable);
+
+        Page<NotificationDTO> dtoPage = pageNotification.map(this::convertToDTO);
 
         ResultPaginationDTO rs = new ResultPaginationDTO();
 
         ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
         meta.setPage(pageable.getPageNumber() + 1);
         meta.setPageSize(pageable.getPageSize());
-        meta.setPages(pageNotification.getTotalPages());
-        meta.setTotal(pageNotification.getTotalElements());
+        meta.setPages(dtoPage.getTotalPages());
+        meta.setTotal(dtoPage.getTotalElements());
 
         rs.setMeta(meta);
-        rs.setResult(pageNotification.getContent());
-
+        rs.setResult(dtoPage.getContent());
         return rs;
     }
 
@@ -77,25 +129,22 @@ public class NotificationServiceImpl implements iNotificationService {
     public void markAsRead(UUID id) {
         notificationRepository.findById(id).ifPresent(notification -> {
             notification.setSeen(true);
+            notification.setSeenOn(LocalDateTime.now());
             notificationRepository.save(notification);
         });
     }
 
     private NotificationDTO convertToDTO(NotificationEntity notification) {
-        LocalDateTime seenOnTime = null;
-        if (notification.isSeen()) {
-            seenOnTime = LocalDateTime.now();
-        }
-
         return NotificationDTO.builder()
                 .notificationId(notification.getNotificationId())
                 .receiverId(notification.getReceiver().getUserId())
-                .type(ENotificationType.valueOf(notification.getType()))
-                .message(notification.getMessage())
+                .author(notification.getAuthor())
+                .title(notification.getTitle())
+                .content(notification.getContent())
+                .type(notification.getType())
                 .isSeen(notification.isSeen())
                 .createdOn(notification.getCreatedOn())
-                .seenOn(seenOnTime)
+                .seenOn(notification.getSeenOn())
                 .build();
     }
-
 }

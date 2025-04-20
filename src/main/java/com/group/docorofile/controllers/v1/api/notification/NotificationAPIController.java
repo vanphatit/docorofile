@@ -1,7 +1,7 @@
 package com.group.docorofile.controllers.v1.api.notification;
 
-import com.group.docorofile.models.dto.NotificationDTO;
 import com.group.docorofile.models.dto.ResultPaginationDTO;
+import com.group.docorofile.request.CreateNotificationMultiRequest;
 import com.group.docorofile.request.CreateNotificationRequest;
 import com.group.docorofile.response.SuccessResponse;
 import com.group.docorofile.services.iNotificationService;
@@ -18,32 +18,51 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/v1/api/notifications")
-public class NotificationController {
+public class NotificationAPIController {
 
     private final iNotificationService notificationService;
 
-    public NotificationController(iNotificationService notificationService) {
+    public NotificationAPIController(iNotificationService notificationService) {
         this.notificationService = notificationService;
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_MEMBER')")
     @PostMapping("/create")
     public ResponseEntity<SuccessResponse> createNotification(@RequestBody CreateNotificationRequest request) {
-        NotificationDTO notification = notificationService.createNotification(
-                request.getReceiverId(),
-                request.getType(),
-                request.getMessage()
-        );
-
+        String email = getEmailFromSecurityContext();
+        notificationService.createNotification(request, email);
         SuccessResponse response = new SuccessResponse(
-                "Notification created successfully",
-                HttpStatus.CREATED.value(),
-                notification,
+                "Đã gửi thông báo thành công",
+                HttpStatus.CREATED.value(), null,
                 LocalDateTime.now()
         );
-
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_MEMBER')")
+    @PostMapping("/notify")
+    public ResponseEntity<SuccessResponse> notifyFromSystem(@RequestBody CreateNotificationRequest request) {
+        notificationService.notifyFromSystem(request);
+        SuccessResponse response = new SuccessResponse(
+                "Đã gửi thông báo thành công",
+                HttpStatus.CREATED.value(), null,
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_MEMBER')")
+    @PostMapping("/create/multiple")
+    public ResponseEntity<SuccessResponse> sendNotificationToMultipleUsers(
+            @RequestBody CreateNotificationMultiRequest request) {
+        String email = getEmailFromSecurityContext();
+        notificationService.sendSystemNotificationToUsers(request,email);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new SuccessResponse("Đã gửi thông báo thành công", 201, null, LocalDateTime.now()));
+    }
+
+
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_MEMBER')")
     @GetMapping("")
     public ResponseEntity<ResultPaginationDTO> getAllNotifications(Pageable pageable) {

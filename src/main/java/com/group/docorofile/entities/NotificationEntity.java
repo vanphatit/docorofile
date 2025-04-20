@@ -8,27 +8,38 @@ import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.UUID;
 
 @Entity
 @Table(name = "notifications")
-@Getter @Setter @SuperBuilder
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 public class NotificationEntity implements Serializable {
+
     @Id
     private UUID notificationId;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "receiver_user_id", referencedColumnName = "userId", nullable = false)
+    @JoinColumn(name = "receiver_id", referencedColumnName = "userId", nullable = false)
     private UserEntity receiver;
 
+    private String title;
 
-    private String type;
-    private String message;
+    @Column(columnDefinition = "TEXT")
+    private String content;
+
+    private String author;
+
     private boolean isSeen;
 
+    @Enumerated(EnumType.STRING)
+    private ENotificationType type;
+
     private LocalDateTime createdOn;
+
     private LocalDateTime seenOn;
 
     @PrePersist
