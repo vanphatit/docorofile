@@ -15,8 +15,10 @@ import java.util.UUID;
 public class NotificationDTO implements Serializable {
     private UUID notificationId;
     private UUID receiverId;
+    private String title;
+    private String author;
     private ENotificationType type;
-    private String message;
+    private String content;
     private boolean isSeen;
     private LocalDateTime createdOn;
     private LocalDateTime seenOn;
