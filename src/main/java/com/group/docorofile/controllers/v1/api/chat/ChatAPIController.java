@@ -5,6 +5,7 @@ import com.group.docorofile.models.dto.ResultPaginationDTO;
 import com.group.docorofile.response.SuccessResponse;
 import com.group.docorofile.security.CustomUserDetails;
 import com.group.docorofile.services.iChatService;
+import com.group.docorofile.services.iMessageService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -22,9 +23,11 @@ import java.util.UUID;
 public class ChatAPIController {
 
     private final iChatService chatService;
+    private final iMessageService messageService;
 
-    public ChatAPIController(iChatService chatService) {
+    public ChatAPIController(iChatService chatService, iMessageService messageService) {
         this.chatService = chatService;
+        this.messageService = messageService;
     }
 
     @PreAuthorize("hasRole('ROLE_MODERATOR')")
@@ -40,6 +43,7 @@ public class ChatAPIController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_MEMBER')")
     @PostMapping("/{chatRoomId}/add-member/{userId}")
     public ResponseEntity<SuccessResponse> addMemberToChatRoom(
             @PathVariable UUID chatRoomId,
@@ -68,6 +72,7 @@ public class ChatAPIController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_MEMBER')")
     @GetMapping("/rooms")
     public ResponseEntity<ResultPaginationDTO> getMyChatRooms(
             @AuthenticationPrincipal CustomUserDetails currentUser,
@@ -77,4 +82,18 @@ public class ChatAPIController {
 
         return ResponseEntity.ok().body(chatService.getChatRoomsByMember(userId, pageable));
     }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_MEMBER')")
+    @GetMapping("/messages")
+    public ResponseEntity<ResultPaginationDTO> getMessages(
+            @RequestParam UUID roomId,
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @PageableDefault(size = 6, sort = "sentAt", direction = Sort.Direction.DESC) Pageable pageable) {
+
+                UUID userId = currentUser.getUser().getUserId();
+
+        ResultPaginationDTO result = messageService.getRecentMessagesByChatRoomId(userId, roomId, pageable);
+        return ResponseEntity.ok(result);
+    }
+
 }

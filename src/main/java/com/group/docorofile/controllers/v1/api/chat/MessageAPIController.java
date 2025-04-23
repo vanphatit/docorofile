@@ -6,6 +6,7 @@ import com.group.docorofile.security.CustomUserDetails;
 import com.group.docorofile.services.impl.MessageServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,6 +25,7 @@ public class MessageAPIController {
         this.messageService = messageService;
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_MEMBER')")
     @PostMapping("/send")
     public ResponseEntity<MessageResponse> sendMessage(
             @AuthenticationPrincipal CustomUserDetails currentUser,
