@@ -71,7 +71,7 @@ public class FollowCourseServiceImpl implements iFollowCourseService {
 
         followCourseRepo.save(follow);
         chatRoomRepo.findByCourse_CourseId(courseId)
-                .ifPresent(chatRoom -> chatService.addMemberToChatRoom(chatRoom.getChatId(), userId));
+                .ifPresent(chatRoom -> chatService.addMemberToChatRoom(chatRoom.getChatRoomId(), userId));
 
     }
 
@@ -103,7 +103,7 @@ public class FollowCourseServiceImpl implements iFollowCourseService {
 
         followCourseRepo.delete(follow);
         chatRoomRepo.findByCourse_CourseId(courseId)
-                .ifPresent(chatRoom -> chatService.removeMemberFromChatRoom(chatRoom.getChatId(), userId));
+                .ifPresent(chatRoom -> chatService.removeMemberFromChatRoom(chatRoom.getChatRoomId(), userId));
     }
 
 }
