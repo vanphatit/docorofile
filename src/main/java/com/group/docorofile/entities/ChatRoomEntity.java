@@ -18,12 +18,13 @@ import java.util.*;
 @Table(name = "chatrooms")
 public class ChatRoomEntity implements Serializable {
     @Id
-    private UUID chatId;
+    private UUID chatRoomId;
 
     private String title;
     private LocalDateTime createdOn;
 
     @ManyToOne
+    @JoinColumn(name = "course_id")
     private CourseEntity course;
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -39,8 +40,8 @@ public class ChatRoomEntity implements Serializable {
 
     @PrePersist
     public void prePersist() {
-        if (this.chatId == null) {
-            this.chatId = UuidCreator.getTimeOrdered();
+        if (this.chatRoomId == null) {
+            this.chatRoomId = UuidCreator.getTimeOrdered();
         }
         if (this.createdOn == null) {
             this.createdOn = LocalDateTime.now();

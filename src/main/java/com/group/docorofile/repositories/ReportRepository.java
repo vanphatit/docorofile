@@ -33,4 +33,8 @@ public interface ReportRepository extends JpaRepository<ReportEntity, UUID> {
     Page<ReportSummaryDTO> findTopReportedDocuments(Pageable pageable);
 
     List<ReportEntity> findByReportedDoc_DocumentId(UUID documentId);
+
+    @Query("SELECT r.detail FROM ReportEntity r WHERE r.reportedDoc.documentId = :documentId ORDER BY r.createdOn DESC")
+    Page<String> findReportDetailsByDocumentId(UUID documentId, Pageable pageable);
+
 }

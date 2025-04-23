@@ -14,7 +14,9 @@ import com.group.docorofile.repositories.UserRepository;
 import com.group.docorofile.request.CreateReportRequest;
 import com.group.docorofile.services.iReportService;
 import jakarta.transaction.Transactional;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -83,5 +85,21 @@ public class ReportServiceImpl implements iReportService {
         }
 
         reportRepository.saveAll(reports);
+    }
+
+    public ResultPaginationDTO getReportDetailsByDocumentId(UUID documentId, Pageable pageable) {
+        Page<String> pageResult = reportRepository.findReportDetailsByDocumentId(documentId, pageable);
+
+        ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
+        meta.setPage(pageResult.getNumber());
+        meta.setPageSize(pageResult.getSize());
+        meta.setPages(pageResult.getTotalPages());
+        meta.setTotal(pageResult.getTotalElements());
+
+        ResultPaginationDTO resultPaginationDTO = new ResultPaginationDTO();
+        resultPaginationDTO.setMeta(meta);
+        resultPaginationDTO.setResult(pageResult.getContent());
+
+        return resultPaginationDTO;
     }
 }

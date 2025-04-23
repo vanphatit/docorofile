@@ -2,10 +2,12 @@ package com.group.docorofile.controllers.v1.api.user;
 
 import com.group.docorofile.models.users.CreateUserRequest;
 import com.group.docorofile.entities.UserEntity;
+import com.group.docorofile.models.users.UpdateProfileRequest;
 import com.group.docorofile.response.CreatedResponse;
 import com.group.docorofile.response.SuccessResponse;
 import com.group.docorofile.response.NotFoundError;
 import com.group.docorofile.services.impl.UserServiceImpl;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,9 +30,8 @@ public class UserInfoAPIController {
     @Autowired
     private UserServiceImpl userService;
 
-    // Tạo user mới, trả về CreatedResponse (status 201)
     @PostMapping("/newMember")
-    public ResponseEntity<SuccessResponse> createUser(@RequestBody CreateUserRequest request) {
+    public ResponseEntity<SuccessResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
         UserEntity user = userService.createMember(request);
         CreatedResponse response = new CreatedResponse("User created successfully", user);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -38,7 +39,7 @@ public class UserInfoAPIController {
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @PostMapping("/newManager")
-    public ResponseEntity<SuccessResponse> createManager(@RequestBody CreateUserRequest request) {
+    public ResponseEntity<SuccessResponse> createManager(@Valid @RequestBody CreateUserRequest request) {
         UserEntity user = userService.createManager(request);
         CreatedResponse response = new CreatedResponse("User created successfully", user);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -79,28 +80,30 @@ public class UserInfoAPIController {
         return ResponseEntity.ok(response);
     }
 
-    // Cập nhật user theo ID
-    @PreAuthorize("hasRole('ROLE_ADMIN)')")
-    @PutMapping("/{id}")
-    public ResponseEntity<SuccessResponse> updateUser(@PathVariable UUID id, @RequestBody CreateUserRequest request) {
-        UserEntity user = userService.updateUser(id, request);
-        SuccessResponse response = new SuccessResponse("User updated successfully", HttpStatus.OK.value(), user, LocalDateTime.now());
-        return ResponseEntity.ok(response);
-    }
-
-//    @PreAuthorize("hasRole('ROLE_MEMBER')")
-//    @PutMapping("/updateMyProfile")
-//    public ResponseEntity<SuccessResponse> updateMyProfile(@PathVariable UUID id, @RequestBody CreateUserRequest request) {
+//    // Cập nhật user theo ID
+//    @PreAuthorize("hasRole('ROLE_ADMIN)')")
+//    @PutMapping("/{id}")
+//    public ResponseEntity<SuccessResponse> updateUser(@PathVariable UUID id, @Valid @RequestBody CreateUserRequest request) {
 //        UserEntity user = userService.updateUser(id, request);
 //        SuccessResponse response = new SuccessResponse("User updated successfully", HttpStatus.OK.value(), user, LocalDateTime.now());
 //        return ResponseEntity.ok(response);
 //    }
 
-    // Xóa user
+    @PreAuthorize("hasRole('ROLE_MEMBER')")
+    @PutMapping("/updateMyProfile")
+    public ResponseEntity<SuccessResponse> updateMyProfile(@PathVariable UUID id, @RequestBody UpdateProfileRequest request) {
+        UserEntity user = userService.updateMyProfile(id, request);
+        SuccessResponse response = new SuccessResponse("User updated successfully", HttpStatus.OK.value(), user, LocalDateTime.now());
+        return ResponseEntity.ok(response);
+    }
+
+    // Huỷ kích hoạt user
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<SuccessResponse> deactivateUser(@PathVariable UUID id) {
-        userService.deleteUser(id);
+        UserEntity user = userService.getUserById(id)
+                .orElseThrow(() -> new NotFoundError("User not found"));
+        userService.deactivateUser(id);
         SuccessResponse response = new SuccessResponse("User deleted successfully", HttpStatus.OK.value(), null, LocalDateTime.now());
         return ResponseEntity.ok(response);
     }

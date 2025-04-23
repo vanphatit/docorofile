@@ -11,5 +11,6 @@ import java.util.UUID;
 public class CreateNotificationRequest {
     private UUID receiverId;
     private ENotificationType type;
-    private String message;
+    private String title;
+    private String content;
 }
