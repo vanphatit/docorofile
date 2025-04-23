@@ -24,6 +24,8 @@ public class FollowCourseEntity implements Serializable {
     @ManyToOne(optional = false)
     private CourseEntity course;
 
+    @Column(name = "followed_at")
+    private LocalDateTime followedAt;
 
     @PrePersist
     public void prePersist() {
