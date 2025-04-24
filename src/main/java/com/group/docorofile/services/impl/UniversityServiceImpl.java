@@ -3,9 +3,11 @@ package com.group.docorofile.services.impl;
 import com.group.docorofile.entities.UniversityEntity;
 import com.group.docorofile.models.university.UniversityDTO;
 import com.group.docorofile.models.university.UniversityNameDTO;
+import com.group.docorofile.repositories.CourseRepository;
 import com.group.docorofile.repositories.UniversityRepository;
 import com.group.docorofile.response.ConflictError;
 import com.group.docorofile.services.iUniversityService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,9 @@ import java.util.UUID;
 public class UniversityServiceImpl implements iUniversityService {
     @Autowired
     private UniversityRepository universityRepository;
+
+    @Autowired
+    CourseRepository courseRepository;
 
     @Override
     public UniversityEntity createUniversity(UniversityDTO universityDTO) {
@@ -71,6 +76,21 @@ public class UniversityServiceImpl implements iUniversityService {
 
         return universityRepository.save(university);
     }
+
+    @Override
+    public void deleteUniversity(UUID univId) {
+        boolean hasCourses = courseRepository.existsByUniversity_UnivId(univId);
+
+        if (hasCourses) {
+            throw new ConflictError("Cannot delete university. There are still courses linked to it.");
+        }
+
+        UniversityEntity university = universityRepository.findByUnivId(univId)
+                .orElseThrow(() -> new EntityNotFoundException("University not found"));
+
+        universityRepository.delete(university);
+    }
+
 }
 
 

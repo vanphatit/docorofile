@@ -19,4 +19,5 @@ public interface iUniversityService {
 
     UniversityEntity updateUniversity(UniversityDTO universityDTO);
 
+    void deleteUniversity(UUID univId);
 }

@@ -26,4 +26,6 @@ public interface CourseRepository extends JpaRepository<CourseEntity, UUID> {
     @Query("SELECT c FROM CourseEntity c WHERE LOWER(c.university.univName) = LOWER(:univName)")
     List<CourseEntity> findAllByUniversityName(@Param("univName") String univName);
 
+    boolean existsByUniversity_UnivId(UUID univId);
+
 }
