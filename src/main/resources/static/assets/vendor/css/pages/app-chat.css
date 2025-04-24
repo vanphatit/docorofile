@@ -366,3 +366,43 @@
 [dir=rtl] .app-chat .ps--active-y > .ps__rail-y {
   right: inherit !important;
 }
+
+/*customize lại*/
+
+.chat-message-text {
+  background: #f6f6f6;
+}
+
+.chat-message.chat-message-right {
+  color: white;
+}
+
+.chat-history-body {
+  background: #fff;
+  max-height: calc(100vh - 290px) !important;
+  overflow-y: auto !important;
+}
+
+.chat-history-footer {
+  background-color: #fff;
+  box-shadow: 0 0.125rem 0.375rem 0 rgba(38, 43, 67, 0.14);
+}
+
+.chat-contact-list-item.active .chat-contact-status {
+  color: black;
+}
+
+.chat-contact-list-item.active .chat-contact-name {
+  color: white;
+}
+
+.chat-message.highlight .chat-message-text {
+  background-color: #ffeaa7 !important;
+  transition: background-color 0.5s ease;
+}
+
+.not-clickable {
+  pointer-events: none;
+  cursor: default;
+}
+

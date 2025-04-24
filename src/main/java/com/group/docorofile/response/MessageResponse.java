@@ -21,6 +21,7 @@ public class MessageResponse {
     private UUID senderId;
     private UUID roomId;
     private String roomName;
+    private boolean isMine;
     private LocalDateTime timestamp;
     private MessageType type;
 }
