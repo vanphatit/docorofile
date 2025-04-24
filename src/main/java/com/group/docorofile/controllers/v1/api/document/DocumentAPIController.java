@@ -1,6 +1,7 @@
 package com.group.docorofile.controllers.v1.api.document;
 
 import com.group.docorofile.entities.DocumentEntity;
+import com.group.docorofile.entities.UserEntity;
 import com.group.docorofile.enums.EDocumentStatus;
 import com.group.docorofile.models.dto.UserDocumentDTO;
 import com.group.docorofile.response.*;
@@ -15,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -30,7 +32,7 @@ public class DocumentAPIController {
     private JwtTokenUtil jwtTokenUtil;
 
     @GetMapping("/list")
-    public Object getAllDocuments(@CookieValue(value = "jwtToken", required = false) String token) {
+    public Object getAllDocuments(@CookieValue(value = "JWT", required = false) String token) {
         try {
             if (jwtTokenUtil.getRoleFromToken(token).equals("ROLE_ADMIN") || jwtTokenUtil.getRoleFromToken(token).equals("ROLE_MODERATOR")) {
                 return new SuccessResponse("Lấy danh sách tài liệu thành công!", 200, documentService.getAllAdminDocuments(), LocalDateTime.now());
@@ -44,7 +46,7 @@ public class DocumentAPIController {
 
     @GetMapping("/{documentId}")
     public Object viewDocumentById(@PathVariable UUID documentId,
-                                   @CookieValue(value = "jwtToken", required = false) String token) {
+                                   @CookieValue(value = "JWT", required = false) String token) {
         try {
             String userName = null;
             String role = null;
@@ -65,7 +67,7 @@ public class DocumentAPIController {
                                  @RequestParam String description,
                                  @RequestParam String nameCourse,
                                  @RequestParam String nameUniversity,
-                                 @CookieValue(value = "jwtToken", required = false) String token) {
+                                 @CookieValue(value = "JWT", required = false) String token) {
         try {
             String username = jwtTokenUtil.getUsernameFromToken(token);
             UUID memberId = userService.findByEmail(username).get().getUserId();
@@ -79,7 +81,7 @@ public class DocumentAPIController {
 
     @GetMapping("/search")
     public Object searchDocuments(@RequestParam String keyword,
-                                  @CookieValue(value = "jwtToken", required = false) String token) {
+                                  @CookieValue(value = "JWT", required = false) String token) {
         try {
             if (token == null || token.isEmpty()) {
                 return new UnauthorizedError("Bạn chưa đăng nhập!");
@@ -98,7 +100,7 @@ public class DocumentAPIController {
                                   @RequestParam(required = false) boolean sortByLikes,
                                   @RequestParam(required = false) boolean sortByDisLike,
                                   @RequestParam(required = false) String status,
-                                  @CookieValue(value = "jwtToken", required = false) String token) {
+                                  @CookieValue(value = "JWT", required = false) String token) {
         try {
             boolean isAdmin = false;
             if (token == null || token.isEmpty()) {
@@ -113,7 +115,7 @@ public class DocumentAPIController {
     }
 
     @GetMapping("/recommend")
-    public Object getRecommendedDocuments(@CookieValue(value = "jwtToken", required = false) String token) {
+    public Object getRecommendedDocuments(@CookieValue(value = "JWT", required = false) String token) {
         try {
             UUID memberId = userService.findByEmail(jwtTokenUtil.getUsernameFromToken(token)).get().getUserId();
 
@@ -129,7 +131,7 @@ public class DocumentAPIController {
 
     @PreAuthorize("hasRole('ROLE_MEMBER')")
     @GetMapping("/download/{documentId}")
-    public Object downloadDocument(@PathVariable UUID documentId, @CookieValue(value = "jwtToken", required = false) String token) {
+    public Object downloadDocument(@PathVariable UUID documentId, @CookieValue(value = "JWT", required = false) String token) {
         try {
             UUID memberId = userService.findByEmail(jwtTokenUtil.getUsernameFromToken(token)).get().getUserId();
             return documentService.downloadDocument(memberId, documentId);
@@ -141,7 +143,7 @@ public class DocumentAPIController {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     @DeleteMapping("/delete/{documentId}")
     public Object deleteDocument(@PathVariable UUID documentId,
-                                 @CookieValue(value = "jwtToken", required = false) String token) {
+                                 @CookieValue(value = "JWT", required = false) String token) {
         try {
             // Kiểm tra nếu token không tồn tại
             if (token == null || token.isEmpty()) {
@@ -180,17 +182,27 @@ public class DocumentAPIController {
         }
     }
 
-    @PreAuthorize("hasRole('ROLE_MEMBER')")
     @GetMapping("/history")
-    public Object getHistoryDocuments(@CookieValue(value = "jwtToken", required = false) String token) {
+    @PreAuthorize("hasRole('ROLE_MEMBER')")
+    public Object getHistoryDocuments(@CookieValue(value = "JWT", required = false) String token) {
         try {
-            UUID memberId = userService.findByEmail(jwtTokenUtil.getUsernameFromToken(token)).get().getUserId();
+            System.out.println("Token: " + token);
+            String email = jwtTokenUtil.getUsernameFromToken(token);
+            Optional<UserEntity> optionalUser = userService.findByEmail(email);
+
+            if (optionalUser.isEmpty()) {
+                return new NotFoundError("Không tìm thấy người dùng với email: " + email);
+            }
+
+            UUID memberId = optionalUser.get().getUserId();
             List<UserDocumentDTO> historyDocuments = documentService.getHistoryDocumentsForUI(memberId);
+
             if (historyDocuments.isEmpty()) {
                 return new NotFoundError("Không có tài liệu nào trong lịch sử xem!");
             }
+
             return new SuccessResponse("Lấy lịch sử xem tài liệu thành công!", 200, historyDocuments, LocalDateTime.now());
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             return new InternalServerError(e.getMessage());
         }
     }
@@ -210,7 +222,7 @@ public class DocumentAPIController {
 
     @PreAuthorize("hasRole('ROLE_MEMBER')")
     @GetMapping("/documentsByCourseFollowed")
-    public Object getDocumentsByCourseFollowed (@CookieValue(value = "jwtToken", required = false) String token) {
+    public Object getDocumentsByCourseFollowed (@CookieValue(value = "JWT", required = false) String token) {
         try {
             UUID memberId = userService.findByEmail(jwtTokenUtil.getUsernameFromToken(token)).get().getUserId();
             boolean courseFollowed = userService.courseFollowedByMember(memberId);
@@ -229,7 +241,7 @@ public class DocumentAPIController {
 
     @PreAuthorize("hasRole('ROLE_MEMBER')")
     @GetMapping("/getDocumentsUpload")
-    public Object getDocumentsUpload(@CookieValue(value = "jwtToken", required = false) String token) {
+    public Object getDocumentsUpload(@CookieValue(value = "JWT", required = false) String token) {
         try {
             UUID memberId = userService.findByEmail(jwtTokenUtil.getUsernameFromToken(token)).get().getUserId();
             List<UserDocumentDTO> documents = documentService.getDocumentByAuthor(memberId);

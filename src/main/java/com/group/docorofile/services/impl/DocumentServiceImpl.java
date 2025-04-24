@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
 import java.time.LocalDateTime;
@@ -310,12 +311,13 @@ public class DocumentServiceImpl implements iDocumentService {
             documentViewRepository.save(documentView);
         }
 
-        // Lấy file từ server
-        String fileName = document.getFileUrl();
-        Path filePath = fileStorageService.getFilePath(fileName);
+        String filePathStr = document.getFileUrl();
+        Path filePath = Paths.get(filePathStr);
+        String fileName = filePath.getFileName().toString();
+
         Resource resource;
         try {
-            resource = new UrlResource(filePath.toUri());  // Tạo resource từ đường dẫn file
+            resource = new UrlResource(filePath.toUri());
             if (!resource.exists()) {
                 throw new RuntimeException("Tài liệu không tồn tại trong hệ thống.");
             }
@@ -323,7 +325,6 @@ public class DocumentServiceImpl implements iDocumentService {
             return ResponseEntity.notFound().build();
         }
 
-        // Trả file về client
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
@@ -358,6 +359,7 @@ public class DocumentServiceImpl implements iDocumentService {
             MemberEntity member = (MemberEntity) userRepository.findById(memberId)
                     .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
             List<DocumentViewEntity> historyViewDocuments = documentViewRepository.findHistoryDocumentsByMemberId(memberId);
+            System.out.println(historyViewDocuments);
             return historyViewDocuments.stream().map(DocumentViewEntity::getDocument).collect(Collectors.toList());
         } catch (RuntimeException e) {
             throw new InternalServerError(e.getMessage());
@@ -370,6 +372,7 @@ public class DocumentServiceImpl implements iDocumentService {
             MemberEntity member = (MemberEntity) userRepository.findById(memberId)
                     .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
             List<DocumentEntity> historyViewDocuments = getHistoryDocuments(memberId);
+            System.out.println(historyViewDocuments);
             return historyViewDocuments.stream().map(DocumentMapper::toUserDTO).collect(Collectors.toList());
         } catch (RuntimeException e) {
             throw new InternalServerError(e.getMessage());
