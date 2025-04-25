@@ -3,6 +3,7 @@ package com.group.docorofile.controllers.v1.api.university;
 import com.group.docorofile.entities.UniversityEntity;
 import com.group.docorofile.models.university.UniversityDTO;
 import com.group.docorofile.models.university.UniversityNameDTO;
+import com.group.docorofile.response.CreatedResponse;
 import com.group.docorofile.response.SuccessResponse;
 import com.group.docorofile.services.impl.UniversityServiceImpl;
 import jakarta.validation.Valid;
@@ -25,31 +26,63 @@ public class UniversityController {
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @PostMapping("/create")
-    public ResponseEntity<UniversityEntity> createUniversity(@Valid @RequestBody UniversityDTO universityDTO) {
+    public ResponseEntity<CreatedResponse> createUniversity(@Valid @RequestBody UniversityDTO universityDTO) {
         UniversityEntity createdUniversity = universityService.createUniversity(universityDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdUniversity);
+
+        CreatedResponse response = new CreatedResponse(
+                "University created successfully",
+                createdUniversity
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR','ROLE_MEMBER')")
     @GetMapping("/names")
-    public ResponseEntity<List<UniversityNameDTO>> getAllUniversityNames() {
+    public ResponseEntity<SuccessResponse> getAllUniversityNames() {
         List<UniversityNameDTO> names = universityService.findAllUniversityNames();
-        return ResponseEntity.ok(names);
+
+        SuccessResponse response = new SuccessResponse(
+                "University names retrieved successfully",
+                HttpStatus.OK.value(),
+                names,
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.ok(response);
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR','ROLE_MEMBER')")
     @GetMapping("/names/search")
-    public ResponseEntity<List<UniversityNameDTO>> searchUniversityNames(@RequestParam("keyword") String keyword) {
+    public ResponseEntity<SuccessResponse> searchUniversityNames(@RequestParam("keyword") String keyword) {
         List<UniversityNameDTO> names = universityService.findUniversityNamesByKeyword(keyword);
-        return ResponseEntity.ok(names);
+
+        SuccessResponse response = new SuccessResponse(
+                "University name search completed successfully",
+                HttpStatus.OK.value(),
+                names,
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.ok(response);
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR','ROLE_MEMBER')")
     @GetMapping("/detail")
-    public ResponseEntity<UniversityEntity> getUniversityByName(@RequestParam String name) {
+    public ResponseEntity<SuccessResponse> getUniversityByName(@RequestParam String name) {
         UniversityEntity university = universityService.findByUnivName(name);
-        return ResponseEntity.ok(university);
+
+        SuccessResponse response = new SuccessResponse(
+                "University detail retrieved successfully",
+                HttpStatus.OK.value(),
+                university,
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.ok(response);
     }
+
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/update")
@@ -65,5 +98,21 @@ public class UniversityController {
 
         return ResponseEntity.ok(response);
     }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @DeleteMapping("/delete/{univId}")
+    public ResponseEntity<SuccessResponse> deleteUniversity(@PathVariable UUID univId) {
+        universityService.deleteUniversity(univId);
+
+        SuccessResponse response = new SuccessResponse(
+                "University deleted successfully",
+                HttpStatus.OK.value(),
+                null,
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
 
 }

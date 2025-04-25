@@ -5,21 +5,25 @@ import com.group.docorofile.entities.CourseEntity;
 import com.group.docorofile.entities.MemberEntity;
 import com.group.docorofile.entities.UserEntity;
 import com.group.docorofile.models.dto.ChatRoomRequest;
+import com.group.docorofile.models.dto.ResultPaginationDTO;
 import com.group.docorofile.repositories.ChatRoomRepository;
 import com.group.docorofile.repositories.CourseRepository;
 import com.group.docorofile.repositories.MemberRepository;
 import com.group.docorofile.repositories.UserRepository;
+import com.group.docorofile.response.ChatRoomResponse;
 import com.group.docorofile.services.iChatService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 public class ChatServiceImpl implements iChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final CourseRepository courseRepository;
-    private final UserRepository userRepository;
     private final MemberRepository memberRepository;
 
     public ChatServiceImpl(
@@ -29,7 +33,6 @@ public class ChatServiceImpl implements iChatService {
             MemberRepository memberRepository) {
         this.chatRoomRepository = chatRoomRepository;
         this.courseRepository = courseRepository;
-        this.userRepository = userRepository;
         this.memberRepository = memberRepository;
     }
 
@@ -69,6 +72,32 @@ public class ChatServiceImpl implements iChatService {
 
         chatRoom.getMembers().remove(memberToRemove);
         chatRoomRepository.save(chatRoom);
+    }
+
+    public ResultPaginationDTO getChatRoomsByMember(UUID userId, Pageable pageable) {
+        Page<ChatRoomEntity> page = chatRoomRepository.findByMembers_UserId(userId, pageable);
+
+        List<ChatRoomResponse> dtoList = page.getContent()
+                .stream()
+                .map(chatRoom -> ChatRoomResponse.builder()
+                        .id(chatRoom.getChatRoomId())
+                        .title(chatRoom.getTitle())
+                        .createdOn(chatRoom.getCreatedOn())
+                        .totalMembers(chatRoom.getMembers() != null ? chatRoom.getMembers().size() : 0)
+                        .build())
+                .toList();
+
+        ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
+        meta.setPage(pageable.getPageNumber() + 1);
+        meta.setPageSize(pageable.getPageSize());
+        meta.setPages(page.getTotalPages());
+        meta.setTotal(page.getTotalElements());
+
+        ResultPaginationDTO result = new ResultPaginationDTO();
+        result.setMeta(meta);
+        result.setResult(dtoList);
+
+        return result;
     }
 
 }

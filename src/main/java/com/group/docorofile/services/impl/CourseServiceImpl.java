@@ -1,17 +1,21 @@
 package com.group.docorofile.services.impl;
 
 import com.group.docorofile.entities.CourseEntity;
+import com.group.docorofile.entities.DocumentEntity;
 import com.group.docorofile.entities.UniversityEntity;
 import com.group.docorofile.models.course.CourseCreatedResponseDTO;
 import com.group.docorofile.models.course.CourseDTO;
 import com.group.docorofile.repositories.CourseRepository;
+import com.group.docorofile.repositories.DocumentRepository;
 import com.group.docorofile.repositories.UniversityRepository;
+import com.group.docorofile.response.ConflictError;
 import com.group.docorofile.services.iCourseService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class CourseServiceImpl implements iCourseService {
@@ -22,10 +26,13 @@ public class CourseServiceImpl implements iCourseService {
     @Autowired
     private UniversityRepository universityRepository;
 
+    @Autowired
+    DocumentRepository documentRepository;
+
     @Override
     public CourseEntity createCourse(CourseDTO dto) {
         if (courseRepository.existsByCourseName(dto.getCourseName())) {
-            throw new RuntimeException("Course already exists: " + dto.getCourseName());
+            throw new ConflictError("Course already exists: " + dto.getCourseName());
         }
 
         UniversityEntity university = universityRepository.findByUnivId(dto.getUniversityId())
@@ -89,4 +96,19 @@ public class CourseServiceImpl implements iCourseService {
 
         return courseRepository.save(course);
     }
+
+    @Override
+    public void deleteCourse(UUID courseId) {
+        List<DocumentEntity> documents = documentRepository.findByCourse_CourseId(courseId);
+
+        if (!documents.isEmpty()) {
+            throw new ConflictError("Cannot delete course. There are still documents linked to it.");
+        }
+
+        CourseEntity course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFoundException("Course not found"));
+
+        courseRepository.delete(course);
+    }
+
 }
