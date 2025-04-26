@@ -45,7 +45,12 @@ $(function () {
                     return {
                         page: Math.floor(d.start / d.length), // convert for Spring pagination
                         size: d.length,
-                        draw: d.draw
+                        draw: d.draw,
+                        search: d.search.value,
+                        role: $('#UserRole').val(),
+                        plan: $('#UserPlan').val(),
+                        status: $('#FilterTransaction').val(),
+                        //sort: d.columns[d.order[0].column].data + "," + d.order[0].dir
                     };
                 }
             },

@@ -1263,6 +1263,28 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
             document.getElementById('fullName').innerText = result.data.name || 'Người dùng';
             document.getElementById('membershipName').innerText = result.data.membershipName || 'Thành viên';
 
+            fetch("/v1/api/users/stats", {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include' // ⚠️ QUAN TRỌNG: gửi cookie (JWT) kèm request
+            })
+                .then(response => response.json())
+                .then(res => {
+                    if (res.statusCode === 200 && res.data) {
+                        const stats = res.data;
+                        document.getElementById("total-users").textContent = stats.totalUsers ?? 0;
+                        document.getElementById("premium-users").textContent = stats.totalMembersWithPlan ?? 0;
+                        document.getElementById("total-members").textContent = stats.totalMembers ?? 0;
+                        document.getElementById("inactive-users").textContent = stats.inactiveMembers ?? 0;
+                    } else {
+                        console.warn("Failed to load user stats");
+                    }
+                })
+                .catch(err => {
+                    console.error("Error fetching user stats:", err);
+                });
         } catch (err) {
             console.error('❌ Lỗi khi lấy thông tin người dùng:', err);
 

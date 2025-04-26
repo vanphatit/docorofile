@@ -1,6 +1,7 @@
 package com.group.docorofile.services.impl;
 
 import com.group.docorofile.entities.*;
+import com.group.docorofile.enums.EMembershipLevel;
 import com.group.docorofile.models.dto.UserInfoDTO;
 import com.group.docorofile.models.users.CreateUserRequest;
 import com.group.docorofile.models.users.UpdateProfileRequest;
@@ -143,6 +144,31 @@ public class UserServiceImpl implements iUserService {
         UserEntity user = optUser.get();
         user.setActive(false);
         userRepository.save(user);
+    }
+
+    public int getTotalUsers() {
+        return (int) userRepository.count();
+    }
+
+    public int getTotalMembers() {
+        return userRepository.findAll().stream()
+                .filter(user -> user instanceof MemberEntity)
+                .mapToInt(user -> 1)
+                .sum();
+    }
+
+    public int getInactiveMembers() {
+        return userRepository.findAll().stream()
+                .filter(user -> !user.isActive())
+                .mapToInt(user -> 1)
+                .sum();
+    }
+
+    public int getTotalMembersWithPlan(String plan) {
+        return userRepository.findAll().stream()
+                .filter(user -> user instanceof MemberEntity && ((MemberEntity) user).getMembership().getLevel().name().equals(plan) )
+                .mapToInt(user -> 1)
+                .sum();
     }
 
     @Override

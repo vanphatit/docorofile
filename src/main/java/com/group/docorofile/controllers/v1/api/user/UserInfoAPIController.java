@@ -8,15 +8,19 @@ import com.group.docorofile.models.dto.UserInfoDTO;
 import com.group.docorofile.models.users.CreateUserRequest;
 import com.group.docorofile.entities.UserEntity;
 import com.group.docorofile.models.users.UpdateProfileRequest;
+import com.group.docorofile.repositories.UserRepository;
 import com.group.docorofile.response.CreatedResponse;
 import com.group.docorofile.response.SuccessResponse;
 import com.group.docorofile.response.NotFoundError;
 import com.group.docorofile.services.impl.UserServiceImpl;
+import com.group.docorofile.services.specifications.UserSpecifications;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,6 +35,9 @@ public class UserInfoAPIController {
 
     @Autowired
     private UserServiceImpl userService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping("/newMember")
     public ResponseEntity<SuccessResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
@@ -62,38 +69,39 @@ public class UserInfoAPIController {
     public ResponseEntity<DataTableResponse<UserInfoDTO>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
-            @RequestParam(defaultValue = "1") int draw
+            @RequestParam(defaultValue = "1") int draw,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String plan,
+            @RequestParam(defaultValue = "status") String status,
+            @RequestParam(defaultValue = "modifiedOn,desc") String[] sort
     ) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<UserEntity> usersPage = userService.getAllUsers(pageable);
+        try {
+            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sort[1]), sort[0]));
+            Specification<UserEntity> spec = UserSpecifications.withFilters(search, role, plan, status);
+            Page<UserEntity> usersPage = userRepository.findAll(spec, pageable);
 
-        List<UserInfoDTO> userInfoList = new ArrayList<>();
-        for(UserEntity user : usersPage.getContent()) {
-            UserInfoDTO userInfo = new UserInfoDTO();
-            userInfo.setId(user.getUserId().toString());
-            userInfo.setName(user.getFullName());
-            userInfo.setEmail(user.getEmail());
-            userInfo.setCurrent_plan("");
-            if(user instanceof MemberEntity){
-                userInfo.setRole("Member");
-                userInfo.setCurrent_plan(((MemberEntity) user).getMembership().getLevel().name());
-            }
-            else if(user instanceof ModeratorEntity)
-                userInfo.setRole("Moderator");
-            else if(user instanceof AdminEntity)
-                userInfo.setRole("Admin");
+            List<UserInfoDTO> userInfoList = usersPage.getContent().stream().map(user -> {
+                UserInfoDTO dto = new UserInfoDTO();
+                dto.setId(user.getUserId().toString());
+                dto.setEmail(user.getEmail());
+                dto.setName(user.getFullName());
+                dto.setRole(user instanceof AdminEntity ? "Admin" :
+                        user instanceof ModeratorEntity ? "Moderator" : "Member");
+                if (user instanceof MemberEntity) {
+                    dto.setCurrent_plan(((MemberEntity) user).getMembership().getLevel().name());
+                } else {
+                    dto.setCurrent_plan("");
+                }
+                dto.setStatus(user.isActive() ? "Active" : "Inactive");
+                return dto;
+            }).toList();
 
-            userInfo.setStatus(user.isActive() ? "Active" : "Inactive" );
-            userInfoList.add(userInfo);
+            return ResponseEntity.ok(new DataTableResponse<>(draw, usersPage.getTotalElements(), usersPage.getTotalElements(), userInfoList));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
-
-        DataTableResponse<UserInfoDTO> response = new DataTableResponse<>(
-                draw,
-                usersPage.getTotalElements(),
-                usersPage.getTotalElements(),
-                userInfoList
-        );
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new DataTableResponse<>(draw, 0, 0, Collections.emptyList()));
     }
 
 //    // Cập nhật user theo ID
@@ -121,6 +129,18 @@ public class UserInfoAPIController {
                 .orElseThrow(() -> new NotFoundError("User not found"));
         userService.deactivateUser(id);
         SuccessResponse response = new SuccessResponse("User deleted successfully", HttpStatus.OK.value(), null, LocalDateTime.now());
+        return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/stats")
+    public ResponseEntity<SuccessResponse> getUserStatistics() {
+        Map<String, Integer> stats = new HashMap<>();
+        stats.put("totalUsers", userService.getTotalUsers());
+        stats.put("totalMembers", userService.getTotalMembers());
+        stats.put("inactiveMembers", userService.getInactiveMembers());
+        stats.put("totalMembersWithPlan", userService.getTotalMembersWithPlan("PREMIUM"));
+        SuccessResponse response = new SuccessResponse("User statistics retrieved successfully", HttpStatus.OK.value(), stats, LocalDateTime.now());
         return ResponseEntity.ok(response);
     }
 }
