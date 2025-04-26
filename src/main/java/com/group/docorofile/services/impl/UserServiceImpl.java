@@ -1,6 +1,7 @@
 package com.group.docorofile.services.impl;
 
 import com.group.docorofile.entities.*;
+import com.group.docorofile.models.dto.UserInfoDTO;
 import com.group.docorofile.models.users.CreateUserRequest;
 import com.group.docorofile.models.users.UpdateProfileRequest;
 import com.group.docorofile.repositories.FollowCourseRepository;

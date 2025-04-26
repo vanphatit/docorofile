@@ -1,126 +1,20 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      lang="en"
-      class="light-style layout-wide customizer-hide"
-      dir="ltr"
-      data-theme="theme-default"
-      data-template="vertical-menu-template"
-      data-style="light">
-<head>
-  <meta charset="utf-8" />
-  <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-
-  <title th:utext="${pageTitle}">DoCoroFile</title>
-
-  <meta name="description" content="" />
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" th:href="@{/images/logo.png}"/>
-
-  <!-- Fonts -->
-  <link rel="preconnect" th:href="@{https://fonts.googleapis.com}" />
-  <link rel="preconnect" th:href="@{https://fonts.gstatic.com}" crossorigin />
-  <link
-          th:href="@{https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&ampdisplay=swap}"
-          rel="stylesheet" />
-
-  <!-- Icons -->
-  <link rel="stylesheet" th:href="@{/assets/vendor/fonts/remixicon/remixicon.css}" />
-  <link rel="stylesheet" th:href="@{/assets/vendor/fonts/flag-icons.css}" />
-
-  <!-- Menu waves for no-customizer fix -->
-  <link rel="stylesheet" th:href="@{/assets/vendor/libs/node-waves/node-waves.css}" />
-
-  <!-- Core CSS -->
-  <link rel="stylesheet" th:href="@{/assets/vendor/css/rtl/core.css}" class="template-customizer-core-css" />
-  <link rel="stylesheet" th:href="@{/assets/vendor/css/rtl/theme-default.css}" class="template-customizer-theme-css" />
-  <link rel="stylesheet" th:href="@{/assets/css/demo.css}" />
-
-  <!-- Vendors CSS -->
-  <link rel="stylesheet" th:href="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css}" />
-  <link rel="stylesheet" th:href="@{/assets/vendor/libs/typeahead-js/typeahead.css}" />
-  <!-- Vendor -->
-  <link rel="stylesheet" th:href="@{/assets/vendor/libs/@form-validation/form-validation.css}" />
-
-  <!-- Page CSS -->
-  <!-- Page -->
-  <link rel="stylesheet" th:href="@{/assets/vendor/css/pages/page-auth.css}" />
-
-  <!-- Helpers -->
-  <script th:src="@{/assets/vendor/js/helpers.js}"></script>
-  <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
-  <script th:src="@{/assets/js/config.js}"></script>
-</head>
-
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/fragments/auth/layout-auth}">
 <body>
-<!-- Content -->
-
-<div class="position-relative">
-  <div class="authentication-wrapper authentication-basic container-p-y p-4 p-sm-0">
-    <div class="authentication-inner py-6">
-      <!-- Register Card -->
-      <div class="card p-md-7 p-1">
-        <!-- Logo -->
-        <div class="app-brand justify-content-center mt-5">
-          <a href="/" class="app-brand-link gap-2">
-                <span class="app-brand-logo demo">
-                  <span style="color: var(--bs-primary)">
-                    <img th:src="@{/images/logo.png}" width="38" height="38" alt="logo" class="app-logo-logo" />
-                  </span>
-                </span>
-            <span class="app-brand-text demo text-heading fw-semibold">DoCoroFile</span>
-          </a>
-        </div>
-        <!-- /Logo -->
-        <!-- Verify Email -->
-        <div class="card-body mt-1">
-          <h4 class="mb-1">Verify your email ✉️</h4>
-          <p class="text-start mb-0">
-            Account activation link sent to your email address: <span class="h6" th:text="${email}">hello@example.com</span> Please
-            follow the link inside to continue.
-          </p>
-          <p class="text-center mb-0">
-            Didn't get the mail?
-            <a href="javascript:void(0);"> Resend </a>
-          </p>
-        </div>
-      </div>
-      <!-- Register Card -->
-      <img
-              alt="mask"
-              th:src="@{/assets/img/illustrations/auth-cover-forgot-password-mask-dark.png}"
-              class="authentication-image d-none d-lg-block" />
-    </div>
-  </div>
+<div layout:fragment="content" class="card-body mt-1">
+    <h4 class="mb-1">Verify your email ✉️</h4>
+    <p class="text-start mb-0">
+        Account activation link sent to your email address: <span class="h6" th:text="${email}">hello@example.com</span>
+        Please
+        follow the link inside to continue.
+    </p>
+    <p class="text-center mb-0">
+        Didn't get the mail?
+        <a href="javascript:void(0);"> Resend </a>
+    </p>
 </div>
 
-<!-- / Content -->
-
-<!-- Core JS -->
-<!-- build:js assets/vendor/js/core.js -->
-<script th:src="@{/assets/vendor/libs/jquery/jquery.js}"></script>
-<script th:src="@{/assets/vendor/libs/popper/popper.js}"></script>
-<script th:src="@{/assets/vendor/js/bootstrap.js}"></script>
-<script th:src="@{/assets/vendor/libs/node-waves/node-waves.js}"></script>
-<script th:src="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js}"></script>
-<script th:src="@{/assets/vendor/libs/hammer/hammer.js}"></script>
-<script th:src="@{/assets/vendor/libs/i18n/i18n.js}"></script>
-<script th:src="@{/assets/vendor/libs/typeahead-js/typeahead.js}"></script>
-<script th:src="@{/assets/vendor/js/menu.js}"></script>
-
-<!-- endbuild -->
-
-<!-- Vendors JS -->
-<script th:src="@{/assets/vendor/libs/@form-validation/popular.js}"></script>
-<script th:src="@{/assets/vendor/libs/@form-validation/bootstrap5.js}"></script>
-<script th:src="@{/assets/vendor/libs/@form-validation/auto-focus.js}"></script>
-
-<!-- Main JS -->
-<script th:src="@{/assets/js/main.js}"></script>
-
-<!-- Page JS -->
-<script th:src="@{/assets/js/pages-auth.js}"></script>
 </body>
 </html>

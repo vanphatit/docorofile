@@ -41,6 +41,7 @@ public class SecurityConfig {
                                 "/error",
                                 "/v1/api/universities/names").permitAll()
                         .requestMatchers("/").permitAll()
+                        .requestMatchers("/document/**").permitAll()
                         .requestMatchers(
                                 "/assets/**",
                                 "/templates/**",
