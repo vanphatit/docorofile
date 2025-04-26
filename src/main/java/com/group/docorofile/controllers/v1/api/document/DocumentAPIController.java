@@ -54,8 +54,13 @@ public class DocumentAPIController {
                 userName = jwtTokenUtil.getUsernameFromToken(token);
                 role = jwtTokenUtil.getRoleFromToken(token);
             }
-            return new SuccessResponse("Lấy thông tin tài liệu thành công!", 200, documentService.viewDocumentByIdForUI(documentId, role, userName), LocalDateTime.now());
-        } catch (RuntimeException e) {
+            Object dto = documentService.viewDocumentByIdForUI(documentId, role, userName);
+            return new SuccessResponse("Lấy thông tin tài liệu thành công!", 200, dto, LocalDateTime.now());
+        } catch (NotFoundError e) {
+            return new NotFoundError("Không tìm thấy tài liệu này!");
+        } catch (UnauthorizedError e) {
+            return new UnauthorizedError("Bạn chưa đăng nhập!");
+        } catch (Exception e) {
             return new InternalServerError(e.getMessage());
         }
     }
