@@ -29,7 +29,7 @@ public class CreateUserRequest {
     @Min(value = 0, message = "downloadLimit không được âm")
     private Integer downloadLimit;
 
-    private UUID universityId;
+    private String universityName;
 
     private Boolean isChat;
     private Boolean isComment;

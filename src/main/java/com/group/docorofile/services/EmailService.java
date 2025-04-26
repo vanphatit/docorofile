@@ -22,13 +22,14 @@ public class EmailService {
     private Map<String, String> emailTokenMap = new ConcurrentHashMap<>();
 
     public void sendVerificationEmail(String to, String verificationCode) throws MessagingException {
+        String url = "http://localhost:9091/auth/verify-email?code=" + verificationCode + "&email=" + to;
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
         helper.setTo(to);
         helper.setSubject("Xác thực tài khoản - DoCoroFile");
         helper.setText("<h3>Xin chào!</h3>" +
-                "<p>Mã xác thực của bạn: <b>" + verificationCode + "</b></p>" +
-                "<p>Vui lòng nhập mã này để kích hoạt tài khoản.</p>", true);
+                "<p>Vui lòng nhấn vào liên kết dưới đây để xác thực tài khoản của bạn:</p>" +
+                "<a href=\"" + url + "\">Xác thực tài khoản</a>", true);
         mailSender.send(mimeMessage);
 
         if(emailTokenMap.containsKey(to)) {

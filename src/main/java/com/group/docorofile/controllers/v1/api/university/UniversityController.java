@@ -38,7 +38,7 @@ public class UniversityController {
     }
 
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR','ROLE_MEMBER')")
+    //@PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR','ROLE_MEMBER')")
     @GetMapping("/names")
     public ResponseEntity<SuccessResponse> getAllUniversityNames() {
         List<UniversityNameDTO> names = universityService.findAllUniversityNames();
