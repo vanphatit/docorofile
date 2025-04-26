@@ -14,6 +14,7 @@ function loadNotifications() {
 
             if (items.length === 0 && currentPage === 0) {
                 $list.append(`<div class="list-group-item">Không có thông báo nào.</div>`);
+                $('#load-more-btn').hide();
                 return;
             }
 

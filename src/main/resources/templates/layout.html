@@ -1373,7 +1373,10 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
             new bootstrap.Toast(toastEl).show();
         }
     });
-</script>
+<!-- Hook cho scripts riêng từng trang -->
+<div layout:fragment="scripts"></div>
+
+<script th:src="@{/js/dropdown_notifications.js}"></script>
 
 </body>
 </html>
