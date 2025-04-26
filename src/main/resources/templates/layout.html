@@ -12,6 +12,9 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title th:utext="${pageTitle}">DoCoroFile</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" th:href="@{/images/logo.png}" />
+
     <!-- Fonts -->
     <link rel="preconnect" th:href="@{https://fonts.googleapis.com}" />
     <link rel="preconnect" th:href="@{https://fonts.gstatic.com}" crossorigin />
@@ -1214,6 +1217,62 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     <div class="drag-target"></div>
 </div>
 <!-- / Layout wrapper -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const response = await fetch('/v1/api/auth/current-user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include' // ⚠️ QUAN TRỌNG: gửi cookie (JWT) kèm request
+            });
+
+            if (!response.ok) {
+                throw new Error('Không thể lấy thông tin người dùng');
+            }
+
+            const result = await response.json();
+
+            // ✅ In ra kết quả
+            console.log('✅ Current User Info:', result.data);
+
+            // Cập nhật thông tin người dùng vào UI
+            document.getElementById('fullName').innerText = result.data.name || 'Người dùng';
+            document.getElementById('membershipName').innerText = result.data.membershipName || 'Thành viên';
+
+        } catch (err) {
+            console.error('❌ Lỗi khi lấy thông tin người dùng:', err);
+
+            // Cập nhật thông tin người dùng vào UI
+            document.getElementById('fullName').innerText = 'Người dùng';
+            document.getElementById('membershipName').innerText = 'Thành viên';
+
+            // 👉 Hide protected dropdown items
+            const protectedItems = [
+                'profile-dropdown-menu',
+                'setting-dropdown-menu',
+                'faq-dropdown-menu'
+            ];
+            protectedItems.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+
+            const btn = document.getElementById('auth-button');
+            if (btn) {
+                btn.classList.remove('btn-danger');
+                btn.classList.add('btn-outline-primary');
+                btn.setAttribute('href', '/auth/login');
+                btn.innerHTML = `
+                    <small class="align-middle">Login</small>
+                    <i class="ri-login-box-line ms-2 ri-16px"></i>
+                `;
+            }
+        }
+    });
+</script>
 
 <!-- Core JS -->
 <!-- build:js assets/vendor/js/core.js -->

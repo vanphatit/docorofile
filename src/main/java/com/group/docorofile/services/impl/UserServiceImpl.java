@@ -65,7 +65,7 @@ public class UserServiceImpl implements iUserService {
         iUserFactory factory = getFactory("MEMBER");
         MemberEntity user = (MemberEntity) factory.createUser(request);
 
-        try {
+        try {//≥≤>
             // random 6 chữ số
             int code = (int)((Math.random() * 900000) + 100000);
             String verificationCode = String.valueOf(code);

@@ -7,6 +7,7 @@ import com.group.docorofile.entities.UserEntity;
 import com.group.docorofile.enums.EMembershipLevel;
 import com.group.docorofile.models.users.CreateUserRequest;
 import com.group.docorofile.repositories.UniversityRepository;
+import com.group.docorofile.services.impl.UniversityServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,7 +21,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MemberFactory implements iUserFactory {
 
-    private final UniversityRepository universityRepository;
+    private final UniversityServiceImpl universityService;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -38,13 +39,11 @@ public class MemberFactory implements iUserFactory {
 
         // Lấy trường đại học nếu có
         UniversityEntity university = null;
-        UUID univId = request.getUniversityId(); // giả sử CreateUserRequest có field này
-        if (univId != null) {
-            Optional<UniversityEntity> opt = universityRepository.findById(univId);
-            if (opt.isPresent()) {
-                university = opt.get();
-            } else {
-                throw new IllegalArgumentException("University not found with id: " + univId);
+        String univName = request.getUniversityName(); // giả sử CreateUserRequest có field này
+        if (univName != null) {
+            university = universityService.findByUnivName(univName);
+            if( university == null) {
+                throw new RuntimeException("University not found with name: " + univName);
             }
         }
 
