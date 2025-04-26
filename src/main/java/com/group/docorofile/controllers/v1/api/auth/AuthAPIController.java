@@ -1,5 +1,7 @@
 package com.group.docorofile.controllers.v1.api.auth;
 
+import com.group.docorofile.entities.MemberEntity;
+import com.group.docorofile.models.dto.UserInfoDTO;
 import com.group.docorofile.models.users.LoginRequest;
 import com.group.docorofile.repositories.UserRepository;
 import com.group.docorofile.response.BadRequestError;
@@ -10,6 +12,7 @@ import com.group.docorofile.security.JwtTokenUtil;
 import com.group.docorofile.response.SuccessResponse;
 import com.group.docorofile.services.EmailService;
 import com.group.docorofile.services.impl.UserServiceImpl;
+import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -186,6 +189,34 @@ public class AuthAPIController {
         userRepository.save(user);
 
         SuccessResponse successResponse = new SuccessResponse("Đổi mật khẩu thành công!", HttpStatus.OK.value(), null, LocalDateTime.now());
+        return ResponseEntity.ok(successResponse);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_MEMBER', 'ROLE_ADMIN', 'ROLE_MODERATOR')")
+    @PostMapping("/current-user")
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+        CustomUserDetails currentUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        var user = currentUserDetails.getUser();
+
+        if(user == null) {
+            throw new UsernameNotFoundException("Không tìm thấy người dùng!");
+        }
+
+        // Chỉ trả về thông tin cần thiết
+        UserInfoDTO userInfoDTO = new UserInfoDTO();
+        userInfoDTO.setId(user.getUserId().toString());
+        userInfoDTO.setEmail(user.getEmail());
+        userInfoDTO.setName(user.getFullName());
+        userInfoDTO.setRole(currentUserDetails.getAuthorities().iterator().next().getAuthority());
+
+        if(user instanceof MemberEntity){
+            MemberEntity member = (MemberEntity) user;
+            if(member.getMembership() == null) {
+                throw new BadRequestError("Không tìm thấy thông tin thành viên!");
+            }
+            userInfoDTO.setMembershipName(member.getMembership().getLevel().toString());
+        }
+        SuccessResponse successResponse = new SuccessResponse("Lấy thông tin người dùng thành công!", HttpStatus.OK.value(), userInfoDTO, LocalDateTime.now());
         return ResponseEntity.ok(successResponse);
     }
 }
