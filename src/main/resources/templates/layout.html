@@ -1314,6 +1314,16 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
                 `;
             }
         }
+
+        const form = document.getElementById("addNewUserForm");
+
+        if (form) {
+            form.addEventListener("submit", async function (e) {
+                e.preventDefault(); // ❗ Ngăn reload trang
+
+
+            })
+        }
     });
 </script>
 

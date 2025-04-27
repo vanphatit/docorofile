@@ -1,4 +1,3 @@
-
 'use strict';
 
 $(function () {
@@ -19,9 +18,9 @@ $(function () {
         select2 = $('.select2'),
         userView = 'app-user-view-account.html',
         statusObj = {
-            1: { title: 'Pending', class: 'bg-label-warning' },
-            2: { title: 'Active', class: 'bg-label-success' },
-            3: { title: 'Inactive', class: 'bg-label-secondary' }
+            1: {title: 'Pending', class: 'bg-label-warning'},
+            2: {title: 'Active', class: 'bg-label-success'},
+            3: {title: 'Inactive', class: 'bg-label-secondary'}
         };
 
     if (select2.length) {
@@ -540,22 +539,65 @@ $(document).on('click', '.delete-record', function () {
             });
     }
 });
+// Add New User
+$(document).on('click', '#add-user-submit', async function () {
+    const fullName = document.getElementById("add-user-fullname").value;
+    const email = document.getElementById("add-user-email").value;
+    const userType = document.getElementById("user-role").value.toUpperCase(); // "ADMIN" or "MODERATOR"
+    const password = document.getElementById("add-user-password").value;
+    const passwordConfirm = document.getElementById("add-user-password-confirm").value;
 
-
-// Validation & Phone mask
-(function () {
-    const phoneMaskList = document.querySelectorAll('.phone-mask'),
-        addNewUserForm = document.getElementById('addNewUserForm');
-
-    // Phone Number
-    if (phoneMaskList) {
-        phoneMaskList.forEach(function (phoneMask) {
-            new Cleave(phoneMask, {
-                phone: true,
-                phoneRegionCode: 'US'
-            });
-        });
+    // Validate password confirmation
+    if (password !== passwordConfirm) {
+        alert("❌ Passwords do not match");
+        return;
     }
+
+    const requestBody = {
+        fullName,
+        email,
+        userType,
+        password
+    };
+
+    // Add moderator-specific field if needed
+    if (userType === "MODERATOR") {
+        requestBody.isReportManage = true;
+    }
+
+    try {
+        const res = await fetch("/v1/api/users/newManager", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify(requestBody)
+        });
+
+        if (!res.ok) throw new Error("Create failed");
+
+        const result = await res.json();
+
+        // ✅ Optionally show Bootstrap Toast
+        const toast = new bootstrap.Toast(document.getElementById("bootstrapToast"));
+        document.getElementById("toastTitle").innerText = "Success";
+        document.getElementById("toastMessage").innerText = result.message || "User created successfully";
+        toast.show();
+
+        // Reset form or close modal
+        document.getElementById("addNewUserForm").reset();
+        $('.datatables-users').DataTable().ajax.reload(); // if using AJAX source
+
+    } catch (err) {
+        alert("❌ Error creating user: " + (err.message || "User not created"));
+    }
+})
+
+// Validation
+(function () {
+    const addNewUserForm = document.getElementById('addNewUserForm');
+
     // Add New User Form Validation
     const fv = FormValidation.formValidation(addNewUserForm, {
         fields: {
