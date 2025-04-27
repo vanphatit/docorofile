@@ -204,9 +204,10 @@ $(function () {
                     searchable: false,
                     orderable: false,
                     render: function (data, type, full, meta) {
+                        const userId = full['id'];
                         return (
                             '<div class="d-flex align-items-center gap-50">' +
-                            '<a href="javascript:;" class="btn btn-sm btn-icon btn-text-secondary rounded-pill waves-effect delete-record" data-bs-toggle="tooltip" title="Delete Invoice"><i class="ri-delete-bin-7-line ri-20px"></i></a>' +
+                            `<a href="javascript:;" class="btn btn-sm btn-icon btn-text-secondary rounded-pill waves-effect delete-record" data-bs-toggle="tooltip" data-user-id="${userId}" title="Deactivate"><i class="ri-delete-bin-7-line ri-20px"></i></a>` +
                             '<a href="' +
                             userView +
                             '" class="btn btn-sm btn-icon btn-text-secondary rounded-pill waves-effect" data-bs-toggle="tooltip" title="Preview"><i class="ri-eye-line ri-20px"></i></a>' +
@@ -499,11 +500,47 @@ $(function () {
         );
     }
 
-    // Delete Record
-    $('.datatables-users tbody').on('click', '.delete-record', function () {
-        dt_user.row($(this).parents('tr')).remove().draw();
-    });
+    // // Delete Record
+    // $('.datatables-users tbody').on('click', '.delete-record', function () {
+    //     dt_user.row($(this).parents('tr')).remove().draw();
+    // });
 });
+
+$(document).on('click', '.delete-record', function () {
+    const userId = $(this).data('user-id');
+
+    if (confirm('Are you sure you want to deactivate this user?')) {
+        fetch(`/v1/api/users/${userId}`, {
+            method: 'DELETE',
+            credentials: 'include', // Include cookie (JWT token)
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => {
+                if (!res.ok) throw new Error('Delete failed');
+                return res.json();
+            })
+            .then(result => {
+                console.log('✅ User deactivated:', result);
+                // Optionally reload table or remove row
+                $('.datatables-users').DataTable().ajax.reload(); // if using AJAX source
+                const toastEl = document.getElementById('bootstrapToast');
+                document.getElementById('toastTitle').innerText = 'Success';
+                document.getElementById('toastMessage').innerText = result.message || 'User deactivated';
+                new bootstrap.Toast(toastEl).show();
+
+            })
+            .catch(err => {
+                console.error('❌ Error deleting user:', err);
+                const toastEl = document.getElementById('bootstrapToast');
+                document.getElementById('toastTitle').innerText = 'Error';
+                document.getElementById('toastMessage').innerText = err.message || 'User not deactivated';
+                new bootstrap.Toast(toastEl).show();
+            });
+    }
+});
+
 
 // Validation & Phone mask
 (function () {

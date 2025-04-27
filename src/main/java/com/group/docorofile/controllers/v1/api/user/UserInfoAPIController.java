@@ -124,11 +124,12 @@ public class UserInfoAPIController {
     // Huỷ kích hoạt user
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<SuccessResponse> deactivateUser(@PathVariable UUID id) {
-        UserEntity user = userService.getUserById(id)
+    public ResponseEntity<SuccessResponse> deactivateUser(@PathVariable String id) {
+        UUID userId = UUID.fromString(id);
+        UserEntity user = userService.getUserById(userId)
                 .orElseThrow(() -> new NotFoundError("User not found"));
-        userService.deactivateUser(id);
-        SuccessResponse response = new SuccessResponse("User deleted successfully", HttpStatus.OK.value(), null, LocalDateTime.now());
+        userService.deactivateUser(userId);
+        SuccessResponse response = new SuccessResponse("User deactivated successfully", HttpStatus.OK.value(), null, LocalDateTime.now());
         return ResponseEntity.ok(response);
     }
 
