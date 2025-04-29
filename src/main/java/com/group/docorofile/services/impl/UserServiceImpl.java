@@ -25,9 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -124,6 +122,7 @@ public class UserServiceImpl implements iUserService {
         return userRepository.findAll(pageable);
     }
 
+    @Override
     public boolean checkMembership(UUID userId) {
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundError("User not found with id: " + userId));
@@ -148,6 +147,31 @@ public class UserServiceImpl implements iUserService {
             }
         }
 
+        return true;
+    }
+
+    @Override
+    public boolean upgradeMembership(UUID userId, String plan) {
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundError("User not found with id: " + userId));
+
+        if (!(userEntity instanceof MemberEntity member)) {
+            throw new BadRequestError("Only members can have plans");
+        }
+
+        if (plan.equals("FREE")) {
+            member.getMembership().setLevel(EMembershipLevel.FREE);
+            member.getMembership().setStartDate(LocalDateTime.now());
+            member.getMembership().setEndDate(null);
+        } else if (plan.equals("PREMIUM")) {
+            member.getMembership().setLevel(EMembershipLevel.PREMIUM);
+            member.getMembership().setStartDate(LocalDateTime.now());
+            member.getMembership().setEndDate(LocalDateTime.now().plusMonths(1)); // 1 tháng
+        } else {
+            throw new BadRequestError("Invalid plan: " + plan);
+        }
+
+        userRepository.save(member);
         return true;
     }
 
@@ -183,6 +207,7 @@ public class UserServiceImpl implements iUserService {
         return userRepository.save(user);
     }
 
+    @Override
     public boolean changePasswordById(UUID id, String newPassword) {
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundError("User not found with id: " + id));
@@ -212,6 +237,7 @@ public class UserServiceImpl implements iUserService {
         userRepository.save(user);
     }
 
+    @Override
     public void activateUser(UUID id) {
         // Soft delete user by setting isActive to false
         Optional<UserEntity> optUser = userRepository.findById(id);

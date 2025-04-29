@@ -184,6 +184,17 @@ public class UserInfoAPIController {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping("/upgrade-plan/{userId}")
+    public ResponseEntity<SuccessResponse> upgradeMembership(
+            @PathVariable UUID userId,
+            @RequestParam("plan") String plan) {
+
+        boolean result = userService.upgradeMembership(userId, plan.toUpperCase());
+        SuccessResponse response = new SuccessResponse("Membership upgraded successfully", HttpStatus.OK.value(), result, LocalDateTime.now());
+        return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(@RequestParam("userId") String id,
                                             @RequestParam("newPassword") String newPassword) {

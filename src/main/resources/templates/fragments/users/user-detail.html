@@ -128,7 +128,7 @@
                     <small id="userInfo-membershipContains">4 days remaining</small>
                     <div class="d-grid w-100 mt-6">
                         <button class="btn btn-primary" data-bs-target="#upgradePlanModal" data-bs-toggle="modal">
-                            Upgrade Plan
+                            Change Plan
                         </button>
                     </div>
                 </div>
@@ -420,10 +420,10 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 <div class="modal-body pt-md-0 px-0">
                     <div class="text-center mb-6">
-                        <h4 class="mb-2">Upgrade Plan</h4>
+                        <h4 class="mb-2">Change Plan</h4>
                         <p class="mb-10">Choose the best plan for user.</p>
                     </div>
-                    <form id="upgradePlanForm" class="row g-4 d-flex align-items-center" onsubmit="return false">
+                    <form id="upgradePlanForm" class="row g-4 d-flex align-items-center">
                         <div class="col-sm-9">
                             <select
                                     id="choosePlan"
@@ -431,9 +431,8 @@
                                     class="form-select form-select-sm"
                                     aria-label="Choose Plan">
                                 <option selected>Choose Plan</option>
-                                <option value="standard">Standard - $99/month</option>
-                                <option value="exclusive">Exclusive - $249/month</option>
-                                <option value="Enterprise">Enterprise - $499/month</option>
+                                <option value="FREE">Free - 0VND/month</option>
+                                <option value="PREMIUM">PREMIUM - 80.000VND/month</option>
                             </select>
                         </div>
                         <div class="col-sm-3 d-flex align-items-end">
@@ -443,14 +442,13 @@
                 </div>
                 <hr class="my-1" />
                 <div class="modal-body pb-md-0 px-0">
-                    <p class="mb-1">User current plan is standard plan</p>
+                    <p id="modalChangePlan-CurrentPlan" class="mb-1">User current plan is standard plan</p>
                     <div class="d-flex justify-content-between align-items-center flex-wrap">
                         <div class="d-flex justify-content-center me-2 mt-4">
-                            <sup class="h5 pricing-currency mt-5 mb-0 me-1 text-primary">$</sup>
-                            <h1 class="mb-0 text-primary">99</h1>
+                            <sup class="h5 pricing-currency mt-5 mb-0 me-1 text-primary">VND</sup>
+                            <h2 id="modelChangePlan-CurrentPlanPrice" class="mb-0 text-primary">99</h2>
                             <sub class="h5 pricing-duration mt-auto mb-3 small fw-normal">/month</sub>
                         </div>
-                        <button class="btn btn-outline-danger cancel-subscription mt-4">Cancel Subscription</button>
                     </div>
                 </div>
             </div>

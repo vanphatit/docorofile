@@ -96,16 +96,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         const membershipContainsEl = document.getElementById('userInfo-membershipContains');
         const membershipProgressEl = document.getElementById('userInfo-membershipProgress');
 
+        const modalCurrentPlan = document.getElementById('modalChangePlan-CurrentPlan');
+        const modalCurrentPlanPrice = document.getElementById('modelChangePlan-CurrentPlanPrice');
+
         if (planBadge) planBadge.innerText = data.current_plan || "Free";
         if (planPrice) planPrice.innerText = data.current_plan === "PREMIUM" ? "80.000" : "0";
 
-        // Ẩn danh sách quyền lợi nếu là Free
         if (planBenefits && data.current_plan !== "PREMIUM") {
             planBenefits.classList.add("d-none");
             membershipUsedEl.classList.add("d-none");
             membershipContainsEl.classList.add("d-none");
             membershipProgressEl.classList.add("d-none");
+            modalCurrentPlan.innerText = "User current plan is Free plan";
+            modalCurrentPlanPrice.innerText = "0";
         } else if (planBenefits) {
+            modalCurrentPlan.innerText = "User current plan is Premium plan";
+            modalCurrentPlanPrice.innerText = "80.000";
             planBenefits.classList.remove("d-none");
         }
         // Membership Info
@@ -317,3 +323,59 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 })();
 
+(function () {
+    const upgradeForm = document.getElementById('upgradePlanForm');
+
+    if (upgradeForm) {
+        upgradeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const parts = window.location.pathname.split('/').filter(p => p);
+            const userId = parts[parts.length - 1];
+            const plan = document.getElementById('choosePlan').value;
+
+            if (plan === "Choose Plan") {
+                alert("Please select a plan to upgrade.");
+                return;
+            }
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append("plan", plan);
+
+                const res = await fetch(`/v1/api/users/upgrade-plan/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    credentials: 'include',
+                    body: formData.toString()
+                });
+
+                if (!res.ok) throw new Error('Failed to upgrade membership');
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Membership upgraded successfully!',
+                    customClass: {
+                        confirmButton: 'btn btn-success waves-effect'
+                    }
+                }).then(() => {
+                    window.location.reload();
+                });
+
+            } catch (err) {
+                console.error('❌ Upgrade failed:', err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to upgrade membership.',
+                    customClass: {
+                        confirmButton: 'btn btn-danger waves-effect'
+                    }
+                });
+            }
+        });
+    }
+})();

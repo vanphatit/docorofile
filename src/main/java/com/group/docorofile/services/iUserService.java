@@ -28,6 +28,10 @@ public interface iUserService {
 
     Page<UserEntity> getAllUsers(Pageable pageable);
 
+    boolean checkMembership(UUID userId);
+
+    boolean upgradeMembership(UUID userId, String plan);
+
     boolean existsByEmail(String email);
 
     boolean existsByUserIdAndIsActive(UUID userId, boolean isActive);
@@ -36,9 +40,13 @@ public interface iUserService {
 
     UserEntity updateUserByID(UUID id, UpdateUserRequest request);
 
+    boolean changePasswordById(UUID id, String newPassword);
+
     void deactivateUser(UUID id);
 
     boolean courseFollowedByMember(UUID memberId);
+
+    void activateUser(UUID id);
 
     int getTotalUsers();
 
