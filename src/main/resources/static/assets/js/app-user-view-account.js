@@ -7,19 +7,32 @@ $(function () {
   // Variable declaration for table
   var dt_invoice_table = $('.datatable-invoice');
 
+  const parts = window.location.pathname.split('/').filter(p => p);
+  const userId = parts[parts.length - 1];
+
   // Invoice datatable
   // --------------------------------------------------------------------
   if (dt_invoice_table.length) {
     var dt_invoice = dt_invoice_table.DataTable({
-      ajax: assetsPath + 'json/invoice-list.json', // JSON file to add data
+      processing: true,
+      serverSide: true,
+      ajax: {
+        url: `/v1/api/member/payment/user/${userId}`,
+        data: function (d) {
+          // DataTables sẽ tự động gửi start, length, draw
+          return d;
+        },
+        dataSrc: function (json) {
+          return json.data;
+        }
+      }, // JSON file to add data
       columns: [
         // columns according to JSON
         { data: '' },
-        { data: 'invoice_id' },
-        { data: 'invoice_status' },
-        { data: 'total' },
-        { data: 'issued_date' },
-        { data: 'action' }
+        { data: 'id' },
+        { data: 'status' },
+        { data: 'amount' },
+        { data: 'paymentDate' }
       ],
       columnDefs: [
         {
@@ -35,9 +48,9 @@ $(function () {
           // Invoice ID
           targets: 1,
           render: function (data, type, full, meta) {
-            var $invoice_id = full['invoice_id'];
+            var $id = full['id'];
             // Creates full output for row
-            var $row_output = '<a href="app-invoice-preview.html"><span>#' + $invoice_id + '</span></a>';
+            var $row_output = '<a href=""><span>#</span></a>';
             return $row_output;
           }
         },
@@ -45,16 +58,16 @@ $(function () {
           // Invoice status
           targets: 2,
           render: function (data, type, full, meta) {
-            var $invoice_status = full['invoice_status'],
+            var $status = full['status'],
               $due_date = full['due_date'],
               $balance = full['balance'];
             var roleBadgeObj = {
               Sent: '<span class="avatar avatar-sm"> <span class="avatar-initial rounded-circle bg-label-secondary"><i class="ri-mail-line ri-16px"></i></span></span>',
               Draft:
                 '<span class="avatar avatar-sm"> <span class="avatar-initial rounded-circle bg-label-primary"><i class="ri-folder-line ri-16px"></i></span></span>',
-              'Past Due':
+              'FAILED':
                 '<span class="avatar avatar-sm"> <span class="avatar-initial rounded-circle bg-label-danger"><i class="ri-alert-line ri-16px"></i></span></span>',
-              'Partial Payment':
+              'SUCCESS':
                 '<span class="avatar avatar-sm"> <span class="avatar-initial rounded-circle bg-label-success"><i class="ri-check-line ri-16px"></i></span></span>',
               Paid: '<span class="avatar avatar-sm"> <span class="avatar-initial rounded-circle bg-label-warning"><i class="ri-pie-chart-line ri-16px"></i></span></span>',
               Downloaded:
@@ -62,30 +75,26 @@ $(function () {
             };
             return (
               "<div class='d-inline-flex' data-bs-toggle='tooltip' data-bs-html='true' title='<span>" +
-              $invoice_status +
-              '<br> <span class="fw-medium">Balance:</span> ' +
-              $balance +
-              '<br> <span class="fw-medium">Due Date:</span> ' +
-              $due_date +
+              $status +
               "</span>'>" +
-              roleBadgeObj[$invoice_status] +
+              roleBadgeObj[$status] +
               '</div>'
             );
           }
         },
         {
-          // Total Invoice Amount
+          // amount Invoice Amount
           targets: 3,
           render: function (data, type, full, meta) {
-            var $total = full['total'];
-            return '$' + $total;
+            var $amount = full['amount'];
+            return $amount + 'VND';
           }
         },
         {
           // Due Date
           targets: 4,
           render: function (data, type, full, meta) {
-            var $due_date = new Date(full['issued_date']);
+            var $due_date = new Date(full['paymentDate']);
             // Creates full output for row
             var $row_output =
               '<span class="d-none">' +
@@ -94,26 +103,6 @@ $(function () {
               moment($due_date).format('DD MMM YYYY');
             $due_date;
             return $row_output;
-          }
-        },
-        {
-          // Action
-          targets: -1,
-          title: 'Action',
-          orderable: false,
-          render: function (data, type, full, meta) {
-            return (
-              '<div class="d-flex align-items-center">' +
-              '<a href="javascript:;" class="btn btn-sm btn-icon btn-text-secondary rounded-pill waves-effect" data-bs-toggle="tooltip" title="Delete Invoice"><i class="ri-delete-bin-7-line ri-20px"></i></a>' +
-              '<a href="app-invoice-preview.html" class="btn btn-sm btn-icon btn-text-secondary rounded-pill waves-effect" data-bs-toggle="tooltip" title="Preview"><i class="ri-eye-line ri-20px"></i></a>' +
-              '<button class="btn btn-sm btn-icon btn-text-secondary rounded-pill waves-effect dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-line ri-20px"></i></button>' +
-              '<div class="dropdown-menu dropdown-menu-end m-0">' +
-              '<a href="javascript:;" class="dropdown-item"><i class="ri-download-line me-2"></i><span>Download</span></a>' +
-              '<a href="javascript:;" class="dropdown-item"><i class="ri-pencil-line me-2"></i><span>Edit</span></a>' +
-              '<a href="javascript:;" class="dropdown-item delete-record"><i class="ri-stack-line me-2"></i><span>Duplicate</span></a>' +
-              '</div>' +
-              '</div>'
-            );
           }
         }
       ],
