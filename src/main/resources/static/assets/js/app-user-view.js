@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (userInfoActive) {
       userInfoActive.className = data.status === "Active"
           ? "badge bg-label-success rounded-pill"
-          : "badge bg-label- rounded-pill";
+          : "badge bg-label-warning rounded-pill";
     }
 
     // Ẩn/hiện thông tin riêng cho từng role
@@ -81,6 +81,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Created, Updated date
     setText('user-info-createdOn', data.createdOn ? new Date(data.createdOn).toLocaleString() : '-');
     setText('user-info-updatedOn', data.modifiedOn ? new Date(data.modifiedOn).toLocaleString() : '-');
+
+    const suspendUser = document.querySelector('.suspend-user');
+    if (suspendUser) {
+      suspendUser.innerText = data.status === "Active" ? "Deactivate User" : "Activate User";
+    }
 
     // Plan
     const planBadge = document.getElementById('plan-badge');
@@ -141,84 +146,76 @@ document.addEventListener('DOMContentLoaded', async () => {
 (function () {
   const suspendUser = document.querySelector('.suspend-user');
 
-  // Suspend User javascript
   if (suspendUser) {
-    suspendUser.onclick = function () {
+    suspendUser.onclick = async function () {
+      const parts = window.location.pathname.split('/').filter(p => p);
+      const userId = parts[parts.length - 1];
+      const userStatusEl = document.getElementById('user-info-active');
+      const currentStatus = userStatusEl ? userStatusEl.innerText : null;
+
+      if (!userId || !currentStatus) {
+        console.error('User ID or Status not found');
+        return;
+      }
+
+      const isCurrentlyActive = currentStatus.trim() === "Active";
+
+      const action = isCurrentlyActive ? "Deactivate" : "Activate";
+      const confirmButtonText = isCurrentlyActive ? "Yes, Deactivate user!" : "Yes, Activate user!";
+      const successTitle = isCurrentlyActive ? "Suspended!" : "Activated!";
+      const successMessage = isCurrentlyActive ? "User has been suspended." : "User has been activated.";
+      const apiUrl = isCurrentlyActive
+          ? `/v1/api/users/${userId}`  // DELETE
+          : `/v1/api/users/activate/${userId}`;  // POST
+
+      const apiMethod = isCurrentlyActive ? "DELETE" : "POST";
+
       Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert user!",
+        title: `Are you sure you want to ${action} this user?`,
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonText: 'Yes, Suspend user!',
+        confirmButtonText: confirmButtonText,
         customClass: {
           confirmButton: 'btn btn-primary me-2 waves-effect waves-light',
           cancelButton: 'btn btn-outline-secondary waves-effect'
         },
         buttonsStyling: false
-      }).then(function (result) {
-        if (result.value) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Suspended!',
-            text: 'User has been suspended.',
-            customClass: {
-              confirmButton: 'btn btn-success waves-effect'
-            }
-          });
-        } else if (result.dismiss === Swal.DismissReason.cancel) {
-          Swal.fire({
-            title: 'Cancelled',
-            text: 'Cancelled Suspension :)',
-            icon: 'error',
-            customClass: {
-              confirmButton: 'btn btn-success waves-effect'
-            }
-          });
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const res = await fetch(apiUrl, {
+              method: apiMethod,
+              credentials: 'include'
+            });
+
+            if (!res.ok) throw new Error('Failed to update user status');
+
+            Swal.fire({
+              icon: 'success',
+              title: successTitle,
+              text: successMessage,
+              customClass: {
+                confirmButton: 'btn btn-success waves-effect'
+              }
+            }).then(() => {
+              // Reload page to refresh status
+              window.location.reload();
+            });
+
+          } catch (error) {
+            console.error('❌ Failed to update user:', error);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Failed to update user status.',
+              customClass: {
+                confirmButton: 'btn btn-danger waves-effect'
+              }
+            });
+          }
         }
       });
     };
   }
-
-  //? Billing page have multiple buttons
-  // Cancel Subscription alert
-  const cancelSubscription = document.querySelectorAll('.cancel-subscription');
-
-  // Alert With Functional Confirm Button
-  if (cancelSubscription) {
-    cancelSubscription.forEach(btnCancle => {
-      btnCancle.onclick = function () {
-        Swal.fire({
-          text: 'Are you sure you would like to cancel your subscription?',
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonText: 'Yes',
-          customClass: {
-            confirmButton: 'btn btn-primary me-2 waves-effect waves-light',
-            cancelButton: 'btn btn-outline-secondary waves-effect'
-          },
-          buttonsStyling: false
-        }).then(function (result) {
-          if (result.value) {
-            Swal.fire({
-              icon: 'success',
-              title: 'Unsubscribed!',
-              text: 'Your subscription cancelled successfully.',
-              customClass: {
-                confirmButton: 'btn btn-success waves-effect'
-              }
-            });
-          } else if (result.dismiss === Swal.DismissReason.cancel) {
-            Swal.fire({
-              title: 'Cancelled',
-              text: 'Unsubscription Cancelled!!',
-              icon: 'error',
-              customClass: {
-                confirmButton: 'btn btn-success waves-effect'
-              }
-            });
-          }
-        });
-      };
-    });
-  }
 })();
+

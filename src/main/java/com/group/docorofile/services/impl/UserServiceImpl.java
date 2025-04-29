@@ -195,6 +195,17 @@ public class UserServiceImpl implements iUserService {
         userRepository.save(user);
     }
 
+    public void activateUser(UUID id) {
+        // Soft delete user by setting isActive to false
+        Optional<UserEntity> optUser = userRepository.findById(id);
+        if (!optUser.isPresent()) {
+            throw new NotFoundError("User not found with id: " + id);
+        }
+        UserEntity user = optUser.get();
+        user.setActive(true);
+        userRepository.save(user);
+    }
+
     @Override
     public int getTotalUsers() {
         return (int) userRepository.count();
