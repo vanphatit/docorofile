@@ -9,6 +9,7 @@ import com.group.docorofile.security.JwtTokenUtil;
 import com.group.docorofile.services.iDocumentService;
 import com.group.docorofile.services.iUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -134,15 +135,14 @@ public class DocumentAPIController {
         }
     }
 
-    @PreAuthorize("hasRole('ROLE_MEMBER')")
     @GetMapping("/download/{documentId}")
-    public Object downloadDocument(@PathVariable UUID documentId, @CookieValue(value = "JWT", required = false) String token) {
-        try {
-            UUID memberId = userService.findByEmail(jwtTokenUtil.getUsernameFromToken(token)).get().getUserId();
-            return documentService.downloadDocument(memberId, documentId);
-        } catch (RuntimeException e) {
-            return new ForbiddenError(e.getMessage());
-        }
+    @PreAuthorize("hasRole('ROLE_MEMBER')")
+    public ResponseEntity<Resource> downloadDocument(@PathVariable UUID documentId,
+                                                     @CookieValue(value = "JWT", required = false) String token) {
+        UUID memberId = userService.findByEmail(jwtTokenUtil.getUsernameFromToken(token))
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"))
+                .getUserId();
+        return documentService.downloadDocument(memberId, documentId);
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")

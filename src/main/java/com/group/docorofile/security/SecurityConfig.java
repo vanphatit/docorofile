@@ -39,6 +39,9 @@ public class SecurityConfig {
                                 "/v1/api/auth/**",
                                 "/auth/**",
                                 "/error",
+                                "/documents/**",
+                                "/uploads/documents/**",
+                                "/v1/api/comments/**",
                                 "/v1/api/universities/names").permitAll()
                         .requestMatchers("/").permitAll()
                         .requestMatchers(

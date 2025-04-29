@@ -32,7 +32,7 @@ public class CommentAPIController {
     public Object addComment(@RequestParam UUID documentId,
                              @RequestParam String content,
                              @RequestParam(required = false) UUID parentCommentId,
-                             @CookieValue(value = "jwtToken", required = false) String token) {
+                             @CookieValue(value = "JWT", required = false) String token) {
         if (token == null || token.isEmpty()) {
             return new UnauthorizedError("Bạn chưa đăng nhập!");
         }
@@ -54,7 +54,7 @@ public class CommentAPIController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/delete/{commentId}")
     public Object deleteComment(@PathVariable UUID commentId,
-                                @CookieValue(value = "jwtToken", required = false) String token) {
+                                @CookieValue(value = "JWT", required = false) String token) {
         if (token == null || token.isEmpty()) {
             return new UnauthorizedError("Bạn chưa đăng nhập!");
         }
@@ -73,7 +73,7 @@ public class CommentAPIController {
         }
     }
 
-    @GetMapping("/getComments/{documentId}")
+    @GetMapping("/{documentId}")
     public Object getComments(@PathVariable UUID documentId) {
         try {
             return new SuccessResponse("Lấy danh sách comment thành công!", 200, commentService.getCommentsByDocumentTree(documentId), LocalDateTime.now());

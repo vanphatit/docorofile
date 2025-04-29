@@ -2,7 +2,10 @@
 
 <html lang="en" class="light-style layout-navbar-fixed layout-menu-fixed layout-compact" dir="ltr"
       data-theme="theme-default" data-assets-path="../../assets/" data-template="vertical-menu-template"
-      data-style="light">
+      data-style="light"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"
+>
 
 <head>
     <meta charset="utf-8" />
@@ -60,11 +63,17 @@
             margin-bottom: 24px;
             max-width: 100%;
         }
+
+        .sticky-sidebar {
+            position: sticky;
+            top: 80px;
+            align-self: flex-start;
+        }
     </style>
 </head>
 
 <body>
-<div th:attr="data-id=${id}" id="documentInfo" class="container-xxl flex-grow-1 container-p-y">
+<div th:attr="data-id=${id}" layout:fragment="content" id="documentInfo" class="container-xxl flex-grow-1 container-p-y">
     <div class="row">
         <!-- Cột trái: Thông tin tài liệu -->
         <div class="col-lg-4 mb-4">
@@ -92,22 +101,11 @@
                             <div id="documentView">0</div>
                         </div>
                         <div class="text-center">
-                            <button class="btn btn-primary mt-2" th:onclick="">
+                            <button class="btn btn-primary mt-2" id="downloadBtn">
                                 <span>Download</span>
                             </button>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Cột phải: Trình đọc PDF + comment -->
-        <div class="col-lg-8">
-            <div class="card">
-                <div class="card-body">
-                    <!-- Trình đọc file PDF -->
-                    <h5 class="mb-3">Tài liệu PDF</h5>
-                    <div id="pdf-container"></div>
                 </div>
             </div>
             <div class="card mt-4">
@@ -127,144 +125,32 @@
                 </div>
             </div>
         </div>
+
+        <!-- Cột phải: Trình đọc PDF + comment -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <!-- Trình đọc file PDF -->
+                    <h5 class="mb-3">Tài liệu PDF</h5>
+                    <div id="pdf-container">
+                        <iframe id="pdf-frame" src="" width="100%" height="600px" style="border: none;"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <!-- / Content -->
 
     <div class="content-backdrop fade"></div>
 </div>
 <!-- Content wrapper -->
-</div>
-<!-- / Layout page -->
-</div>
 
 <!-- Overlay -->
 <div class="layout-overlay layout-menu-toggle"></div>
 
 <!-- Drag Target Area To SlideIn Menu On Small Screens -->
 <div class="drag-target"></div>
-</div>
 <!-- / Layout wrapper -->
-<script th:src="@{/assets/pdfjs/pdf.min.js}"></script>
-<script>
-    const docElem = document.getElementById('documentInfo');
-    const documentId = docElem.getAttribute('data-id');
-
-    // === Load Document Info ===
-    fetch(`/api/documents/${documentId}`)
-        .then(res => res.json())
-        .then(res => {
-            const doc = res.data;
-            document.getElementById("documentTitle").innerText = doc.title;
-            document.getElementById("documentAuthor").innerText = doc.authorName;
-            document.getElementById("documentCourse").innerText = doc.courseName;
-            document.getElementById("documentUniv").innerText = doc.universityName;
-            document.getElementById("documentUpload").innerText = new Date(doc.uploadedDate).toLocaleDateString();
-            document.getElementById("documentLikes").innerText = doc.likes;
-            document.getElementById("documentDislikes").innerText = doc.dislikes;
-            document.getElementById("documentView").innerText = doc.views;
-
-            loadPDF(doc.fileUrl);
-        });
-
-    // === Load PDF ===
-    function loadPDF(fileUrl) {
-        const container = document.getElementById('pdf-container');
-        pdfjsLib.GlobalWorkerOptions.workerSrc = '/assets/pdfjs/pdf.worker.min.js';
-        pdfjsLib.getDocument('/uploads/' + fileUrl).promise.then(pdf => {
-            for (let i = 1; i <= pdf.numPages; i++) {
-                pdf.getPage(i).then(page => {
-                    const scale = 1.5;
-                    const viewport = page.getViewport({ scale });
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
-                    page.render({ canvasContext: ctx, viewport });
-                    canvas.classList.add('pdf-page');
-                    container.appendChild(canvas);
-                });
-            }
-        });
-    }
-
-    // === Load Comments ===
-    const commentContainer = document.getElementById('commentList');
-    fetch(`/api/comments/getComments/${documentId}`)
-        .then(res => res.json())
-        .then(res => (res.data || []).forEach(renderComment));
-
-    function renderComment(comment) {
-        const div = document.createElement('div');
-        div.className = "d-flex align-items-start mb-4";
-        div.innerHTML = `
-            <div class="me-3"><img src="/assets/img/avatars/1.png" class="rounded-circle" width="40"></div>
-            <div>
-                <strong>${comment.authorName}</strong> <small>${formatDate(comment.createdOn)}</small>
-                <p>${comment.content}</p>
-                <a href="#commentInput" onclick="replyToComment('${comment.authorName}', '${comment.commentId}')">Phản hồi</a>
-                ${renderReplies(comment.replies)}
-                <hr/>
-            </div>
-        `;
-        commentContainer.appendChild(div);
-    }
-
-    function renderReplies(replies) {
-        return (replies || []).map(reply => `
-            <div class="ms-4 mt-2">
-                <strong>${reply.authorName}</strong> <small>${formatDate(reply.createdOn)}</small>
-                <p>${reply.content}</p>
-                <a href="#commentInput" onclick="replyToComment('${reply.authorName}', '${reply.commentId}')">Phản hồi</a>
-            </div>
-        `).join('');
-    }
-
-    function formatDate(dateStr) {
-        const d = new Date(dateStr);
-        return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
-    }
-
-    // === Gửi bình luận ===
-    document.getElementById('commentForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        const content = document.getElementById('commentInput').value;
-        const parentCommentId = document.getElementById('parentCommentId').value || null;
-
-        if (!content.trim()) return alert("Bình luận không được để trống!");
-
-        fetch('/api/comments/add', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-                content: content,
-                documentId: documentId,
-                parentCommentId: parentCommentId
-            })
-        })
-            .then(res => res.json())
-            .then(res => {
-                if (res.code === 200) {
-                    alert("Bình luận thành công!");
-                    document.getElementById('commentInput').value = '';
-                    document.getElementById('parentCommentId').value = '';
-                    location.reload();
-                } else {
-                    alert("Lỗi: " + res.message);
-                }
-            })
-            .catch(() => alert("Không thể gửi bình luận!"));
-    });
-
-    function replyToComment(name, commentId) {
-        const input = document.getElementById('commentInput');
-        const hidden = document.getElementById('parentCommentId');
-        input.value = `@${name}: `;
-        hidden.value = commentId;
-        input.focus();
-        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-</script>
 
 <!-- Core JS -->
 <script th:src="@{/assets/vendor/libs/jquery/jquery.js}"></script>

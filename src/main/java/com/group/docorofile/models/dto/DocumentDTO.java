@@ -20,11 +20,13 @@ public class DocumentDTO {
     private String title;
     private String description;
     private LocalDateTime uploadedDate;
-    private MemberEntity author;
-    private CourseEntity course;
-    private UniversityEntity university;
-    private List<CommentEntity> comments;
+    private String authorName;
+    private String memberShip;
+    private String courseName;
+    private String universityName;
+    private List<CommentDTO> comments;
     private String coverImageUrl;
+    private String fileUrl;
     private int viewCount;
     private int likes;
     private int dislikes;

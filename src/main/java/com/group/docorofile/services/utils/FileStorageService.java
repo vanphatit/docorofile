@@ -1,5 +1,6 @@
 package com.group.docorofile.services.utils;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,11 +13,34 @@ import java.util.UUID;
 @Service
 public class FileStorageService {
 
-    @Value("${document.upload.dir}") // Lấy từ application.properties
+    @Value("${document.upload.dir}")
     private String uploadDir;
+
+    @Value("${document.access.url}")
+    private String accessUrl;
 
     // Kiểm tra định dạng file hợp lệ
     private static final String[] ALLOWED_FILE_TYPES = {"pdf", "docx", "pptx", "txt", "zip"};
+
+    @PostConstruct
+    public void initUploadDir() {
+        // Nếu đường dẫn là tương đối, nối với thư mục gốc project thật
+        if (!Paths.get(uploadDir).isAbsolute()) {
+            String projectDir = System.getProperty("user.dir");
+            uploadDir = Paths.get(projectDir, uploadDir)
+                    .toAbsolutePath()
+                    .normalize()
+                    .toString();
+        }
+
+        // Tạo thư mục nếu chưa có
+        try {
+            Files.createDirectories(Paths.get(uploadDir));
+            System.out.println("Thư mục upload đã được tạo (nếu chưa có): " + uploadDir);
+        } catch (IOException e) {
+            throw new RuntimeException("Không thể tạo thư mục upload: " + uploadDir, e);
+        }
+    }
 
     private boolean isValidFileType(String filename) {
         String extension = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
@@ -37,22 +61,22 @@ public class FileStorageService {
         // Tạo tên file mới để tránh trùng
         String fileExtension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
         String filename = UUID.randomUUID() + fileExtension;
-        String filePath = uploadDir + filename;
+        Path targetPath = Paths.get(uploadDir, filename);
 
         // Tạo thư mục nếu chưa có
-        Files.createDirectories(Paths.get(uploadDir));
+        Files.createDirectories(targetPath.getParent());
 
         // Lưu file vào thư mục
         try {
-            file.transferTo(new File(filePath));
+            file.transferTo(targetPath.toFile());
         } catch (IOException e) {
-            System.err.println("❌ Lỗi khi ghi file: " + e.getMessage());
-            e.printStackTrace(); // in chi tiết ra log
+            System.err.println("Lỗi khi ghi file: " + e.getMessage());
+            e.printStackTrace();
             throw new IOException("Lỗi khi lưu tài liệu! Vui lòng thử lại.");
         }
 
         // Trả về đường dẫn file
-        return uploadDir + filename;
+        return accessUrl + filename;
     }
 
     // Lấy file từ đường dẫn

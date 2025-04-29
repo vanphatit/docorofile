@@ -7,6 +7,7 @@ import com.group.docorofile.models.dto.AdminDocumentDTO;
 import com.group.docorofile.models.dto.UserDocumentDTO;
 import com.group.docorofile.models.mappers.DocumentMapper;
 import com.group.docorofile.repositories.*;
+import com.group.docorofile.response.BadRequestError;
 import com.group.docorofile.response.InternalServerError;
 import com.group.docorofile.response.NotFoundError;
 import com.group.docorofile.response.UnauthorizedError;
@@ -14,6 +15,7 @@ import com.group.docorofile.services.iDocumentService;
 import com.group.docorofile.services.specifications.DocumentSpecification;
 import com.group.docorofile.services.utils.FileStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.jpa.domain.Specification;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -51,6 +54,9 @@ public class DocumentServiceImpl implements iDocumentService {
 
     @Autowired
     private UniversityRepository universityRepository;
+
+    @Value("${document.upload.dir}")
+    private String uploadDir;
 
     @Override
     public DocumentEntity createDocument(DocumentEntity document) {
@@ -283,7 +289,7 @@ public class DocumentServiceImpl implements iDocumentService {
 
         // Nếu người dùng là Member thì kiểm tra số lượt tải
         if (member.getMembership().getLevel() == EMembershipLevel.FREE && member.getDownloadLimit() <= 0) {
-            return ResponseEntity.badRequest().body(null);
+            throw new BadRequestError("Bạn đã hết lượt tải tài liệu. Vui lòng nâng cấp tài khoản.");
         }
 
         // Nếu là Member, trừ đi 1 lượt tải
@@ -312,17 +318,24 @@ public class DocumentServiceImpl implements iDocumentService {
         }
 
         String filePathStr = document.getFileUrl();
-        Path filePath = Paths.get(filePathStr);
+        String relativePath = filePathStr.replaceFirst("^.*?/uploads/documents/", "");
+        Path filePath = Paths.get(uploadDir, relativePath);
         String fileName = filePath.getFileName().toString();
 
         Resource resource;
         try {
-            resource = new UrlResource(filePath.toUri());
-            if (!resource.exists()) {
-                throw new RuntimeException("Tài liệu không tồn tại trong hệ thống.");
+            if (!Files.exists(filePath)) {
+                throw new NotFoundError("Tài liệu không tồn tại trong hệ thống (missing file).");
             }
+
+            resource = new UrlResource(filePath.toUri());
+            if (!resource.exists() || !resource.isReadable()) {
+                throw new NotFoundError("Tài liệu không tồn tại hoặc không thể đọc được.");
+            }
+
         } catch (Exception e) {
-            return ResponseEntity.notFound().build();
+            e.printStackTrace(); //
+            throw new InternalServerError("Không thể load file: " + e.getMessage());
         }
 
         return ResponseEntity.ok()
