@@ -62,7 +62,6 @@ public class NotificationAPIController {
                 .body(new SuccessResponse("Đã gửi thông báo thành công", 201, null, LocalDateTime.now()));
     }
 
-
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_MEMBER')")
     @GetMapping("")
     public ResponseEntity<ResultPaginationDTO> getAllNotifications(Pageable pageable) {
