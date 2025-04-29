@@ -139,28 +139,6 @@
 
         <!-- User Content -->
         <div class="col-xl-6 col-lg-6 col-md-6 order-0 order-md-1">
-            <!-- User Tabs -->
-            <div class="nav-align-top">
-                <ul class="nav nav-pills flex-column flex-md-row mb-6 row-gap-2">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="javascript:void(0);"
-                        ><i class="ri-group-line me-2"></i>Account</a
-                        >
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="app-user-view-security.html"
-                        ><i class="ri-lock-2-line me-2"></i>Security</a
-                        >
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="app-user-view-billing.html"
-                        ><i class="ri-bookmark-line me-2"></i>Billing & Plans</a
-                        >
-                    </li>
-                </ul>
-            </div>
-            <!--/ User Tabs -->
-
             <!-- Activity Timeline
             <div class="card mb-6">
                 <h5 class="card-header">User Activity Timeline</h5>
@@ -260,8 +238,61 @@
             </div>
             /Activity Timeline -->
 
+            <!-- Change Password -->
+            <div id="card-change-password" class="card mb-6">
+                <h5 class="card-header">Change Password</h5>
+                <div class="card-body">
+                    <form id="formChangePassword">
+                        <div class="alert alert-warning alert-dismissible" role="alert">
+                            <h5 class="alert-heading mb-1">Ensure that these requirements are met</h5>
+                            <span>Minimum 8 characters long, uppercase & symbol</span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        <div class="row gx-5">
+                            <div class="mb-3 col-12 col-sm-6 form-password-toggle">
+                                <div class="input-group input-group-merge">
+                                    <div class="form-floating form-floating-outline">
+                                        <input
+                                                class="form-control"
+                                                type="password"
+                                                id="newPassword"
+                                                name="newPassword"
+                                                placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
+                                        <label for="newPassword">New Password</label>
+                                    </div>
+                                    <span class="input-group-text cursor-pointer text-heading"
+                                    ><i class="ri-eye-off-line"></i
+                                    ></span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3 col-12 col-sm-6 form-password-toggle">
+                                <div class="input-group input-group-merge">
+                                    <div class="form-floating form-floating-outline">
+                                        <input
+                                                class="form-control"
+                                                type="password"
+                                                name="confirmPassword"
+                                                id="confirmPassword"
+                                                placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
+                                        <label for="confirmPassword">Confirm New Password</label>
+                                    </div>
+                                    <span class="input-group-text cursor-pointer text-heading"
+                                    ><i class="ri-eye-off-line"></i
+                                    ></span>
+                                </div>
+                            </div>
+                            <div>
+                                <button id="change-password-submit" type="submit" class="btn btn-primary me-2">Change Password</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!--/ Change Password -->
+
             <!-- Invoice table -->
-            <div class="card">
+            <div id="card-invoice" class="card">
                 <div class="table-responsive mb-4">
                     <table class="table datatable-invoice">
                         <thead>

@@ -150,7 +150,6 @@ public class UserServiceImpl implements iUserService {
         return true;
     }
 
-
     @Override
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
@@ -181,6 +180,23 @@ public class UserServiceImpl implements iUserService {
 
         getUpdateStrategy(user).update(user, request);
         return userRepository.save(user);
+    }
+
+    public boolean changePasswordById(UUID id, String newPassword) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundError("User not found with id: " + id));
+
+        if (newPassword.length() < 6) {
+            throw new BadRequestError("Password must be at least 6 characters long");
+        }
+
+        if (newPassword.equals(user.getPassword())) {
+            throw new BadRequestError("New password cannot be the same as the old password");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        return true;
     }
 
     @Override
