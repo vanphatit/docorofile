@@ -43,8 +43,12 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     <link rel="stylesheet" th:href="@{/assets/vendor/libs/datatables-checkboxes-jquery/datatables.checkboxes.css}" />
     <link rel="stylesheet" th:href="@{/assets/vendor/libs/select2/select2.css}" />
     <link rel="stylesheet" th:href="@{/assets/vendor/libs/@form-validation/form-validation.css}" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/animate-css/animate.css}" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/sweetalert2/sweetalert2.css}" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/tagify/tagify.css}" />
 
     <!-- Page CSS -->
+    <link rel="stylesheet" th:href="@{/assets/vendor/css/pages/page-user-view.css}" />
     <link rel="stylesheet" th:href="@{/assets/vendor/css/pages/app-chat.css}" />
     <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
 
@@ -1265,6 +1269,8 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
             document.getElementById('fullName').innerText = result.data.name || 'Người dùng';
             document.getElementById('membershipName').innerText = result.data.membershipName || 'Thành viên';
 
+
+
             fetch("/v1/api/users/stats", {
                 method: 'GET',
                 headers: {
@@ -1316,6 +1322,16 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
                 `;
             }
         }
+
+        const form = document.getElementById("addNewUserForm");
+
+        if (form) {
+            form.addEventListener("submit", async function (e) {
+                e.preventDefault(); // ❗ Ngăn reload trang
+
+
+            })
+        }
     });
 </script>
 
@@ -1342,11 +1358,17 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 <script th:src="@{/assets/vendor/libs/@form-validation/auto-focus.js}"></script>
 <script th:src="@{/assets/vendor/libs/cleavejs/cleave.js}"></script>
 <script th:src="@{/assets/vendor/libs/cleavejs/cleave-phone.js}"></script>
+<script th:src="@{/assets/vendor/libs/sweetalert2/sweetalert2.js}"></script>
+<script th:src="@{/assets/vendor/libs/tagify/tagify.js}"></script>
+
 <!-- Main JS -->
 <script th:src="@{/assets/js/main.js}"></script>
 
 <!-- Page JS -->
 <script th:src="@{/assets/js/app-user-list.js}"></script>
+<script th:src="@{/assets/js/modal-edit-user.js}"></script>
+<script th:src="@{/assets/js/app-user-view.js}"></script>
+<script th:src="@{/assets/js/app-user-view-account.js}"></script>
 
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function () {

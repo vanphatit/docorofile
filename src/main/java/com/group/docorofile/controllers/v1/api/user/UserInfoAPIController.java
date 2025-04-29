@@ -4,6 +4,7 @@ import com.group.docorofile.entities.AdminEntity;
 import com.group.docorofile.entities.MemberEntity;
 import com.group.docorofile.entities.ModeratorEntity;
 import com.group.docorofile.models.dto.DataTableResponse;
+import com.group.docorofile.models.dto.UserDetailDTO;
 import com.group.docorofile.models.dto.UserInfoDTO;
 import com.group.docorofile.models.users.CreateUserRequest;
 import com.group.docorofile.entities.UserEntity;
@@ -58,9 +59,22 @@ public class UserInfoAPIController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<SuccessResponse> getUser(@PathVariable UUID id) {
-        UserEntity user = userService.getUserById(id)
-                .orElseThrow(() -> new NotFoundError("User not found"));
+        UserInfoDTO user = userService.getUserInfoById(id);
+        if( user == null) {
+            throw new NotFoundError("User not found");
+        }
         SuccessResponse response = new SuccessResponse("User retrieved successfully", HttpStatus.OK.value(), user, LocalDateTime.now());
+        return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/user-detail/{userId}")
+    public ResponseEntity<SuccessResponse> getUserDetail(@PathVariable UUID userId) {
+        UserDetailDTO userInfo = userService.getUserDetailById(userId);
+        if( userInfo == null) {
+            throw new NotFoundError("User not found");
+        }
+        SuccessResponse response = new SuccessResponse("User retrieved successfully", HttpStatus.OK.value(), userInfo, LocalDateTime.now());
         return ResponseEntity.ok(response);
     }
 
@@ -124,11 +138,20 @@ public class UserInfoAPIController {
     // Huỷ kích hoạt user
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<SuccessResponse> deactivateUser(@PathVariable UUID id) {
-        UserEntity user = userService.getUserById(id)
-                .orElseThrow(() -> new NotFoundError("User not found"));
-        userService.deactivateUser(id);
-        SuccessResponse response = new SuccessResponse("User deleted successfully", HttpStatus.OK.value(), null, LocalDateTime.now());
+    public ResponseEntity<SuccessResponse> deactivateUser(@PathVariable String id) {
+        UUID userId = UUID.fromString(id);
+        userService.deactivateUser(userId);
+        SuccessResponse response = new SuccessResponse("User deactivated successfully", HttpStatus.OK.value(), null, LocalDateTime.now());
+        return ResponseEntity.ok(response);
+    }
+
+    // Kích hoạt user
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping("/activate/{id}")
+    public ResponseEntity<SuccessResponse> activateUser(@PathVariable String id) {
+        UUID userId = UUID.fromString(id);
+        userService.activateUser(userId);
+        SuccessResponse response = new SuccessResponse("User deactivated successfully", HttpStatus.OK.value(), null, LocalDateTime.now());
         return ResponseEntity.ok(response);
     }
 
@@ -143,4 +166,13 @@ public class UserInfoAPIController {
         SuccessResponse response = new SuccessResponse("User statistics retrieved successfully", HttpStatus.OK.value(), stats, LocalDateTime.now());
         return ResponseEntity.ok(response);
     }
+
+    @PreAuthorize("hasAnyRole('ROLE_MEMBER', 'ROLE_ADMIN')")
+    @PostMapping("/checkMembership/{userId}")
+    public ResponseEntity<SuccessResponse> checkAndCreateMembership(@PathVariable UUID userId) {
+        boolean result = userService.checkMembership(userId);
+        SuccessResponse response = new SuccessResponse("Checked membership successfully", HttpStatus.OK.value(), result, LocalDateTime.now());
+        return ResponseEntity.ok(response);
+    }
+
 }

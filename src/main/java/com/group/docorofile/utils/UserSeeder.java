@@ -443,8 +443,8 @@ public class UserSeeder {
             // ===== MEMBER 13 =====
             MembershipEntity membership13 = MembershipEntity.builder()
                     .level(EMembershipLevel.PREMIUM)
-                    .startDate(LocalDateTime.of(2024, 2, 13, 0, 0))
-                    .endDate(LocalDateTime.of(2025, 2, 13, 0, 0))
+                    .startDate(LocalDateTime.of(2025, 4, 20, 0, 0))
+                    .endDate(LocalDateTime.of(2025, 5, 20, 0, 0))
                     .build();
 
 

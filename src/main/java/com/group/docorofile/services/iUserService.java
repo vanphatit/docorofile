@@ -2,6 +2,8 @@ package com.group.docorofile.services;
 
 
 import com.group.docorofile.entities.UserEntity;
+import com.group.docorofile.models.dto.UserDetailDTO;
+import com.group.docorofile.models.dto.UserInfoDTO;
 import com.group.docorofile.models.users.CreateUserRequest;
 import com.group.docorofile.models.users.UpdateProfileRequest;
 import org.springframework.data.domain.Page;
@@ -19,6 +21,10 @@ public interface iUserService {
 
     Optional<UserEntity> getUserById(UUID id);
 
+    UserInfoDTO getUserInfoById(UUID id);
+
+    UserDetailDTO getUserDetailById(UUID id);
+
     Page<UserEntity> getAllUsers(Pageable pageable);
 
     boolean existsByEmail(String email);
@@ -32,6 +38,14 @@ public interface iUserService {
     void deactivateUser(UUID id);
 
     boolean courseFollowedByMember(UUID memberId);
+
+    int getTotalUsers();
+
+    int getTotalMembers();
+
+    int getInactiveMembers();
+
+    int getTotalMembersWithPlan(String plan);
 
     Optional<UserEntity> findByEmail(String email);
 }

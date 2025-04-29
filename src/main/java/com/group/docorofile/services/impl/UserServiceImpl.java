@@ -2,6 +2,7 @@ package com.group.docorofile.services.impl;
 
 import com.group.docorofile.entities.*;
 import com.group.docorofile.enums.EMembershipLevel;
+import com.group.docorofile.models.dto.UserDetailDTO;
 import com.group.docorofile.models.dto.UserInfoDTO;
 import com.group.docorofile.models.users.CreateUserRequest;
 import com.group.docorofile.models.users.UpdateProfileRequest;
@@ -23,6 +24,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -98,9 +102,54 @@ public class UserServiceImpl implements iUserService {
     }
 
     @Override
+    public UserInfoDTO getUserInfoById(UUID id) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundError("User not found with id: " + id));
+
+        UserInfoDTO dto = new UserInfoDTO();
+        dto = dto.mapToUserInfo(user);
+        return dto;
+    }
+
+    @Override
+    public UserDetailDTO getUserDetailById(UUID id) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundError("User not found with id: " + id));
+        return UserDetailDTO.mapTo(user);
+    }
+
+    @Override
     public Page<UserEntity> getAllUsers(Pageable pageable) {
         return userRepository.findAll(pageable);
     }
+
+    public boolean checkMembership(UUID userId) {
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundError("User not found with id: " + userId));
+
+        if (!(userEntity instanceof MemberEntity member)) {
+            return false;
+        }
+
+        if (member.getMembership() == null) {
+            MembershipEntity membership = new MembershipEntity();
+            membership.setLevel(EMembershipLevel.FREE);
+            membership.setStartDate(LocalDateTime.now());
+            member.setMembership(membership);
+            userRepository.save(member);
+        } else {
+            if( member.getMembership().getEndDate() != null) {
+                if (member.getMembership().getEndDate().isBefore(LocalDateTime.now())) {
+                    member.getMembership().setLevel(EMembershipLevel.FREE);
+                    userRepository.save(member);
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
 
     @Override
     public boolean existsByEmail(String email) {
@@ -146,10 +195,23 @@ public class UserServiceImpl implements iUserService {
         userRepository.save(user);
     }
 
+    public void activateUser(UUID id) {
+        // Soft delete user by setting isActive to false
+        Optional<UserEntity> optUser = userRepository.findById(id);
+        if (!optUser.isPresent()) {
+            throw new NotFoundError("User not found with id: " + id);
+        }
+        UserEntity user = optUser.get();
+        user.setActive(true);
+        userRepository.save(user);
+    }
+
+    @Override
     public int getTotalUsers() {
         return (int) userRepository.count();
     }
 
+    @Override
     public int getTotalMembers() {
         return userRepository.findAll().stream()
                 .filter(user -> user instanceof MemberEntity)
@@ -157,6 +219,7 @@ public class UserServiceImpl implements iUserService {
                 .sum();
     }
 
+    @Override
     public int getInactiveMembers() {
         return userRepository.findAll().stream()
                 .filter(user -> !user.isActive())
@@ -164,6 +227,7 @@ public class UserServiceImpl implements iUserService {
                 .sum();
     }
 
+    @Override
     public int getTotalMembersWithPlan(String plan) {
         return userRepository.findAll().stream()
                 .filter(user -> user instanceof MemberEntity && ((MemberEntity) user).getMembership().getLevel().name().equals(plan) )

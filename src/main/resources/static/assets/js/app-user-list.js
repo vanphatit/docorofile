@@ -1,4 +1,3 @@
-
 'use strict';
 
 $(function () {
@@ -17,11 +16,11 @@ $(function () {
     // Variable declaration for table
     var dt_user_table = $('.datatables-users'),
         select2 = $('.select2'),
-        userView = 'app-user-view-account.html',
+        userView = '/admin/user-detail',
         statusObj = {
-            1: { title: 'Pending', class: 'bg-label-warning' },
-            2: { title: 'Active', class: 'bg-label-success' },
-            3: { title: 'Inactive', class: 'bg-label-secondary' }
+            1: {title: 'Pending', class: 'bg-label-warning'},
+            2: {title: 'Active', class: 'bg-label-success'},
+            3: {title: 'Inactive', class: 'bg-label-secondary'}
         };
 
     if (select2.length) {
@@ -112,7 +111,7 @@ $(function () {
                             var states = ['success', 'danger', 'warning', 'info', 'dark', 'primary', 'secondary'];
                             var $state = states[stateNum],
                                 $name = full['name'],
-                                $initials = $name.match(/\b\w/g) || [];
+                                $initials = $name.match(/\b\w/g) || []; // Extract initials, e.g., "John Doe" => "JD"
                             $initials = (($initials.shift() || '') + ($initials.pop() || '')).toUpperCase();
                             $output = '<span class="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
                         }
@@ -126,7 +125,7 @@ $(function () {
                             '</div>' +
                             '<div class="d-flex flex-column">' +
                             '<a href="' +
-                            userView +
+                            userView + '/' + full['id'] +
                             '" class="text-truncate text-heading"><span class="fw-medium">' +
                             $name +
                             '</span></a>' +
@@ -180,8 +179,8 @@ $(function () {
                         const status = row.status;
                         const statusMap = {
                             Active: 'bg-label-success',
-                            Inactive: 'bg-label-secondary',
-                            Pending: 'bg-label-warning'
+                            Inactive: 'bg-label-warning',
+                            Pending: 'bg-label-secondary'
                         };
                         return `<span class="badge rounded-pill ${statusMap[status] || 'bg-label-secondary'}">${status}</span>`;
                     }
@@ -204,9 +203,10 @@ $(function () {
                     searchable: false,
                     orderable: false,
                     render: function (data, type, full, meta) {
+                        const userId = full['id'];
                         return (
                             '<div class="d-flex align-items-center gap-50">' +
-                            '<a href="javascript:;" class="btn btn-sm btn-icon btn-text-secondary rounded-pill waves-effect delete-record" data-bs-toggle="tooltip" title="Delete Invoice"><i class="ri-delete-bin-7-line ri-20px"></i></a>' +
+                            `<a href="javascript:;" class="btn btn-sm btn-icon btn-text-secondary rounded-pill waves-effect delete-record" data-bs-toggle="tooltip" data-user-id="${userId}" title="Deactivate"><i class="ri-delete-bin-7-line ri-20px"></i></a>` +
                             '<a href="' +
                             userView +
                             '" class="btn btn-sm btn-icon btn-text-secondary rounded-pill waves-effect" data-bs-toggle="tooltip" title="Preview"><i class="ri-eye-line ri-20px"></i></a>' +
@@ -499,26 +499,105 @@ $(function () {
         );
     }
 
-    // Delete Record
-    $('.datatables-users tbody').on('click', '.delete-record', function () {
-        dt_user.row($(this).parents('tr')).remove().draw();
-    });
+    // // Delete Record
+    // $('.datatables-users tbody').on('click', '.delete-record', function () {
+    //     dt_user.row($(this).parents('tr')).remove().draw();
+    // });
 });
 
-// Validation & Phone mask
-(function () {
-    const phoneMaskList = document.querySelectorAll('.phone-mask'),
-        addNewUserForm = document.getElementById('addNewUserForm');
+$(document).on('click', '.delete-record', function () {
+    const userId = $(this).data('user-id');
 
-    // Phone Number
-    if (phoneMaskList) {
-        phoneMaskList.forEach(function (phoneMask) {
-            new Cleave(phoneMask, {
-                phone: true,
-                phoneRegionCode: 'US'
+    if (confirm('Are you sure you want to deactivate this user?')) {
+        fetch(`/v1/api/users/${userId}`, {
+            method: 'DELETE',
+            credentials: 'include', // Include cookie (JWT token)
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => {
+                if (!res.ok) throw new Error('Delete failed');
+                return res.json();
+            })
+            .then(result => {
+                console.log('✅ User deactivated:', result);
+                // Optionally reload table or remove row
+                $('.datatables-users').DataTable().ajax.reload(); // if using AJAX source
+                const toastEl = document.getElementById('bootstrapToast');
+                document.getElementById('toastTitle').innerText = 'Success';
+                document.getElementById('toastMessage').innerText = result.message || 'User deactivated';
+                new bootstrap.Toast(toastEl).show();
+
+            })
+            .catch(err => {
+                console.error('❌ Error deleting user:', err);
+                const toastEl = document.getElementById('bootstrapToast');
+                document.getElementById('toastTitle').innerText = 'Error';
+                document.getElementById('toastMessage').innerText = err.message || 'User not deactivated';
+                new bootstrap.Toast(toastEl).show();
             });
-        });
     }
+});
+// Add New User
+$(document).on('click', '#add-user-submit', async function () {
+    const fullName = document.getElementById("add-user-fullname").value;
+    const email = document.getElementById("add-user-email").value;
+    const userType = document.getElementById("user-role").value.toUpperCase(); // "ADMIN" or "MODERATOR"
+    const password = document.getElementById("add-user-password").value;
+    const passwordConfirm = document.getElementById("add-user-password-confirm").value;
+
+    // Validate password confirmation
+    if (password !== passwordConfirm) {
+        alert("❌ Passwords do not match");
+        return;
+    }
+
+    const requestBody = {
+        fullName,
+        email,
+        userType,
+        password
+    };
+
+    // Add moderator-specific field if needed
+    if (userType === "MODERATOR") {
+        requestBody.isReportManage = true;
+    }
+
+    try {
+        const res = await fetch("/v1/api/users/newManager", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify(requestBody)
+        });
+
+        if (!res.ok) throw new Error("Create failed");
+
+        const result = await res.json();
+
+        // ✅ Optionally show Bootstrap Toast
+        const toast = new bootstrap.Toast(document.getElementById("bootstrapToast"));
+        document.getElementById("toastTitle").innerText = "Success";
+        document.getElementById("toastMessage").innerText = result.message || "User created successfully";
+        toast.show();
+
+        // Reset form or close modal
+        document.getElementById("addNewUserForm").reset();
+        $('.datatables-users').DataTable().ajax.reload(); // if using AJAX source
+
+    } catch (err) {
+        alert("❌ Error creating user: " + (err.message || "User not created"));
+    }
+})
+
+// Validation
+(function () {
+    const addNewUserForm = document.getElementById('addNewUserForm');
+
     // Add New User Form Validation
     const fv = FormValidation.formValidation(addNewUserForm, {
         fields: {
