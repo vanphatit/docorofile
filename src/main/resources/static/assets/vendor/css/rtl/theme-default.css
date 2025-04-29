@@ -418,6 +418,16 @@ button.list-group-item-primary.active {
   color: #fff;
 }
 
+.btn-outline-success {
+  color: #28c76f;
+  border-color: #28c76f;
+}
+.btn-outline-success:hover {
+  background-color: #28c76f;
+  color: #fff;
+}
+
+
 .dropdown-item.waves-effect .waves-ripple {
   background: radial-gradient(rgba(102, 108, 255, 0.2) 0, rgba(102, 108, 255, 0.3) 40%, rgba(102, 108, 255, 0.4) 50%, rgba(102, 108, 255, 0.5) 60%, rgba(255, 255, 255, 0) 70%);
 }
