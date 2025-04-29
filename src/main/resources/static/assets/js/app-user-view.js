@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const suspendUser = document.querySelector('.suspend-user');
     if (suspendUser) {
-      suspendUser.innerText = data.status === "Active" ? "Deactivate User" : "Activate User";
+      suspendUser.innerText = data.status === "Active" ? "Deactivate" : "Activate";
     }
 
     // Plan
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const membershipProgressEl = document.getElementById('userInfo-membershipProgress');
 
     if (planBadge) planBadge.innerText = data.current_plan || "Free";
-    if (planPrice) planPrice.innerText = data.current_plan === "Premium" ? "80.000" : "0";
+    if (planPrice) planPrice.innerText = data.current_plan === "PREMIUM" ? "80.000" : "0";
 
     // Ẩn danh sách quyền lợi nếu là Free
     if (planBenefits && data.current_plan !== "PREMIUM" ) {
