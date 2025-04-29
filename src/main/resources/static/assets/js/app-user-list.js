@@ -16,7 +16,7 @@ $(function () {
     // Variable declaration for table
     var dt_user_table = $('.datatables-users'),
         select2 = $('.select2'),
-        userView = 'app-user-view-account.html',
+        userView = '/admin/user-detail',
         statusObj = {
             1: {title: 'Pending', class: 'bg-label-warning'},
             2: {title: 'Active', class: 'bg-label-success'},
@@ -111,7 +111,7 @@ $(function () {
                             var states = ['success', 'danger', 'warning', 'info', 'dark', 'primary', 'secondary'];
                             var $state = states[stateNum],
                                 $name = full['name'],
-                                $initials = $name.match(/\b\w/g) || [];
+                                $initials = $name.match(/\b\w/g) || []; // Extract initials, e.g., "John Doe" => "JD"
                             $initials = (($initials.shift() || '') + ($initials.pop() || '')).toUpperCase();
                             $output = '<span class="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
                         }
@@ -125,7 +125,7 @@ $(function () {
                             '</div>' +
                             '<div class="d-flex flex-column">' +
                             '<a href="' +
-                            userView +
+                            userView + '/' + full['id'] +
                             '" class="text-truncate text-heading"><span class="fw-medium">' +
                             $name +
                             '</span></a>' +
@@ -179,8 +179,8 @@ $(function () {
                         const status = row.status;
                         const statusMap = {
                             Active: 'bg-label-success',
-                            Inactive: 'bg-label-secondary',
-                            Pending: 'bg-label-warning'
+                            Inactive: 'bg-label-warning',
+                            Pending: 'bg-label-secondary'
                         };
                         return `<span class="badge rounded-pill ${statusMap[status] || 'bg-label-secondary'}">${status}</span>`;
                     }

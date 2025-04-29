@@ -18,4 +18,11 @@ public class UserManageController {
         m.addAttribute("pageTitle","Users | Admin – DoCoroFile");
         return "fragments/users/user-list";
     }
+
+    @GetMapping("/user-detail/{userId}")
+    public String showUserDetailPage(Model m) {
+        m.addAttribute("pageTitle","User Detail | Admin – DoCoroFile");
+        return "fragments/users/user-detail";
+    }
+
 }
