@@ -18,9 +18,9 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     <!-- Fonts -->
     <link rel="preconnect" th:href="@{https://fonts.googleapis.com}" />
     <link rel="preconnect" th:href="@{https://fonts.gstatic.com}" crossorigin />
-    <link
-            th:href="@{https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&ampdisplay=swap}"
-            rel="stylesheet" />
+<!--    <link-->
+<!--            th:href="@{https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&ampdisplay=swap}"-->
+<!--            rel="stylesheet" />-->
 
     <!-- Icons -->
     <link rel="stylesheet" th:href="@{/assets/vendor/fonts/remixicon/remixicon.css}" />
@@ -37,8 +37,16 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     <!-- Vendors CSS -->
     <link rel="stylesheet" th:href="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css}"/>
     <link rel="stylesheet" th:href="@{/assets/vendor/libs/typeahead-js/typeahead.css}" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css}" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css}" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css}" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/datatables-checkboxes-jquery/datatables.checkboxes.css}" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/select2/select2.css}" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/@form-validation/form-validation.css}" />
 
     <!-- Page CSS -->
+    <link rel="stylesheet" th:href="@{/assets/vendor/css/pages/app-chat.css}" />
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
 
     <!-- Helpers -->
     <script th:src="@{/assets/vendor/js/helpers.js}"></script>
@@ -1218,6 +1226,21 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 </div>
 <!-- / Layout wrapper -->
 
+<!-- Bootstrap Toast Wrapper -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+    <div id="bootstrapToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+        <div class="toast-header">
+            <img id="toastIcon" th:src="@{/images/logo.png}" class="rounded me-2" alt="Logo" width="20" height="20">
+            <strong id="toastTitle" class="me-auto">Thông báo</strong>
+            <small id="toastTime">vừa xong</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+            ...
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
         try {
@@ -1242,6 +1265,28 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
             document.getElementById('fullName').innerText = result.data.name || 'Người dùng';
             document.getElementById('membershipName').innerText = result.data.membershipName || 'Thành viên';
 
+            fetch("/v1/api/users/stats", {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include' // ⚠️ QUAN TRỌNG: gửi cookie (JWT) kèm request
+            })
+                .then(response => response.json())
+                .then(res => {
+                    if (res.statusCode === 200 && res.data) {
+                        const stats = res.data;
+                        document.getElementById("total-users").textContent = stats.totalUsers ?? 0;
+                        document.getElementById("premium-users").textContent = stats.totalMembersWithPlan ?? 0;
+                        document.getElementById("total-members").textContent = stats.totalMembers ?? 0;
+                        document.getElementById("inactive-users").textContent = stats.inactiveMembers ?? 0;
+                    } else {
+                        console.warn("Failed to load user stats");
+                    }
+                })
+                .catch(err => {
+                    console.error("Error fetching user stats:", err);
+                });
         } catch (err) {
             console.error('❌ Lỗi khi lấy thông tin người dùng:', err);
 
@@ -1289,9 +1334,48 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 <!-- endbuild -->
 
 <!-- Vendors JS -->
-
+<script th:src="@{/assets/vendor/libs/moment/moment.js}"></script>
+<script th:src="@{/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js}"></script>
+<script th:src="@{/assets/vendor/libs/select2/select2.js}"></script>
+<script th:src="@{/assets/vendor/libs/@form-validation/popular.js}"></script>
+<script th:src="@{/assets/vendor/libs/@form-validation/bootstrap5.js}"></script>
+<script th:src="@{/assets/vendor/libs/@form-validation/auto-focus.js}"></script>
+<script th:src="@{/assets/vendor/libs/cleavejs/cleave.js}"></script>
+<script th:src="@{/assets/vendor/libs/cleavejs/cleave-phone.js}"></script>
 <!-- Main JS -->
 <script th:src="@{/assets/js/main.js}"></script>
+
+<!-- Page JS -->
+<script th:src="@{/assets/js/app-user-list.js}"></script>
+
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        const toastEl = document.getElementById('bootstrapToast');
+        const toastTitle = document.getElementById('toastTitle');
+        const toastMessage = document.getElementById('toastMessage');
+        const toastIcon = document.getElementById('toastIcon');
+        const toastTime = document.getElementById('toastTime');
+
+        let successMessage = /*[[${success}]]*/ null;
+        let errorMessage = /*[[${error}]]*/ null;
+
+        if (successMessage) {
+            toastTitle.innerText = "Thành công";
+            toastMessage.innerText = successMessage;
+            toastTime.innerText = "vừa xong";
+            toastIcon.src = "/images/success.png"; // optional: your own icon
+            new bootstrap.Toast(toastEl).show();
+        }
+
+        if (errorMessage) {
+            toastTitle.innerText = "Thất bại";
+            toastMessage.innerText = errorMessage;
+            toastTime.innerText = "vừa xong";
+            toastIcon.src = "/images/error.png"; // optional: your own icon
+            new bootstrap.Toast(toastEl).show();
+        }
+    });
+</script>
 
 <!-- Hook cho scripts riêng từng trang -->
 <div layout:fragment="scripts"></div>

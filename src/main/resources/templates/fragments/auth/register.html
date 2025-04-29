@@ -1,212 +1,85 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-        lang="en"
-        class="light-style layout-wide customizer-hide"
-        dir="ltr"
-        data-theme="theme-default"
-        data-template="vertical-menu-template"
-        data-style="light">
-<head>
-    <meta charset="utf-8" />
-    <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-
-    <title th:utext="${pageTitle}">DoCoroFile</title>
-
-    <meta name="description" content="" />
-
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" th:href="@{/images/logo.png}"/>
-
-    <!-- Fonts -->
-    <link rel="preconnect" th:href="@{https://fonts.googleapis.com}" />
-    <link rel="preconnect" th:href="@{https://fonts.gstatic.com}" crossorigin />
-    <link
-            th:href="@{https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&ampdisplay=swap}"
-            rel="stylesheet" />
-
-    <!-- Icons -->
-    <link rel="stylesheet" th:href="@{/assets/vendor/fonts/remixicon/remixicon.css}" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/fonts/flag-icons.css}" />
-
-    <!-- Menu waves for no-customizer fix -->
-    <link rel="stylesheet" th:href="@{/assets/vendor/libs/node-waves/node-waves.css}" />
-
-    <!-- Core CSS -->
-    <link rel="stylesheet" th:href="@{/assets/vendor/css/rtl/core.css}" class="template-customizer-core-css" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/css/rtl/theme-default.css}" class="template-customizer-theme-css" />
-    <link rel="stylesheet" th:href="@{/assets/css/demo.css}" />
-
-    <!-- Vendors CSS -->
-    <link rel="stylesheet" th:href="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css}" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/libs/typeahead-js/typeahead.css}" />
-    <!-- Vendor -->
-    <link rel="stylesheet" th:href="@{/assets/vendor/libs/@form-validation/form-validation.css}" />
-
-    <!-- Page CSS -->
-    <!-- Page -->
-    <link rel="stylesheet" th:href="@{/assets/vendor/css/pages/page-auth.css}" />
-
-    <!-- Helpers -->
-    <script th:src="@{/assets/vendor/js/helpers.js}"></script>
-    <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
-    <script th:src="@{/assets/js/config.js}"></script>
-</head>
-
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/fragments/auth/layout-auth}">
 <body>
-<!-- Content -->
+<div layout:fragment="content">
+    <h4 class="mb-1">Adventure starts here 🚀</h4>
+    <p class="mb-5">Your journey to better file management begins here.</p>
 
-<div class="position-relative">
-    <div class="authentication-wrapper authentication-basic container-p-y p-4 p-sm-0">
-        <div class="authentication-inner py-6">
-            <!-- Register Card -->
-            <div class="card p-md-7 p-1">
-                <!-- Logo -->
-                <div class="app-brand justify-content-center mt-5">
-                    <a href="/" class="app-brand-link gap-2">
-                <span class="app-brand-logo demo">
-                  <span style="color: var(--bs-primary)">
-                    <img th:src="@{/images/logo.png}" width="38" height="38" alt="logo" class="app-logo-logo" />
-                  </span>
-                </span>
-                        <span class="app-brand-text demo text-heading fw-semibold">DoCoroFile</span>
-                    </a>
-                </div>
-                <!-- /Logo -->
-                <div class="card-body mt-1">
-                    <h4 class="mb-1">Adventure starts here 🚀</h4>
-                    <p class="mb-5">Your journey to better file management begins here.</p>
-
-                    <form id="formAuthentication" class="mb-5" th:action="@{/auth/register}"
-                          th:method="post" th:object="${createUserRequest}">
-                        <div class="form-floating form-floating-outline mb-4">
-                            <input type="text" class="form-control" id="fullName" name="fullName"
-                                   placeholder="Full name" th:field="*{fullName}" required />
-                            <label for="fullName">Full Name</label>
-                        </div>
-
-                        <div class="form-floating form-floating-outline mb-4">
-                            <input type="email" class="form-control" id="email" name="email"
-                                   placeholder="Email" required th:field="*{email}" />
-                            <label for="email">Email</label>
-                        </div>
-
-                        <div class="form-floating form-floating-outline mb-4">
-                            <input type="password" class="form-control" id="password" name="password"
-                                   placeholder="Password" required th:field="*{password}" />
-                            <label for="password">Password</label>
-                        </div>
-
-                        <div class="form-floating form-floating-outline mb-4">
-                            <input type="password" class="form-control" id="rePassword" name="rePassword"
-                                   placeholder="Repeat Password" required />
-                            <label for="rePassword">Repeat Password</label>
-                        </div>
-
-                        <div class="form-floating form-floating-outline mb-4">
-                            <select class="form-select" id="universityName" name="universityName"
-                                    required th:field="*{universityName}">
-                            </select>
-                            <label for="universityName">University</label>
-                        </div>
-
-                        <div class="form-check mt-2 mb-4">
-                            <input class="form-check-input" type="checkbox" id="terms" name="terms" required />
-                            <label class="form-check-label" for="terms">
-                                I agree to <a href="#">privacy policy & terms</a>
-                            </label>
-                        </div>
-
-                        <input type="hidden" name="userType" value="MEMBER" />
-                        <button class="btn btn-primary d-grid w-100">Sign up</button>
-                    </form>
-
-                    <p class="text-center">
-                        <span>Already have an account?</span>
-                        <a href="/auth/login">
-                            <span>Sign in instead</span>
-                        </a>
-                    </p>
-
-                    <div class="divider my-5">
-                        <div class="divider-text">or</div>
-                    </div>
-
-                    <div class="d-flex justify-content-center gap-2">
-                        <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-facebook">
-                            <i class="tf-icons ri-facebook-fill"></i>
-                        </a>
-
-                        <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-twitter">
-                            <i class="tf-icons ri-twitter-fill"></i>
-                        </a>
-
-                        <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-github">
-                            <i class="tf-icons ri-github-fill"></i>
-                        </a>
-
-                        <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-google-plus">
-                            <i class="tf-icons ri-google-fill"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <!-- Register Card -->
-            <img
-                    alt="mask"
-                    th:src="@{/assets/img/illustrations/auth-cover-forgot-password-mask-dark.png}"
-                    class="authentication-image d-none d-lg-block" />
+    <form id="formAuthentication" class="mb-5" th:action="@{/auth/register}"
+          th:method="post" th:object="${createUserRequest}">
+        <div class="form-floating form-floating-outline mb-4">
+            <input type="text" class="form-control" id="fullName" name="fullName"
+                   placeholder="Full name" th:field="*{fullName}" required/>
+            <label for="fullName">Full Name</label>
         </div>
+
+        <div class="form-floating form-floating-outline mb-4">
+            <input type="email" class="form-control" id="email" name="email"
+                   placeholder="Email" required th:field="*{email}"/>
+            <label for="email">Email</label>
+        </div>
+
+        <div class="form-floating form-floating-outline mb-4">
+            <input type="password" class="form-control" id="password" name="password"
+                   placeholder="Password" required th:field="*{password}"/>
+            <label for="password">Password</label>
+        </div>
+
+        <div class="form-floating form-floating-outline mb-4">
+            <input type="password" class="form-control" id="rePassword" name="rePassword"
+                   placeholder="Repeat Password" required/>
+            <label for="rePassword">Repeat Password</label>
+        </div>
+
+        <div class="form-floating form-floating-outline mb-4">
+            <select class="form-select" id="universityName" name="universityName"
+                    required th:field="*{universityName}">
+            </select>
+            <label for="universityName">University</label>
+        </div>
+
+        <div class="form-check mt-2 mb-4">
+            <input class="form-check-input" type="checkbox" id="terms" name="terms" required/>
+            <label class="form-check-label" for="terms">
+                I agree to <a href="#">privacy policy & terms</a>
+            </label>
+        </div>
+
+        <input type="hidden" name="userType" value="MEMBER"/>
+        <button class="btn btn-primary d-grid w-100">Sign up</button>
+    </form>
+
+    <p class="text-center">
+        <span>Already have an account?</span>
+        <a href="/auth/login">
+            <span>Sign in instead</span>
+        </a>
+    </p>
+
+    <div class="divider my-5">
+        <div class="divider-text">or</div>
+    </div>
+
+    <div class="d-flex justify-content-center gap-2">
+        <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-facebook">
+            <i class="tf-icons ri-facebook-fill"></i>
+        </a>
+
+        <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-twitter">
+            <i class="tf-icons ri-twitter-fill"></i>
+        </a>
+
+        <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-github">
+            <i class="tf-icons ri-github-fill"></i>
+        </a>
+
+        <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-google-plus">
+            <i class="tf-icons ri-google-fill"></i>
+        </a>
     </div>
 </div>
 
-<!-- / Content -->
-
-<script>
-    document.addEventListener('DOMContentLoaded', async () => {
-        try {
-            const response = await fetch('/v1/api/universities/names');
-            const result = await response.json();
-            const data = result.data || [];
-
-            const select = document.getElementById('universityName');
-            data.forEach(u => {
-                const option = document.createElement('option');
-                option.value = u.univName;
-                option.textContent = u.univName;
-                select.appendChild(option);
-            });
-        } catch (err) {
-            console.error('Failed to load universities:', err);
-        }
-    });
-</script>
-
-
-<!-- Core JS -->
-<!-- build:js assets/vendor/js/core.js -->
-<script th:src="@{/assets/vendor/libs/jquery/jquery.js}"></script>
-<script th:src="@{/assets/vendor/libs/popper/popper.js}"></script>
-<script th:src="@{/assets/vendor/js/bootstrap.js}"></script>
-<script th:src="@{/assets/vendor/libs/node-waves/node-waves.js}"></script>
-<script th:src="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js}"></script>
-<script th:src="@{/assets/vendor/libs/hammer/hammer.js}"></script>
-<script th:src="@{/assets/vendor/libs/i18n/i18n.js}"></script>
-<script th:src="@{/assets/vendor/libs/typeahead-js/typeahead.js}"></script>
-<script th:src="@{/assets/vendor/js/menu.js}"></script>
-
-<!-- endbuild -->
-
-<!-- Vendors JS -->
-<script th:src="@{/assets/vendor/libs/@form-validation/popular.js}"></script>
-<script th:src="@{/assets/vendor/libs/@form-validation/bootstrap5.js}"></script>
-<script th:src="@{/assets/vendor/libs/@form-validation/auto-focus.js}"></script>
-
-<!-- Main JS -->
-<script th:src="@{/assets/js/main.js}"></script>
-
-<!-- Page JS -->
-<script th:src="@{/assets/js/pages-auth.js}"></script>
 </body>
 </html>

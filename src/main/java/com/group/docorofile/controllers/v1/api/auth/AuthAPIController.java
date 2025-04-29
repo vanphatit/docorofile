@@ -214,7 +214,7 @@ public class AuthAPIController {
             if(member.getMembership() == null) {
                 throw new BadRequestError("Không tìm thấy thông tin thành viên!");
             }
-            userInfoDTO.setMembershipName(member.getMembership().getLevel().toString());
+            userInfoDTO.setCurrent_plan(member.getMembership().getLevel().toString());
         }
         SuccessResponse successResponse = new SuccessResponse("Lấy thông tin người dùng thành công!", HttpStatus.OK.value(), userInfoDTO, LocalDateTime.now());
         return ResponseEntity.ok(successResponse);
