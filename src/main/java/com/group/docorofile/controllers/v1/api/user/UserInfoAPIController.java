@@ -9,6 +9,7 @@ import com.group.docorofile.models.dto.UserInfoDTO;
 import com.group.docorofile.models.users.CreateUserRequest;
 import com.group.docorofile.entities.UserEntity;
 import com.group.docorofile.models.users.UpdateProfileRequest;
+import com.group.docorofile.models.users.UpdateUserRequest;
 import com.group.docorofile.repositories.UserRepository;
 import com.group.docorofile.response.CreatedResponse;
 import com.group.docorofile.response.SuccessResponse;
@@ -125,14 +126,14 @@ public class UserInfoAPIController {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new DataTableResponse<>(draw, 0, 0, Collections.emptyList()));
     }
 
-//    // Cập nhật user theo ID
-//    @PreAuthorize("hasRole('ROLE_ADMIN)')")
-//    @PutMapping("/{id}")
-//    public ResponseEntity<SuccessResponse> updateUser(@PathVariable UUID id, @Valid @RequestBody CreateUserRequest request) {
-//        UserEntity user = userService.updateUser(id, request);
-//        SuccessResponse response = new SuccessResponse("User updated successfully", HttpStatus.OK.value(), user, LocalDateTime.now());
-//        return ResponseEntity.ok(response);
-//    }
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<SuccessResponse> updateUser(@PathVariable UUID id,
+                                                      @ModelAttribute UpdateUserRequest request) {
+        userService.updateUserByID(id, request);
+        return ResponseEntity.ok(new SuccessResponse("User updated successfully", 200, null, LocalDateTime.now()));
+    }
+
 
     @PreAuthorize("hasRole('ROLE_MEMBER')")
     @PutMapping("/updateMyProfile")

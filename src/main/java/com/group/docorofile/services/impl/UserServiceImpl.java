@@ -6,6 +6,7 @@ import com.group.docorofile.models.dto.UserDetailDTO;
 import com.group.docorofile.models.dto.UserInfoDTO;
 import com.group.docorofile.models.users.CreateUserRequest;
 import com.group.docorofile.models.users.UpdateProfileRequest;
+import com.group.docorofile.models.users.UpdateUserRequest;
 import com.group.docorofile.repositories.FollowCourseRepository;
 import com.group.docorofile.repositories.MembershipRepository;
 import com.group.docorofile.repositories.UserRepository;
@@ -174,7 +175,7 @@ public class UserServiceImpl implements iUserService {
     }
 
     @Override
-    public UserEntity updateUserByID(UUID id, CreateUserRequest request) {
+    public UserEntity updateUserByID(UUID id, UpdateUserRequest request) {
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundError("User not found with id: " + id));
 

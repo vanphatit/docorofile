@@ -6,6 +6,7 @@ import com.group.docorofile.models.dto.UserDetailDTO;
 import com.group.docorofile.models.dto.UserInfoDTO;
 import com.group.docorofile.models.users.CreateUserRequest;
 import com.group.docorofile.models.users.UpdateProfileRequest;
+import com.group.docorofile.models.users.UpdateUserRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -33,7 +34,7 @@ public interface iUserService {
 
     UserEntity updateMyProfile(UUID id, UpdateProfileRequest request);
 
-    UserEntity updateUserByID(UUID id, CreateUserRequest request);
+    UserEntity updateUserByID(UUID id, UpdateUserRequest request);
 
     void deactivateUser(UUID id);
 

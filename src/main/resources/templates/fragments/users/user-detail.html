@@ -321,110 +321,83 @@
                 <div class="modal-body p-0">
                     <div class="text-center mb-6">
                         <h4 class="mb-2">Edit User Information</h4>
-                        <p class="mb-6">Updating user details will receive a privacy audit.</p>
+                        <p class="mb-6">Updating details for this user.</p>
                     </div>
-                    <form id="editUserForm" class="row g-5" onsubmit="return false">
+                    <form id="editUserForm" class="row g-5">
                         <div class="col-12 col-md-6">
                             <div class="form-floating form-floating-outline">
                                 <input
                                         type="text"
-                                        id="modalEditUserFirstName"
-                                        name="modalEditUserFirstName"
+                                        id="modalEditUserFullName"
+                                        name="modalEditUserFullName"
                                         class="form-control"
-                                        value="Oliver"
                                         placeholder="Oliver" />
-                                <label for="modalEditUserFirstName">First Name</label>
+                                <label for="modalEditUserFullName">Full name</label>
                             </div>
                         </div>
                         <div class="col-12 col-md-6">
                             <div class="form-floating form-floating-outline">
                                 <input
                                         type="text"
-                                        id="modalEditUserLastName"
-                                        name="modalEditUserLastName"
+                                        id="modalEditUserDownloadLimit"
+                                        name="modalEditUserDownloadLimit"
                                         class="form-control"
-                                        value="Queen"
-                                        placeholder="Queen" />
-                                <label for="modalEditUserLastName">Last Name</label>
+                                        placeholder="0" />
+                                <label for="modalEditUserDownloadLimit">Download limit</label>
                             </div>
                         </div>
-                        <div class="col-12">
-                            <div class="form-floating form-floating-outline">
-                                <input
-                                        type="text"
-                                        id="modalEditUserName"
-                                        name="modalEditUserName"
-                                        class="form-control"
-                                        value="oliver.queen"
-                                        placeholder="oliver.queen" />
-                                <label for="modalEditUserName">Username</label>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="form-floating form-floating-outline">
-                                <input
-                                        type="text"
-                                        id="modalEditUserEmail"
-                                        name="modalEditUserEmail"
-                                        class="form-control"
-                                        value="oliverqueen@gmail.com"
-                                        placeholder="oliverqueen@gmail.com" />
-                                <label for="modalEditUserEmail">Email</label>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-md-6" id="li-modalEditUniversity">
                             <div class="form-floating form-floating-outline">
                                 <select
-                                        id="modalEditUserStatus"
-                                        name="modalEditUserStatus"
+                                        id="modalEditUniversity"
+                                        name="modalEditUniversity"
                                         class="form-select"
                                         aria-label="Default select example">
-                                    <option value="1" selected>Active</option>
-                                    <option value="2">Inactive</option>
-                                    <option value="3">Suspended</option>
                                 </select>
-                                <label for="modalEditUserStatus">Status</label>
+                                <label for="modalEditUniversity">University</label>
                             </div>
                         </div>
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-md-6" id="li-modalEditIsChat">
                             <div class="form-floating form-floating-outline">
-                                <input
-                                        type="text"
-                                        id="modalEditTaxID"
-                                        name="modalEditTaxID"
-                                        class="form-control modal-edit-tax-id"
-                                        placeholder="123 456 7890" />
-                                <label for="modalEditTaxID">Tax ID</label>
+                                <select
+                                        id="modalEditIsChat"
+                                        name="modalEditIsChat"
+                                        class="form-select"
+                                        aria-label="Default select example">
+                                    <option value="True" selected>True</option>
+                                    <option value="False">False</option>
+                                </select>
+                                <label for="modalEditIsChat">Can chat</label>
                             </div>
                         </div>
-                        <div class="col-12 col-md-6">
-                            <div class="input-group input-group-merge">
-                                <span class="input-group-text">US (+1)</span>
-                                <div class="form-floating form-floating-outline">
-                                    <input
-                                            type="text"
-                                            id="modalEditUserPhone"
-                                            name="modalEditUserPhone"
-                                            class="form-control phone-number-mask"
-                                            value="+1 609 933 4422"
-                                            placeholder="+1 609 933 4422" />
-                                    <label for="modalEditUserPhone">Phone Number</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-md-6" id="li-modalEditIsComment">
                             <div class="form-floating form-floating-outline">
-                                <input
-                                        id="TagifyLanguageSuggestion"
-                                        name="TagifyLanguageSuggestion"
-                                        class="form-control h-auto"
-                                        placeholder="select language"
-                                        value="English" />
-                                <label for="TagifyLanguageSuggestion">Language</label>
+                                <select
+                                        id="modalEditIsComment"
+                                        name="modalEditIsComment"
+                                        class="form-select"
+                                        aria-label="Default select example">
+                                    <option value="True" selected>True</option>
+                                    <option value="False">False</option>
+                                </select>
+                                <label for="modalEditIsComment">Can comment</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6" id="li-modalEditIsReportManager">
+                            <div class="form-floating form-floating-outline">
+                                <select
+                                        id="modalEditIsReportManager"
+                                        name="modalEditIsReportManager"
+                                        class="form-select"
+                                        aria-label="Default select example">
+                                    <option value="True" selected>True</option>
+                                    <option value="False">False</option>
+                                </select>
+                                <label for="modalEditIsReportManager">Can manage report</label>
                             </div>
                         </div>
                         <div class="col-12 text-center d-flex flex-wrap justify-content-center gap-4 row-gap-4">
-                            <button type="submit" class="btn btn-primary">Submit</button>
+                            <button id="btn-modelSubmit" type="submit" class="btn btn-primary">Submit</button>
                             <button
                                     type="reset"
                                     class="btn btn-outline-secondary"

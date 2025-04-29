@@ -4,113 +4,146 @@
 
 'use strict';
 
-// Select2 (jquery)
-$(function () {
-  const select2 = $('.select2'),
-    TagifyLanguageSuggestionEl = document.querySelector('#TagifyLanguageSuggestion');
+'use strict';
 
-  const langaugelist = ['Portuguese', 'German', 'French', 'English'];
+document.addEventListener('DOMContentLoaded', async function () {
+  const editUserModal = document.getElementById('editUser');
+  const formEditUser = document.getElementById('editUserForm');
+  const submitBtn = document.getElementById('btn-modelSubmit');
 
-  let TagifyLanguageSuggestion = new Tagify(TagifyLanguageSuggestionEl, {
-    whitelist: langaugelist,
-    dropdown: {
-      classname: '',
-      enabled: 0,
-      closeOnSelect: false
+  if (!editUserModal || !formEditUser) return;
+
+  let currentUserId = null;
+  let currentUserRole = null;
+
+  editUserModal.addEventListener('show.bs.modal', async () => {
+    const parts = window.location.pathname.split('/').filter(p => p);
+    currentUserId = parts[parts.length - 1];
+
+    try {
+      const response = await fetch(`/v1/api/users/user-detail/${currentUserId}`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+
+      const result = await response.json();
+      const data = result.data;
+
+      if (!data) return;
+
+      // Gán giá trị vào form
+      document.getElementById('modalEditUserFullName').value = data.name || '';
+
+      // Reset all optional fields hidden trước
+      [
+        'li-modalEditUniversity',
+        'li-modalEditIsChat',
+        'li-modalEditIsComment',
+        'li-modalEditIsReportManager',
+        'modalEditUserDownloadLimit'
+      ].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.closest('.col-md-6').classList.add('d-none');
+      });
+
+      currentUserRole = data.role;
+
+      if (currentUserRole === "Member") {
+        document.getElementById('li-modalEditUniversity').classList.remove('d-none');
+        document.getElementById('li-modalEditIsChat').classList.remove('d-none');
+        document.getElementById('li-modalEditIsComment').classList.remove('d-none');
+        document.getElementById('modalEditUserDownloadLimit').closest('.col-md-6').classList.remove('d-none');
+
+        document.getElementById('modalEditUserDownloadLimit').value = data.downloadLimit || 0;
+        document.getElementById('modalEditIsChat').value = data.chat ? "True" : "False";
+        document.getElementById('modalEditIsComment').value = data.comment ? "True" : "False";
+
+        const select = document.getElementById('modalEditUniversity');
+        try {
+          const uniRes = await fetch('/v1/api/universities/names', {
+            method: 'GET',
+            credentials: 'include'
+          });
+          const uniResult = await uniRes.json();
+          const universities = uniResult.data || [];
+
+          // Xóa toàn bộ option cũ
+          select.innerHTML = '';
+          universities.forEach(u => {
+            const option = document.createElement('option');
+            option.value = u.univName;
+            option.textContent = u.univName;
+            if (u.univName === data.university) {
+              option.selected = true;
+            }
+            select.appendChild(option);
+          });
+        } catch (err) {
+          console.error('❌ Failed to load universities:', err);
+        }
+      } else if (currentUserRole === "Moderator") {
+        document.getElementById('li-modalEditIsReportManager').classList.remove('d-none');
+        document.getElementById('modalEditIsReportManager').value = data.isReportManager ? "True" : "False";
+      }
+      // Admin: không có gì thêm ngoài FullName
+    } catch (error) {
+      console.error('❌ Failed to fetch user detail for edit:', error);
     }
   });
 
-  // Select2 Country
-  if (select2.length) {
-    select2.each(function () {
-      var $this = $(this);
-      select2Focus($this);
-      $this.wrap('<div class="position-relative"></div>').select2({
-        placeholder: 'Select value',
-        dropdownParent: $this.parent()
-      });
-    });
-  }
-});
+  if (submitBtn) {
+    submitBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try {
+        const formData = new URLSearchParams();
+        formData.append('fullName', document.getElementById('modalEditUserFullName').value);
 
-document.addEventListener('DOMContentLoaded', function (e) {
-  (function () {
-    // variables
-    const modalEditUserTaxID = document.querySelector('.modal-edit-tax-id');
-    const modalEditUserPhone = document.querySelector('.phone-number-mask');
-
-    // Prefix
-    if (modalEditUserTaxID) {
-      new Cleave(modalEditUserTaxID, {
-        prefix: 'TIN',
-        blocks: [3, 3, 3, 4],
-        uppercase: true
-      });
-    }
-
-    // Phone Number Input Mask
-    if (modalEditUserPhone) {
-      new Cleave(modalEditUserPhone, {
-        phone: true,
-        phoneRegionCode: 'US'
-      });
-    }
-
-    // Edit user form validation
-    FormValidation.formValidation(document.getElementById('editUserForm'), {
-      fields: {
-        modalEditUserFirstName: {
-          validators: {
-            notEmpty: {
-              message: 'Please enter your first name'
-            },
-            regexp: {
-              regexp: /^[a-zA-Zs]+$/,
-              message: 'The first name can only consist of alphabetical'
-            }
-          }
-        },
-        modalEditUserLastName: {
-          validators: {
-            notEmpty: {
-              message: 'Please enter your last name'
-            },
-            regexp: {
-              regexp: /^[a-zA-Zs]+$/,
-              message: 'The last name can only consist of alphabetical'
-            }
-          }
-        },
-        modalEditUserName: {
-          validators: {
-            notEmpty: {
-              message: 'Please enter your username'
-            },
-            stringLength: {
-              min: 6,
-              max: 30,
-              message: 'The name must be more than 6 and less than 30 characters long'
-            },
-            regexp: {
-              regexp: /^[a-zA-Z0-9 ]+$/,
-              message: 'The name can only consist of alphabetical, number and space'
-            }
-          }
+        if (currentUserRole === "Member") {
+          formData.append('downloadLimit', document.getElementById('modalEditUserDownloadLimit').value);
+          formData.append('isChat', document.getElementById('modalEditIsChat').value);
+          formData.append('isComment', document.getElementById('modalEditIsComment').value);
+          formData.append('universityName', document.getElementById('modalEditUniversity').value);
+        } else if (currentUserRole === "Moderator") {
+          formData.append('isReportManage', document.getElementById('modalEditIsReportManager').value);
         }
-      },
-      plugins: {
-        trigger: new FormValidation.plugins.Trigger(),
-        bootstrap5: new FormValidation.plugins.Bootstrap5({
-          // Use this for enabling/changing valid/invalid class
-          // eleInvalidClass: '',
-          eleValidClass: '',
-          rowSelector: '.col-12'
-        }),
-        submitButton: new FormValidation.plugins.SubmitButton(),
-        // Submit the form when all fields are valid
-        // defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
-        autoFocus: new FormValidation.plugins.AutoFocus()
+
+        console.log("is comment:", document.getElementById('modalEditIsComment').value);
+        console.log("is chat:", document.getElementById('modalEditIsChat').value);
+
+        // Gọi API Update
+        const res = await fetch(`/v1/api/users/${currentUserId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          credentials: 'include',
+          body: formData.toString()
+        });
+
+        if (!res.ok) throw new Error('Failed to update user');
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: 'User updated successfully!',
+          customClass: {
+            confirmButton: 'btn btn-success waves-effect'
+          }
+        }).then(() => {
+          window.location.reload();
+        });
+
+      } catch (error) {
+        console.error('❌ Failed to submit update user:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to update user. Please try again.',
+          customClass: {
+            confirmButton: 'btn btn-danger waves-effect'
+          }
+        });
       }
     });
-  })();
+  }
 });
