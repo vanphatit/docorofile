@@ -1,36 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
 <head>
-    <meta charset="utf-8" />
-
-    <meta name="current-user-id" content="[[${currentUser.userId}]]">
-
-    <!-- Fonts -->
-    <link rel="preconnect" th:href="@{https://fonts.googleapis.com}" />
-    <link rel="preconnect" th:href="@{https://fonts.gstatic.com}" crossorigin />
-    <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&ampdisplay=swap"
-            rel="stylesheet" />
-
-    <!-- Menu waves for no-customizer fix -->
-<!--    <link rel="stylesheet" th:href="@{assets/vendor/libs/node-waves/node-waves.css}" />-->
-
-    <!-- Core CSS -->
-    <link rel="stylesheet" th:href="@{/assets/vendor/css/rtl/core.css}" class="template-customizer-core-css" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/css/rtl/theme-default.css}" class="template-customizer-theme-css" />
-    <link rel="stylesheet" th:href="@{/assets/css/demo.css}" />
-
-    <!-- Vendors CSS -->
-    <link rel="stylesheet" th:href="@{assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css}" />
-    <link rel="stylesheet" th:href="@{assets/vendor/libs/bootstrap-maxlength/bootstrap-maxlength.css}" />
-
-    <!-- Page CSS -->
-    <link rel="stylesheet" th:href="@{/assets/vendor/css/pages/app-chat.css}" />
-    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <title layout:fragment="title">Trò chuyện</title>
 </head>
 <body>
 <div class="layout-wrapper layout-navbar-full layout-horizontal layout-without-menu">
-    <div class="layout-container">
+    <div class="layout-container container-fluid" layout:fragment="content">
         <!-- Layout container -->
         <div class="layout-page">
             <!-- Content wrapper -->
@@ -39,13 +16,11 @@
                 <div class="container-xxl flex-grow-1 container-p-y">
                     <div class="app-chat card overflow-hidden">
                         <div class="row g-0">
-                            <!-- Chat & Contacts -->
                             <!-- Chat & Contacts - will be loaded dynamically -->
                             <div id="chat-contacts-wrapper" class="col app-chat-contacts app-sidebar flex-grow-0 overflow-hidden border-end">
                                 <div class="text-center p-5">Loading...</div>
                             </div>
                             <!-- /Chat contacts -->
-
                             <!-- Chat History -->
                             <div class="col app-chat-history">
                                 <div class="chat-history-wrapper">
@@ -96,24 +71,13 @@
         <!--/ Layout container -->
     </div>
 </div>
-
-<!-- Core JS -->
-<script th:src="@{/assets/vendor/libs/jquery/jquery.js}"></script>
-<script th:src="@{/assets/vendor/js/bootstrap.js}"></script>
-<script th:src="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js}"></script>
-<script th:src="@{/assets/vendor/js/menu.js}"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-
-<!-- Vendors JS -->
-<script th:src="@{/assets/vendor/libs/bootstrap-maxlength/bootstrap-maxlength.js}"></script>
-
-<!-- Page JS -->
-<script th:src="@{/js/app-chat.js}"></script>
-
-<script>
-    window.currentUserId = '[[${currentUser.userId}]]';
-</script>
+<div layout:fragment="scripts">
+    <script th:src="@{/js/app-chat.js}"></script>
+    <script>
+        window.currentUserId = '[[${currentUser.userId}]]';
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</div>
 </body>
 </html>
