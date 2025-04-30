@@ -37,6 +37,9 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     <!-- Vendors CSS -->
     <link rel="stylesheet" th:href="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css}"/>
     <link rel="stylesheet" th:href="@{/assets/vendor/libs/typeahead-js/typeahead.css}" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/dropzone/dropzone.css}" />
+    <script th:src="@{/assets/vendor/libs/dropzone/dropzone.js}"></script>
+    <script th:src="@{/assets/js/forms-file-upload.js}"></script>
 
     <!-- Page CSS -->
 
@@ -1277,6 +1280,7 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = '/assets/pdfjs/pdf.worker.min.js';
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const docElem = document.getElementById('documentInfo');
@@ -1284,26 +1288,36 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
         const documentId = docElem.getAttribute('data-id');
         const commentContainer = document.getElementById('commentList');
 
-        // === Load Document Info ===
-        fetch(`/v1/api/documents/${documentId}`)
-            .then(res => res.json())
-            .then(res => {
-                const doc = res.data;
-                console.log("Loaded document", doc);
-                document.getElementById("documentTitle").innerText = doc.title;
-                document.getElementById("documentAuthor").innerText = doc.authorName;
-                document.getElementById("documentCourse").innerText = doc.courseName;
-                document.getElementById("documentUniv").innerText = doc.universityName;
-                document.getElementById("documentUpload").innerText = new Date(doc.uploadedDate).toLocaleDateString();
-                document.getElementById("documentLikes").innerText = doc.likes;
-                document.getElementById("documentDislikes").innerText = doc.dislikes;
-                document.getElementById("documentView").innerText = doc.views;
-                loadFile(doc.fileUrl);
-                if (doc.comments && Array.isArray(doc.comments)) {
-                    doc.comments.forEach(renderComment);
-                }
-            })
-            .catch(err => console.error("Lỗi khi fetch document", err));
+        loadDocumentInfo();
+
+        function loadDocumentInfo() {
+            // === Load Document Info ===
+            fetch(`/v1/api/documents/view/${documentId}`)
+                .then(res => res.json())
+                .then(res => {
+                    const doc = res.data;
+                    console.log("Loaded document", doc);
+                    document.getElementById("documentTitle").innerText = doc.title;
+                    document.getElementById("documentAuthor").innerText = doc.authorName;
+                    document.getElementById("documentCourse").innerText = doc.courseName;
+                    document.getElementById("documentUniv").innerText = doc.universityName;
+                    document.getElementById("documentUpload").innerText = new Date(doc.uploadedDate).toLocaleDateString();
+                    document.getElementById("documentLikes").innerText = doc.likes;
+                    document.getElementById("documentDislikes").innerText = doc.dislikes;
+                    document.getElementById("documentView").innerText = doc.views;
+                    loadFile(doc.fileUrl);
+                    renderComments(doc.comments || []);
+                })
+                .catch(err => {
+                    console.error("Lỗi khi fetch document", err);
+                    Swal.fire('Lỗi', 'Không thể gửi bình luận!', 'error');
+                });
+        }
+
+        function renderComments(comments) {
+            commentContainer.innerHTML = ''; // Xoá hết comment cũ
+            comments.forEach(renderComment);
+        }
 
         function renderComment(comment) {
             const div = document.createElement('div');
@@ -1366,7 +1380,10 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
             const content = document.getElementById('commentInput').value.trim();
             const parentCommentId = document.getElementById('parentCommentId').value.trim() || null;
 
-            if (!content.trim()) return alert("Bình luận không được để trống!");
+            if (!content.trim()) {
+                Swal.fire('Lỗi', 'Bình luận không được để trống!', 'error');
+                return;
+            }
 
             const formData = new URLSearchParams();
             formData.append('content', content);
@@ -1384,15 +1401,15 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
                 .then(res => res.json())
                 .then(res => {
                     if (res.code === 200) {
-                        alert("Bình luận thành công!");
                         document.getElementById('commentInput').value = '';
                         document.getElementById('parentCommentId').value = '';
+                        loadDocumentInfo();
                         location.reload();
                     } else {
-                        alert("Lỗi: " + res.message);
+                        Swal.fire('Lỗi', res.message, 'error');
                     }
                 })
-                .catch(() => alert("Không thể gửi bình luận!"));
+                .catch(() => Swal.fire('Lỗi', 'Không thể gửi bình luận!', 'error'));
         });
 
         function loadFile(fileUrl) {
@@ -1430,38 +1447,59 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
         `;
             }
         }
-            document.getElementById("downloadBtn").addEventListener("click", function () {
-                fetch(`/v1/api/documents/download/${documentId}`, {
-                    method: "GET",
-                    credentials: "include"
-                })
-                    .then(async res => {
-                        if (!res.ok) {
-                            const text = await res.text();
-                            alert("Lỗi tải xuống: " + text);
-                            return;
+        document.getElementById("downloadBtn").addEventListener("click", function () {
+            fetch(`/v1/api/documents/download/${documentId}`, {
+                method: "GET",
+                credentials: "include"
+            })
+                .then(async res => {
+                    if (!res.ok) {
+                        const contentType = res.headers.get("Content-Type");
+
+                        // Nếu trả về JSON (hết lượt tải)
+                        if (contentType && contentType.includes("application/json")) {
+                            const data = await res.json();
+                            if (data.redirectToUpload) {
+                                return Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Hết lượt tải!',
+                                    text: data.message || 'Bạn đã hết lượt tải tài liệu.',
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Tải tài liệu lên để nhận lượt tải',
+                                    cancelButtonText: 'Đóng'
+                                }).then(result => {
+                                    if (result.isConfirmed) {
+                                        window.location.href = "/documents/uploads";
+                                    }
+                                });
+                            } else {
+                                return Swal.fire('Lỗi', data.message || 'Không thể tải tài liệu.', 'error');
+                            }
                         }
 
-                        return res.blob();
-                    })
-                    .then(blob => {
-                        if (!blob) return;
+                        // Nếu trả về plain text
+                        const text = await res.text();
+                        Swal.fire('Lỗi', "Lỗi tải xuống: " + text, 'error');
+                        return;
+                    }
 
-                        // Tạo đường dẫn tải file
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
+                    return res.blob();
+                })
+                .then(blob => {
+                    if (!blob) return;
 
-                        // Tên file fallback
-                        a.download = `document_${documentId}.pdf`;
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                    })
-                    .catch(err => {
-                        console.error("Download error:", err);
-                        alert("Không thể tải tài liệu.");
-                    });
-            });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `document_${documentId}.pdf`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(err => {
+                    console.error("Download error:", err);
+                    Swal.fire('Lỗi', 'Không thể tải tài liệu.', 'error');
+                });
+        });
     });
 </script>
 
@@ -1476,6 +1514,7 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 <script th:src="@{/assets/vendor/libs/i18n/i18n.js}"></script>
 <script th:src="@{/assets/vendor/libs/typeahead-js/typeahead.js}"></script>
 <script th:src="@{/assets/vendor/js/menu.js}"></script>
+<script th:src="@{/assets/js/forms-file-upload.js}"></script>
 
 <!-- endbuild -->
 

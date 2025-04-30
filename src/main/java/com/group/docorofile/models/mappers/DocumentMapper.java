@@ -8,6 +8,11 @@ import com.group.docorofile.utils.FilePreviewUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 @Component
 public class DocumentMapper {
 
@@ -28,8 +33,9 @@ public class DocumentMapper {
         userDocumentDTO.setViewCount(document.getViewCount());
         userDocumentDTO.setAuthorName(document.getAuthor().getFullName());
         userDocumentDTO.setMemberShip(document.getAuthor().getMembership().getLevel().toString());
-        userDocumentDTO.setCourseName(document.getCourse().getCourseName());
-        userDocumentDTO.setUniversityName(document.getCourse().getUniversity().getUnivName());
+        userDocumentDTO.setDownloadCount(document.getAuthor().getDownloadLimit());
+        userDocumentDTO.setCourseName(document.getCourse() != null ? document.getCourse().getCourseName() : null);
+        userDocumentDTO.setUniversityName(document.getCourse() != null ? document.getCourse().getUniversity().getUnivName() : null);
         userDocumentDTO.setComments(document.getComments().stream().map(CommentDTO::fromEntity).toList());
 
         String filePathStr = document.getFileUrl();
@@ -38,6 +44,16 @@ public class DocumentMapper {
         userDocumentDTO.setCoverImageUrl(preview);
 
         userDocumentDTO.setFileUrl(document.getFileUrl());
+
+        Path path = Paths.get(uploadDir, relativePath);
+        String readableSize;
+        try {
+            long bytes = Files.size(path);
+            readableSize = (bytes / 1024) + " KB";
+        } catch (IOException e) {
+            readableSize = "Unknown";
+        }
+        userDocumentDTO.setFileSize(readableSize);
 
         userDocumentDTO.setLikes((int) document.getReactions().stream().filter(reaction -> reaction.isLike()).count());
         userDocumentDTO.setDislikes((int) document.getReactions().stream().filter(reaction -> reaction.isDislike()).count());
@@ -55,9 +71,8 @@ public class DocumentMapper {
         adminDocumentDTO.setUploadedDate(document.getUploadedDate());
         adminDocumentDTO.setViewCount(document.getViewCount());
         adminDocumentDTO.setAuthorName(document.getAuthor().getFullName());
-        adminDocumentDTO.setMemberShip(document.getAuthor().getMembership().getLevel().toString());
-        adminDocumentDTO.setCourseName(document.getCourse().getCourseName());
-        adminDocumentDTO.setUniversityName(document.getCourse().getUniversity().getUnivName());
+        adminDocumentDTO.setCourseName(document.getCourse() != null ? document.getCourse().getCourseName() : null);
+        adminDocumentDTO.setUniversityName(document.getCourse() != null ? document.getCourse().getUniversity().getUnivName() : null);
         adminDocumentDTO.setComments(document.getComments().stream().map(CommentDTO::fromEntity).toList());
 
         String filePathStr = document.getFileUrl();
@@ -66,6 +81,17 @@ public class DocumentMapper {
         adminDocumentDTO.setCoverImageUrl(preview); // Lấy trang bìa từ fileUrl
 
         adminDocumentDTO.setFileUrl(document.getFileUrl());
+
+        Path path = Paths.get(uploadDir, relativePath);
+        String readableSize;
+        try {
+            long bytes = Files.size(path);
+            readableSize = (bytes / 1024) + " KB";
+        } catch (IOException e) {
+            readableSize = "Unknown";
+        }
+        adminDocumentDTO.setFileSize(readableSize);
+
         adminDocumentDTO.setLikes((int) document.getReactions().stream().filter(reaction -> reaction.isLike()).count());
         adminDocumentDTO.setDislikes((int) document.getReactions().stream().filter(reaction -> reaction.isDislike()).count());
         adminDocumentDTO.setViews(document.getViewCount());

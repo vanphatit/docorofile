@@ -1,5 +1,7 @@
 package com.group.docorofile.services.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group.docorofile.entities.*;
 import com.group.docorofile.enums.EDocumentStatus;
 import com.group.docorofile.enums.EMembershipLevel;
@@ -7,7 +9,6 @@ import com.group.docorofile.models.dto.AdminDocumentDTO;
 import com.group.docorofile.models.dto.UserDocumentDTO;
 import com.group.docorofile.models.mappers.DocumentMapper;
 import com.group.docorofile.repositories.*;
-import com.group.docorofile.response.BadRequestError;
 import com.group.docorofile.response.InternalServerError;
 import com.group.docorofile.response.NotFoundError;
 import com.group.docorofile.response.UnauthorizedError;
@@ -16,10 +17,12 @@ import com.group.docorofile.services.specifications.DocumentSpecification;
 import com.group.docorofile.services.utils.FileStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -30,8 +33,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -278,6 +283,90 @@ public class DocumentServiceImpl implements iDocumentService {
     }
 
     @Override
+    public UUID saveFileOnly(UUID memberId, MultipartFile file) {
+        // Kiểm tra user tồn tại
+        MemberEntity member = (MemberEntity) userRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+
+        String fileUrl;
+        try {
+            fileUrl = fileStorageService.saveFile(file);
+        } catch (IOException e) {
+            throw new RuntimeException("Lỗi khi lưu file");
+        }
+
+        // Tạo DocumentEntity chưa có metadata
+        DocumentEntity document = DocumentEntity.builder()
+                .documentId(UUID.randomUUID())
+                .uploadedDate(LocalDateTime.now())
+                .author(member)
+                .fileUrl(fileUrl)
+                .status(EDocumentStatus.DRAFT) // Trạng thái tạm
+                .viewCount(0)
+                .build();
+
+        documentRepository.save(document);
+        return document.getDocumentId();
+    }
+
+    @Override
+    public UserDocumentDTO updateMetadata(UUID documentId, String title, String description,
+                                          String nameCourse, String nameUniversity) {
+        DocumentEntity document = documentRepository.findById(documentId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài liệu"));
+
+        if (!courseRepository.existsByCourseName(nameCourse)) {
+            throw new RuntimeException("Không tìm thấy khóa học!");
+        }
+
+        if (!universityRepository.existsByUnivName(nameUniversity)) {
+            throw new RuntimeException("Không tìm thấy trường học!");
+        }
+
+        if (documentRepository.existsByTitleAndAuthor_UserId(title, document.getAuthor().getUserId())) {
+            throw new RuntimeException("Bạn đã tải lên tài liệu này trước đó.");
+        }
+
+        // Gán metadata
+        document.setTitle(title);
+        document.setDescription(description);
+        document.setStatus(EDocumentStatus.PUBLIC);
+        document.setCourse(courseRepository.findByCourseNameAndUniversityName(nameCourse, nameUniversity)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy course")));
+
+        documentRepository.save(document);
+
+        // Tính lượt upload và tăng downloadLimit nếu cần
+        UUID memberId = document.getAuthor().getUserId();
+        int uploadCount = documentRepository.countDocumentUploadInDay(LocalDate.now(), memberId);
+        if (uploadCount == 1 || uploadCount == 3 || uploadCount % 5 == 0) {
+            MemberEntity member = document.getAuthor();
+            member.setDownloadLimit(member.getDownloadLimit() + 1);
+            userRepository.save(member);
+        }
+
+        return DocumentMapper.toUserDTO(document);
+    }
+
+    public class JsonErrorHelper {
+        public static ResponseEntity<Resource> error(int code, String message, boolean redirectToUpload) {
+            Map<String, Object> body = new HashMap<>();
+            body.put("code", code);
+            body.put("message", message);
+            body.put("redirectToUpload", redirectToUpload);
+
+            try {
+                byte[] json = new ObjectMapper().writeValueAsBytes(body);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(new ByteArrayResource(json));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("Không thể chuyển lỗi sang JSON", e);
+            }
+        }
+    }
+
+    @Override
     public ResponseEntity<Resource> downloadDocument(UUID memberId, UUID documentId) {
         // Kiểm tra xem tài liệu có tồn tại không
         DocumentEntity document = documentRepository.findById(documentId)
@@ -289,7 +378,9 @@ public class DocumentServiceImpl implements iDocumentService {
 
         // Nếu người dùng là Member thì kiểm tra số lượt tải
         if (member.getMembership().getLevel() == EMembershipLevel.FREE && member.getDownloadLimit() <= 0) {
-            throw new BadRequestError("Bạn đã hết lượt tải tài liệu. Vui lòng nâng cấp tài khoản.");
+            return JsonErrorHelper.error(403,
+                    "Bạn đã hết lượt tải. Vuic lòng tải lên tài liệu để nhận thêm lượt tải miễn phí.",
+                    true);
         }
 
         // Nếu là Member, trừ đi 1 lượt tải
@@ -436,6 +527,15 @@ public class DocumentServiceImpl implements iDocumentService {
         try {
             List<DocumentEntity> documents = documentRepository.findByAuthor_UserId(authorId);
             return documents.stream().map(DocumentMapper::toUserDTO).collect(Collectors.toList());
+        } catch (RuntimeException e) {
+            throw new InternalServerError(e.getMessage());
+        }
+    }
+
+    @Override
+    public List<CourseEntity> findAllWithUniversity() {
+        try {
+            return courseRepository.findAllWithUniversity();
         } catch (RuntimeException e) {
             throw new InternalServerError(e.getMessage());
         }

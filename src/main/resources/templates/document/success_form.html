@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Submission Success</title>
+    <style>
+        /* Custom styles for the success page */
+        .success-container {
+            min-height: 100vh;
+            background-color: #F1F0FB;
+            padding: 2rem 1rem;
+        }
+
+        .inner-container {
+            max-width: 64rem;
+            margin: 0 auto;
+        }
+
+        .logo img {
+            height: 3rem;
+            filter: brightness(0);
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .title h1 {
+            font-size: 1.875rem;
+            font-weight: 500;
+        }
+
+        .title h1 .highlight {
+            color: #9b87f5;
+        }
+
+        .title p {
+            color: #4B5563;
+            margin-top: 0.25rem;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .step-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .step-circle {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .step-active {
+            background-color: #9b87f5;
+        }
+
+        .step-inactive {
+            background-color: #D1D5DB;
+        }
+
+        .step-label {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            font-weight: 500;
+        }
+
+        .step-label-active {
+            color: inherit;
+        }
+
+        .step-label-inactive {
+            color: #6B7280;
+        }
+
+        .step-line {
+            flex: 1;
+            height: 0.25rem;
+            margin: 0 0.5rem;
+            background-color: #D1D5DB;
+        }
+
+        .step-line-active {
+            background-color: #9b87f5;
+        }
+
+        .step-line-inactive {
+            background-color: #D1D5DB;
+        }
+
+        .success-card {
+            margin-bottom: 2rem;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            border: 1px solid #E5E7EB;
+            background-color: white;
+        }
+
+        .card-header {
+            background: linear-gradient(to right, #F1F0FB, rgba(155, 135, 245, 0.2));
+            padding: 1.5rem;
+        }
+
+        .trophy-icon {
+            width: 5rem;
+            height: 5rem;
+            background-color: white;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem auto;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .trophy-icon svg {
+            width: 2.5rem;
+            height: 2.5rem;
+            color: #9b87f5;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-description {
+            text-align: center;
+            color: #6B7280;
+            margin-bottom: 1.5rem;
+            max-width: 28rem;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .progress-bar-container {
+            height: 0.5rem;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 15%;
+            background-color: #9b87f5;
+            border-radius: 9999px;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .submitted-files {
+            margin-bottom: 1.5rem;
+        }
+
+        .submitted-files-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .check-icon {
+            color: #10B981;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background-color: #F9FAFB;
+            border: 1px solid #E5E7EB;
+            border-radius: 0.375rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .file-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            background-color: #F3F4F6;
+            border-radius: 0.25rem;
+            margin-right: 0.75rem;
+        }
+
+        .file-icon svg {
+            color: #9b87f5;
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        .file-details {
+            flex: 1;
+        }
+
+        .file-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .file-size {
+            font-size: 0.75rem;
+            color: #6B7280;
+        }
+
+        .check-indicator {
+            color: #10B981;
+        }
+
+        .info-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background-color: #EBF5FF;
+            border-radius: 0.375rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-icon {
+            color: #3B82F6;
+            flex-shrink: 0;
+        }
+
+        .info-text {
+            font-size: 0.875rem;
+            color: #1E40AF;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        @media (min-width: 640px) {
+            .action-buttons {
+                flex-direction: row;
+                justify-content: center;
+            }
+        }
+
+        .btn {
+            padding: 0.5rem 2rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #9b87f5;
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #8a74e8;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: #9b87f5;
+            border: 1px solid #9b87f5;
+        }
+
+        .btn-outline:hover {
+            background-color: #F1F0FB;
+        }
+
+        .premium-cta {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            background-color: #FEF3C7;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (min-width: 640px) {
+            .premium-cta {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+        }
+
+        .premium-text {
+            text-align: center;
+        }
+
+        @media (min-width: 640px) {
+            .premium-text {
+                text-align: left;
+            }
+        }
+
+        .premium-title {
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .premium-description {
+            color: #6B7280;
+        }
+
+        .premium-button {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="success-container">
+        <div class="inner-container">
+            <!-- Title -->
+            <div th:replace="fragments/document/title-section :: titleSection"></div>
+
+            <!-- Progress Steps -->
+            <div th:replace="fragments/document/progress-steps :: progressSteps(${3})"></div>
+
+            <!-- Success Card -->
+            <div class="success-card">
+                <div class="card-header">
+                    <div class="trophy-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                             stroke-linejoin="round">
+                            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                            <path d="M4 22h16"></path>
+                            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                        </svg>
+                    </div>
+
+                    <h2 class="card-title">Documents submitted successfully!</h2>
+
+                    <p class="card-description">
+                        Your documents have been submitted for review. You will be notified once they are approved.
+                    </p>
+
+                    <div>
+                        <div class="progress-label">
+                            <span>Review Progress</span>
+                            <span>Pending</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-content">
+                    <div class="submitted-files">
+                        <div class="submitted-files-header">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                 stroke-linejoin="round" class="check-icon">
+                                <path d="M20 6 9 17l-5-5"></path>
+                            </svg>
+                            <span>Submitted Documents (<span>0</span>)</span>
+                        </div>
+
+                        <div class="file-list">
+                            <div class="file-item">
+                                <div class="file-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                         stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                                        <line x1="10" y1="9" x2="8" y2="9"></line>
+                                    </svg>
+                                </div>
+                                <div class="file-details">
+                                    <div class="file-name">File Name.pdf</div>
+                                    <div class="file-size">2.4 MB</div>
+                                </div>
+                                <div class="check-indicator">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                         stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20 6 9 17l-5-5"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                             stroke-linejoin="round" class="info-icon">
+                            <polygon
+                                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                            </polygon>
+                        </svg>
+                        <p class="info-text">
+                            You'll earn x download turn once your documents are approved. Your download turn is y turn.
+                        </p>
+                    </div>
+
+                    <div class="action-buttons">
+                        <a href="/documents/uploads" class="btn btn-primary">
+                            Upload more documents
+                        </a>
+                        <a href="/" class="btn btn-outline">
+                            Go to Studocu Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Premium CTA -->
+            <div class="premium-cta">
+                <div class="premium-text">
+                    <h3 class="premium-title">Want immediate Premium access?</h3>
+                    <p class="premium-description">Don't wait for document approval - get Premium now!</p>
+                </div>
+                <a href="#" class="btn btn-primary premium-button">
+                    Get Premium Now
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const uploadedFiles = JSON.parse(localStorage.getItem('uploadedDocuments') || '[]');
+            const x = parseInt(localStorage.getItem('addedTurns') || '0');
+            const y = parseInt(localStorage.getItem('downloadLimit') || '0');
+
+            // Gán số lượng
+            const fileCountSpan = document.querySelector('.submitted-files-header span span');
+            if (fileCountSpan) fileCountSpan.textContent = uploadedFiles.length;
+
+            const infoText = document.querySelector('.info-text');
+            if (infoText) {
+                infoText.textContent = `You'll earn ${x} download turn${x !== 1 ? 's' : ''} once your documents are approved. Your download turn is ${y} turn${y !== 1 ? 's' : ''}.`;
+            }
+
+            // Render từng file
+            const fileList = document.querySelector('.file-list');
+            fileList.innerHTML = ''; // Clear cũ nếu có
+
+            uploadedFiles.forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+
+                fileItem.innerHTML = `
+                <div class="file-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <line x1="10" y1="9" x2="8" y2="9"></line>
+                    </svg>
+                </div>
+                <div class="file-details">
+                    <div class="file-name">${file.title || 'Untitled Document'}</div>
+                    <div class="file-size">${file.fileSize || 'Unknown size'}</div>
+                </div>
+                <div class="check-indicator">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                    </svg>
+                </div>
+            `;
+
+                fileList.appendChild(fileItem);
+            });
+
+            // Clear localStorage nếu không muốn lưu lâu
+            localStorage.removeItem('uploadedDocuments');
+
+            const premiumButton = document.querySelector('.premium-button');
+            if (premiumButton) {
+                premiumButton.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    window.location.href = '/premium-subscription';
+                });
+            }
+        });
+    </script>
+</div>
+</body>
+
+</html>

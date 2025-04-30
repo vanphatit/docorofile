@@ -21,12 +21,12 @@ public class DocumentDTO {
     private String description;
     private LocalDateTime uploadedDate;
     private String authorName;
-    private String memberShip;
     private String courseName;
     private String universityName;
     private List<CommentDTO> comments;
     private String coverImageUrl;
     private String fileUrl;
+    private String fileSize;
     private int viewCount;
     private int likes;
     private int dislikes;

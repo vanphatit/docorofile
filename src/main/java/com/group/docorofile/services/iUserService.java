@@ -34,4 +34,6 @@ public interface iUserService {
     boolean courseFollowedByMember(UUID memberId);
 
     Optional<UserEntity> findByEmail(String email);
+
+    Optional<UserEntity> findById(UUID id);
 }

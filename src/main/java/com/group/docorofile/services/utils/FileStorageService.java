@@ -20,7 +20,7 @@ public class FileStorageService {
     private String accessUrl;
 
     // Kiểm tra định dạng file hợp lệ
-    private static final String[] ALLOWED_FILE_TYPES = {"pdf", "docx", "pptx", "txt", "zip"};
+    private static final String[] ALLOWED_FILE_TYPES = {"pdf", "doc", "docx", "pptx", "txt", "zip"};
 
     @PostConstruct
     public void initUploadDir() {
@@ -57,7 +57,9 @@ public class FileStorageService {
         if (!isValidFileType(file.getOriginalFilename())) {
             throw new IOException("Định dạng tài liệu không được hỗ trợ!");
         }
-
+        if (file == null || file.isEmpty()) {
+            throw new IOException("File rỗng hoặc null");
+        }
         // Tạo tên file mới để tránh trùng
         String fileExtension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
         String filename = UUID.randomUUID() + fileExtension;
@@ -70,7 +72,6 @@ public class FileStorageService {
         try {
             file.transferTo(targetPath.toFile());
         } catch (IOException e) {
-            System.err.println("Lỗi khi ghi file: " + e.getMessage());
             e.printStackTrace();
             throw new IOException("Lỗi khi lưu tài liệu! Vui lòng thử lại.");
         }

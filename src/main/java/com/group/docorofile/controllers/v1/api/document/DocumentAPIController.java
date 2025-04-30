@@ -1,9 +1,13 @@
 package com.group.docorofile.controllers.v1.api.document;
 
+import com.group.docorofile.entities.CourseEntity;
 import com.group.docorofile.entities.DocumentEntity;
+import com.group.docorofile.entities.MemberEntity;
 import com.group.docorofile.entities.UserEntity;
 import com.group.docorofile.enums.EDocumentStatus;
+import com.group.docorofile.models.dto.UploadResultDTO;
 import com.group.docorofile.models.dto.UserDocumentDTO;
+import com.group.docorofile.request.DocumentMetadataRequest;
 import com.group.docorofile.response.*;
 import com.group.docorofile.security.JwtTokenUtil;
 import com.group.docorofile.services.iDocumentService;
@@ -15,10 +19,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.lang.reflect.Member;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/v1/api/documents")
@@ -45,27 +48,6 @@ public class DocumentAPIController {
         }
     }
 
-    @GetMapping("/{documentId}")
-    public Object viewDocumentById(@PathVariable UUID documentId,
-                                   @CookieValue(value = "JWT", required = false) String token) {
-        try {
-            String userName = null;
-            String role = null;
-            if (token != null) {
-                userName = jwtTokenUtil.getUsernameFromToken(token);
-                role = jwtTokenUtil.getRoleFromToken(token);
-            }
-            Object dto = documentService.viewDocumentByIdForUI(documentId, role, userName);
-            return new SuccessResponse("Lấy thông tin tài liệu thành công!", 200, dto, LocalDateTime.now());
-        } catch (NotFoundError e) {
-            return new NotFoundError("Không tìm thấy tài liệu này!");
-        } catch (UnauthorizedError e) {
-            return new UnauthorizedError("Bạn chưa đăng nhập!");
-        } catch (Exception e) {
-            return new InternalServerError(e.getMessage());
-        }
-    }
-
     @PreAuthorize("hasRole('ROLE_MEMBER')")
     @PostMapping("/upload")
     public Object uploadDocument(@RequestParam MultipartFile file,
@@ -82,6 +64,82 @@ public class DocumentAPIController {
             return new CreatedResponse("Tài liệu đã được tải lên thành công!", response);
         } catch (RuntimeException e) {
             return new BadRequestError(e.getMessage());
+        }
+    }
+
+    @PreAuthorize("hasRole('ROLE_MEMBER')")
+    @PostMapping("/upload-files")
+    public Object uploadMultipleFiles(@RequestParam("files") MultipartFile[] files,
+                                      @CookieValue(value = "JWT", required = false) String token) {
+        try {
+            String username = jwtTokenUtil.getUsernameFromToken(token);
+            UUID memberId = userService.findByEmail(username).get().getUserId();
+
+            List<UUID> documentIds = new ArrayList<>();
+            for (MultipartFile file : files) {
+                UUID docId = documentService.saveFileOnly(memberId, file);
+                documentIds.add(docId);
+            }
+
+            return new CreatedResponse("Tải lên thành công", documentIds);
+        } catch (RuntimeException e) {
+            return new BadRequestError(e.getMessage());
+        }
+    }
+
+    @PreAuthorize("hasRole('ROLE_MEMBER')")
+    @PostMapping("/upload-metadata")
+    public Object updateDocumentMetadata(@RequestBody List<DocumentMetadataRequest> metadataList,
+                                         @CookieValue(value = "JWT", required = false) String token) {
+        try {
+            String username = jwtTokenUtil.getUsernameFromToken(token);
+            UUID memberId = userService.findByEmail(username).get().getUserId();
+            if (memberId == null) {
+                return new UnauthorizedError("Bạn chưa đăng nhập!");
+            }
+            if (metadataList.isEmpty()) {
+                return new BadRequestError("Danh sách tài liệu rỗng!");
+            }
+
+            MemberEntity member = (MemberEntity) userService.findById(memberId).get();
+
+            int downloadLimit = member.getDownloadLimit();
+
+            List<UserDocumentDTO> documents = new ArrayList<>();
+
+            for (DocumentMetadataRequest req : metadataList) {
+                UUID documentId = UUID.fromString(req.getDocumentId());
+               documents.add(documentService.updateMetadata(documentId, req.getTitle(), req.getDescription(),
+                        req.getNameCourse(), req.getNameUniversity())
+               );
+            }
+
+            int finalDownloadLimit = member.getDownloadLimit();
+            int addedDownloadLimit = finalDownloadLimit - downloadLimit;
+
+            UploadResultDTO response = new UploadResultDTO();
+            response.setDocuments(documents);
+            response.setAddedTurns(addedDownloadLimit);
+            response.setTotalDownloadLimit(finalDownloadLimit);
+
+            return new SuccessResponse("Thay đổi thông tin tài liệu thành công!", 200, response, LocalDateTime.now());
+        } catch (RuntimeException e) {
+            return new BadRequestError(e.getMessage());
+        }
+    }
+
+    @GetMapping("/metadata")
+    public Object getMetaData() {
+        try {
+            List<CourseEntity> courses = documentService.findAllWithUniversity();
+            Map<String, List<String>> result = new HashMap<>();
+            for (CourseEntity course : courses) {
+                String univName = course.getUniversity().getUnivName();
+                result.computeIfAbsent(univName, k -> new ArrayList<>()).add(course.getCourseName());
+            }
+            return new SuccessResponse("Lấy thông tin metadata thành công!", 200, result, LocalDateTime.now());
+        } catch (RuntimeException e) {
+            return new InternalServerError(e.getMessage());
         }
     }
 
@@ -255,6 +313,27 @@ public class DocumentAPIController {
             }
             return new SuccessResponse("Lấy danh sách tài liệu đã tải lên thành công!", 200, documents, LocalDateTime.now());
         } catch (RuntimeException e) {
+            return new InternalServerError(e.getMessage());
+        }
+    }
+
+    @GetMapping("/view/{documentId}")
+    public Object viewDocumentById(@PathVariable UUID documentId,
+                                   @CookieValue(value = "JWT", required = false) String token) {
+        try {
+            String userName = null;
+            String role = null;
+            if (token != null) {
+                userName = jwtTokenUtil.getUsernameFromToken(token);
+                role = jwtTokenUtil.getRoleFromToken(token);
+            }
+            Object dto = documentService.viewDocumentByIdForUI(documentId, role, userName);
+            return new SuccessResponse("Lấy thông tin tài liệu thành công!", 200, dto, LocalDateTime.now());
+        } catch (NotFoundError e) {
+            return new NotFoundError("Không tìm thấy tài liệu này!");
+        } catch (UnauthorizedError e) {
+            return new UnauthorizedError("Bạn chưa đăng nhập!");
+        } catch (Exception e) {
             return new InternalServerError(e.getMessage());
         }
     }

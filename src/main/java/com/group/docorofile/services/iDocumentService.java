@@ -1,5 +1,6 @@
 package com.group.docorofile.services;
 
+import com.group.docorofile.entities.CourseEntity;
 import com.group.docorofile.entities.DocumentEntity;
 import com.group.docorofile.models.dto.AdminDocumentDTO;
 import com.group.docorofile.models.dto.UserDocumentDTO;
@@ -42,6 +43,10 @@ public interface iDocumentService {
 
     String uploadDocument(UUID memberId, MultipartFile file, String title, String description, String nameCourse, String nameUniversity);
 
+    UUID saveFileOnly(UUID memberId, MultipartFile file);
+
+    UserDocumentDTO updateMetadata(UUID documentId, String title, String description, String nameCourse, String nameUniversity);
+
     ResponseEntity<Resource> downloadDocument(UUID memberId, UUID documentId);
 
     List<DocumentEntity> getRelatedDocuments(UUID documentId);
@@ -63,4 +68,6 @@ public interface iDocumentService {
     List<UserDocumentDTO> getDocumentByCourseAndFollowedByMemberForUI(UUID memberId);
 
     List<UserDocumentDTO> getDocumentByAuthor(UUID authorId);
+
+    List<CourseEntity> findAllWithUniversity();
 }
