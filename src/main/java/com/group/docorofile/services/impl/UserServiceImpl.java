@@ -1,8 +1,12 @@
 package com.group.docorofile.services.impl;
 
 import com.group.docorofile.entities.*;
+import com.group.docorofile.enums.EMembershipLevel;
+import com.group.docorofile.models.dto.UserDetailDTO;
+import com.group.docorofile.models.dto.UserInfoDTO;
 import com.group.docorofile.models.users.CreateUserRequest;
 import com.group.docorofile.models.users.UpdateProfileRequest;
+import com.group.docorofile.models.users.UpdateUserRequest;
 import com.group.docorofile.repositories.FollowCourseRepository;
 import com.group.docorofile.repositories.MembershipRepository;
 import com.group.docorofile.repositories.UserRepository;
@@ -21,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -96,8 +101,78 @@ public class UserServiceImpl implements iUserService {
     }
 
     @Override
+    public UserInfoDTO getUserInfoById(UUID id) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundError("User not found with id: " + id));
+
+        UserInfoDTO dto = new UserInfoDTO();
+        dto = dto.mapToUserInfo(user);
+        return dto;
+    }
+
+    @Override
+    public UserDetailDTO getUserDetailById(UUID id) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundError("User not found with id: " + id));
+        return UserDetailDTO.mapTo(user);
+    }
+
+    @Override
     public Page<UserEntity> getAllUsers(Pageable pageable) {
         return userRepository.findAll(pageable);
+    }
+
+    @Override
+    public boolean checkMembership(UUID userId) {
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundError("User not found with id: " + userId));
+
+        if (!(userEntity instanceof MemberEntity member)) {
+            return false;
+        }
+
+        if (member.getMembership() == null) {
+            MembershipEntity membership = new MembershipEntity();
+            membership.setLevel(EMembershipLevel.FREE);
+            membership.setStartDate(LocalDateTime.now());
+            member.setMembership(membership);
+            userRepository.save(member);
+        } else {
+            if( member.getMembership().getEndDate() != null) {
+                if (member.getMembership().getEndDate().isBefore(LocalDateTime.now())) {
+                    member.getMembership().setLevel(EMembershipLevel.FREE);
+                    userRepository.save(member);
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean upgradeMembership(UUID userId, String plan) {
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundError("User not found with id: " + userId));
+
+        if (!(userEntity instanceof MemberEntity member)) {
+            throw new BadRequestError("Only members can have plans");
+        }
+
+        if (plan.equals("FREE")) {
+            member.getMembership().setLevel(EMembershipLevel.FREE);
+            member.getMembership().setStartDate(LocalDateTime.now());
+            member.getMembership().setEndDate(null);
+        } else if (plan.equals("PREMIUM")) {
+            member.getMembership().setLevel(EMembershipLevel.PREMIUM);
+            member.getMembership().setStartDate(LocalDateTime.now());
+            member.getMembership().setEndDate(LocalDateTime.now().plusMonths(1)); // 1 tháng
+        } else {
+            throw new BadRequestError("Invalid plan: " + plan);
+        }
+
+        userRepository.save(member);
+        return true;
     }
 
     @Override
@@ -124,12 +199,30 @@ public class UserServiceImpl implements iUserService {
     }
 
     @Override
-    public UserEntity updateUserByID(UUID id, CreateUserRequest request) {
+    public UserEntity updateUserByID(UUID id, UpdateUserRequest request) {
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundError("User not found with id: " + id));
 
         getUpdateStrategy(user).update(user, request);
         return userRepository.save(user);
+    }
+
+    @Override
+    public boolean changePasswordById(UUID id, String newPassword) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundError("User not found with id: " + id));
+
+        if (newPassword.length() < 6) {
+            throw new BadRequestError("Password must be at least 6 characters long");
+        }
+
+        if (newPassword.equals(user.getPassword())) {
+            throw new BadRequestError("New password cannot be the same as the old password");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        return true;
     }
 
     @Override
@@ -142,6 +235,47 @@ public class UserServiceImpl implements iUserService {
         UserEntity user = optUser.get();
         user.setActive(false);
         userRepository.save(user);
+    }
+
+    @Override
+    public void activateUser(UUID id) {
+        // Soft delete user by setting isActive to false
+        Optional<UserEntity> optUser = userRepository.findById(id);
+        if (!optUser.isPresent()) {
+            throw new NotFoundError("User not found with id: " + id);
+        }
+        UserEntity user = optUser.get();
+        user.setActive(true);
+        userRepository.save(user);
+    }
+
+    @Override
+    public int getTotalUsers() {
+        return (int) userRepository.count();
+    }
+
+    @Override
+    public int getTotalMembers() {
+        return userRepository.findAll().stream()
+                .filter(user -> user instanceof MemberEntity)
+                .mapToInt(user -> 1)
+                .sum();
+    }
+
+    @Override
+    public int getInactiveMembers() {
+        return userRepository.findAll().stream()
+                .filter(user -> !user.isActive())
+                .mapToInt(user -> 1)
+                .sum();
+    }
+
+    @Override
+    public int getTotalMembersWithPlan(String plan) {
+        return userRepository.findAll().stream()
+                .filter(user -> user instanceof MemberEntity && ((MemberEntity) user).getMembership().getLevel().name().equals(plan) )
+                .mapToInt(user -> 1)
+                .sum();
     }
 
     @Override

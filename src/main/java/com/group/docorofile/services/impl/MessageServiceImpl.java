@@ -15,6 +15,7 @@ import com.group.docorofile.request.MessageRequest;
 import com.group.docorofile.response.MessageResponse;
 import com.group.docorofile.response.NotFoundError;
 import com.group.docorofile.services.iMessageService;
+import com.group.docorofile.utils.ProfanityFilter;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -50,10 +51,12 @@ public class MessageServiceImpl implements iMessageService {
         MemberEntity member = memberRepository.findById(senderId)
                 .orElseThrow(() -> new NotFoundError("Sender is not a member"));
 
+        String cleanMessage = ProfanityFilter.filterBadWords(request.getContent());
+
         MessageEntity message = MessageEntity.builder()
                 .chatRoom(chatRoom)
                 .sender(member)
-                .content(request.getContent())
+                .content(cleanMessage)
                 .build();
 
         messageRepository.save(message);

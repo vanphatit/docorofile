@@ -136,6 +136,74 @@ public class UserSeeder {
             userRepository.save(member3);
 
             // ===== MEMBER 4 =====
+            MembershipEntity membership4 = MembershipEntity.builder()
+                    .level(EMembershipLevel.FREE)
+                    .startDate(LocalDateTime.of(2024, 2, 3, 0, 0))
+                    .endDate(LocalDateTime.of(2025, 2, 3, 0, 0))
+                    .build();
+
+
+            MemberEntity member4 = MemberEntity.builder()
+                    .fullName("David Pham")
+                    .email("david@gmail.com")
+                    .password(passwordEncoder.encode("password123"))
+                    .isActive(false)
+                    .membership(membership4)
+                    .isChat(false)
+                    .isComment(true)
+                    .downloadLimit(7)
+                    .studyAt(uit)
+                    .createdOn(LocalDateTime.of(2024, 2, 4, 9, 45))
+                    .modifiedOn(LocalDateTime.of(2024, 2, 4, 9, 45))
+                    .build();
+            userRepository.save(member4);
+
+            // ===== MEMBER 5 =====
+            MembershipEntity membership5 = MembershipEntity.builder()
+                    .level(EMembershipLevel.PREMIUM)
+                    .startDate(LocalDateTime.of(2024, 2, 4, 0, 0))
+                    .endDate(LocalDateTime.of(2025, 2, 4, 0, 0))
+                    .build();
+
+            MemberEntity member5 = MemberEntity.builder()
+                    .fullName("Emma Vo")
+                    .email("emma@gmail.com")
+                    .password(passwordEncoder.encode("password123"))
+                    .isActive(true)
+                    .membership(membership5)
+                    .isChat(true)
+                    .isComment(false)
+                    .downloadLimit(6)
+                    .studyAt(uit)
+                    .createdOn(LocalDateTime.of(2024, 2, 5, 10, 0))
+                    .modifiedOn(LocalDateTime.of(2024, 2, 5, 10, 0))
+                    .build();
+
+            userRepository.save(member5);
+
+            // ===== MEMBER 6 =====
+            MembershipEntity membership6 = MembershipEntity.builder()
+                    .level(EMembershipLevel.FREE)
+                    .startDate(LocalDateTime.of(2024, 2, 5, 0, 0))
+                    .endDate(LocalDateTime.of(2025, 2, 5, 0, 0))
+                    .build();
+
+            MemberEntity member6 = MemberEntity.builder()
+                    .fullName("Frank Do")
+                    .email("frank@gmail.com")
+                    .password(passwordEncoder.encode("password123"))
+                    .isActive(true)
+                    .membership(membership6)
+                    .isChat(false)
+                    .isComment(true)
+                    .downloadLimit(8)
+                    .studyAt(uit)
+                    .createdOn(LocalDateTime.of(2024, 2, 6, 11, 0))
+                    .modifiedOn(LocalDateTime.of(2024, 2, 6, 11, 0))
+                    .build();
+            userRepository.save(member6);
+
+            // ===== MEMBER 4 =====
 //            MembershipEntity membership4 = MembershipEntity.builder()
 //                    .membershipId(UUID.fromString("01964240-fc03-7ab7-bbce-16bb0337a3da"))
 //                    .level(EMembershipLevel.FREE)
@@ -375,8 +443,8 @@ public class UserSeeder {
             // ===== MEMBER 13 =====
             MembershipEntity membership13 = MembershipEntity.builder()
                     .level(EMembershipLevel.PREMIUM)
-                    .startDate(LocalDateTime.of(2024, 2, 13, 0, 0))
-                    .endDate(LocalDateTime.of(2025, 2, 13, 0, 0))
+                    .startDate(LocalDateTime.of(2025, 4, 20, 0, 0))
+                    .endDate(LocalDateTime.of(2025, 5, 20, 0, 0))
                     .build();
 
 
