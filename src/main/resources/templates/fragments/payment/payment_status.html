@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      lang="en"
+      class="light-style layout-wide customizer-hide"
+      dir="ltr"
+      data-theme="theme-default"
+      data-template="vertical-menu-template"
+      data-style="light"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="utf-8" />
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+    <title th:utext="${pageTitle}">DoCoroFile - Trạng thái thanh toán</title>
+
+    <meta name="description" content="" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" th:href="@{/images/logo.png}"/>
+
+</head>
+
+
+<body>
+<!-- Content wrapper -->
+<div class="content-wrapper">
+    <!-- Content -->
+
+    <div class="container-xxl flex-grow-1 container-p-y" layout:fragment="content">
+
+
+<div th:if="${status eq 'success'}" class="text-center">
+    <h2>Thanh toán thành công!</h2>
+    <p>Hãy đăng nhập lại và trải nghiệm tài khoản Premium ngay lúc này.</p>
+
+    <div class="mt-4 d-flex justify-content-center">
+        <a href="/auth/login" class="btn btn-outline-primary d-grid w-100" style="max-width: 300px;">Đăng nhập ngay tại đây</a>
+    </div>
+</div>
+
+<div th:if="${status eq 'fail'}" class="text-center">
+    <h2>Giao dịch thất bại.</h2>
+    <p>Oops, không sao, đăng nhập và thử lại lần nữa bạn nhé.</p>
+
+    <div class="mt-4 d-flex justify-content-center">
+        <a href="/auth/login" class="btn btn-outline-primary d-grid w-100" style="max-width: 300px;">Đăng nhập ngay tại đây</a>
+    </div>
+</div>
+    </div>
+</div>
+
+</body>
+
+</html>

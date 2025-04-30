@@ -5,10 +5,13 @@ import com.group.docorofile.entities.UniversityEntity;
 import com.group.docorofile.entities.UserEntity;
 import com.group.docorofile.models.users.CreateUserRequest;
 import com.group.docorofile.models.users.UpdateProfileRequest;
+import com.group.docorofile.models.users.UpdateUserRequest;
 import com.group.docorofile.repositories.UniversityRepository;
 import com.group.docorofile.response.NotFoundError;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -22,14 +25,15 @@ public class MemberUpdateStrategy implements iUserUpdateStrategy {
     }
 
     @Override
-    public void update(UserEntity user, CreateUserRequest request) {
+    public void update(UserEntity user, UpdateUserRequest request) {
         MemberEntity member = (MemberEntity) user;
         member.setFullName(request.getFullName());
-        member.setEmail(request.getEmail());
-        member.setDownloadLimit(
-                request.getDownloadLimit() != null ? request.getDownloadLimit() : member.getDownloadLimit());
-        member.setChat(Boolean.TRUE.equals(request.getIsChat()));
-        member.setComment(Boolean.TRUE.equals(request.getIsComment()));
+        member.setDownloadLimit(request.getDownloadLimit());
+        member.setChat(Objects.equals(request.getIsChat(), "True"));
+        member.setComment(Objects.equals(request.getIsComment(), "True"));
+        UniversityEntity univ = universityRepository.findByUnivName(request.getUniversityName())
+                .orElseThrow(() -> new NotFoundError("University not found with name: " + request.getUniversityName()));
+        member.setStudyAt(univ);
     }
 
     @Override

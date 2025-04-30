@@ -36,7 +36,13 @@ public abstract class UserEntity implements Serializable {
         }
         if (this.createdOn == null) {
             this.createdOn = LocalDateTime.now();
-            this.modifiedOn = LocalDateTime.now();
+
         }
+        this.modifiedOn = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.modifiedOn = LocalDateTime.now();
     }
 }

@@ -45,6 +45,8 @@ public class SecurityConfig {
                                 "/v1/api/universities/names").permitAll()
                         .requestMatchers("/").permitAll()
                         .requestMatchers(
+                                "/member/payment/vn-pay-callback").permitAll()
+                        .requestMatchers(
                                 "/assets/**",
                                 "/templates/**",
                                 "/static/**",
