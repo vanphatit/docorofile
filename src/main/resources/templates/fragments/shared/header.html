@@ -15,7 +15,7 @@
             <div class="nav-item navbar-search-wrapper mb-0">
                 <a class="nav-item nav-link search-toggler fw-normal px-0" href="javascript:void(0);">
                     <i class="ri-search-line ri-22px scaleX-n1-rtl me-3"></i>
-                    <span class="d-none d-md-inline-block text-muted">Search (Ctrl+/)</span>
+                    <span class="d-none d-md-inline-block text-muted">Search</span>
                 </a>
             </div>
         </div>
@@ -24,7 +24,8 @@
         <ul class="navbar-nav flex-row align-items-center ms-auto">
 
             <!-- Admin/ Moderator -->
-            <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-4 me-xl-1">
+            <li id="badge-role"
+                class="nav-item dropdown-notifications navbar-dropdown dropdown me-4 me-xl-1 d-none">
                 <span class="nav-link btn btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow"
                    data-bs-auto-close="outside">
                     <i class="ri-admin-line ri-22px"></i>
@@ -32,7 +33,7 @@
             </li>
 
             <!-- Notification -->
-            <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-4 me-xl-1">
+            <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-4 me-xl-1 d-none">
                 <a class="nav-link btn btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow"
                    href="javascript:void(0);"
                    data-bs-toggle="dropdown"
@@ -79,7 +80,7 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>
-                        <a class="dropdown-item" href="pages-account-settings-account.html">
+                        <a class="dropdown-item" href="/member/profiles/">
                             <div class="d-flex">
                                 <div class="flex-shrink-0 me-2">
                                     <div class="avatar avatar-online">
@@ -97,20 +98,15 @@
                         <div class="dropdown-divider"></div>
                     </li>
                     <li id="profile-dropdown-menu">
-                        <a class="dropdown-item" href="pages-profile-user.html">
+                        <a class="dropdown-item" href="/member/profiles/">
                             <i class="ri-user-3-line ri-22px me-3"></i><span class="align-middle">My Profile</span>
                         </a>
                     </li>
-                    <li id="setting-dropdown-menu">
-                        <a class="dropdown-item" href="pages-account-settings-account.html">
-                            <i class="ri-settings-4-line ri-22px me-3"></i><span class="align-middle">Settings</span>
-                        </a>
-                    </li>
-                    <li id="faq-dropdown-menu">
-                        <a class="dropdown-item" href="pages-faq.html">
-                            <i class="ri-question-line ri-22px me-3"></i><span class="align-middle">FAQ</span>
-                        </a>
-                    </li>
+<!--                    <li id="setting-dropdown-menu">-->
+<!--                        <a class="dropdown-item" href="pages-account-settings-account.html">-->
+<!--                            <i class="ri-settings-4-line ri-22px me-3"></i><span class="align-middle">Settings</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
                     <li>
                         <div class="d-grid px-4 pt-2 pb-1">
                             <a id="auth-button" class="btn btn-sm btn-danger d-flex" href="/auth/logout">
