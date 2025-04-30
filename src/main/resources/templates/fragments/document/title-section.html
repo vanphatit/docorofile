@@ -1,0 +1,39 @@
+<!-- templates/fragments/title-section.html -->
+<div th:fragment="titleSection">
+
+    <!-- Title -->
+    <div class="title">
+        <h1>
+            <span>Share </span>
+            <span class="highlight">summary</span>
+            <span> to earn download turns</span>
+        </h1>
+        <p id="download-turn-text">
+            You will receive <strong>1 download turn</strong> per approved document.
+        </p>
+    </div>
+
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('/v1/api/users/download-turn-info', {credentials: 'include'})
+                .then(res => res.json())
+                .then(res => {
+                    const currentLimit = parseInt(res.data || '0');
+                    const p = document.getElementById('download-turn-text');
+                    if (!p) return;
+
+                    let needed = 1;
+
+                    if (currentLimit >= 5 && currentLimit % 5 !== 0) {
+                        needed = 5 - (currentLimit % 5);
+                    } else if (currentLimit >= 3 && currentLimit % 3 !== 0) {
+                        needed = 3 - (currentLimit % 3);
+                    } else {
+                        needed = 1;
+                    }
+
+                    p.innerHTML = `You will receive <strong>1 download turn</strong> after uploading <strong>${needed} more document${needed > 1 ? 's' : ''}</strong>.`;
+                });
+        });
+    </script>
+</div>

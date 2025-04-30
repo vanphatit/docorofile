@@ -22,14 +22,24 @@ public class FilePreviewUtils {
 
     public static String getCoverImageBase64(String uploadDir, String fileName) {
         try {
+            if (fileName == null || fileName.isBlank()) {
+                throw new IllegalArgumentException("Tên file null hoặc rỗng.");
+            }
+
             File file;
 
             if (fileName.contains(":") || fileName.startsWith("/")) {
                 // Là đường dẫn tuyệt đối
                 file = new File(fileName);
             } else {
-                // Là tên file tương đối → dùng uploadDir
+                if (uploadDir == null || uploadDir.isBlank()) {
+                    throw new IllegalArgumentException("Đường dẫn thư mục uploadDir null hoặc rỗng.");
+                }
                 file = Paths.get(uploadDir, fileName).toFile();
+            }
+
+            if (!file.exists()) {
+                throw new FileNotFoundException("Không tìm thấy file tại đường dẫn: " + file.getAbsolutePath());
             }
 
             String ext = getExtension(fileName).toLowerCase();
@@ -55,10 +65,12 @@ public class FilePreviewUtils {
             return "data:image/png;base64," + Base64.getEncoder().encodeToString(imageBytes); // convert to base64
 
         } catch (Exception e) {
+            System.err.println("Lỗi khi tạo preview cho file: " + fileName);
             e.printStackTrace();
             return null;
         }
     }
+
 
     private static BufferedImage renderPdf(File file) throws IOException {
         PDDocument doc = PDDocument.load(file);

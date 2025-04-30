@@ -13,6 +13,7 @@ import java.util.UUID;
 @Repository
 public interface CourseRepository extends JpaRepository<CourseEntity, UUID> {
     Optional<CourseEntity> findByCourseName(String courseName);
+
     Boolean existsByCourseName(String courseName);
 
     @Query("SELECT c FROM CourseEntity c WHERE c.courseName = :courseName AND c.university.univName = :universityName")
@@ -28,4 +29,6 @@ public interface CourseRepository extends JpaRepository<CourseEntity, UUID> {
 
     boolean existsByUniversity_UnivId(UUID univId);
 
+    @Query("SELECT c FROM CourseEntity c JOIN FETCH c.university")
+    List<CourseEntity> findAllWithUniversity();
 }

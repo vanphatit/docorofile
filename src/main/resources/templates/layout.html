@@ -49,7 +49,8 @@
     <link rel="stylesheet" th:href="@{/assets/vendor/libs/tagify/tagify.css}"/>
     <link rel="stylesheet" th:href="@{/assets/vendor/libs/nouislider/nouislider.css}"/>
     <link rel="stylesheet" th:href="@{/assets/vendor/libs/swiper/swiper.css}"/>
-
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/dropzone/dropzone.css}" />
+  
     <!-- Page CSS -->
     <link rel="stylesheet" th:href="@{/assets/vendor/css/pages/page-user-view.css}"/>
     <link rel="stylesheet" th:href="@{/assets/vendor/css/pages/app-chat.css}"/>
@@ -321,6 +322,232 @@
         }
     });
 </script>
+<script th:src="@{/assets/pdfjs/pdf.min.js}"></script>
+<script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '/assets/pdfjs/pdf.worker.min.js';
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const docElem = document.getElementById('documentInfo');
+        if (!docElem) return;
+        const documentId = docElem.getAttribute('data-id');
+        const commentContainer = document.getElementById('commentList');
+
+        loadDocumentInfo();
+
+        function loadDocumentInfo() {
+            // === Load Document Info ===
+            fetch(`/v1/api/documents/view/${documentId}`)
+                .then(res => res.json())
+                .then(res => {
+                    const doc = res.data;
+                    console.log("Loaded document", doc);
+                    document.getElementById("documentTitle").innerText = doc.title;
+                    document.getElementById("documentAuthor").innerText = doc.authorName;
+                    document.getElementById("documentCourse").innerText = doc.courseName;
+                    document.getElementById("documentUniv").innerText = doc.universityName;
+                    document.getElementById("documentUpload").innerText = new Date(doc.uploadedDate).toLocaleDateString();
+                    document.getElementById("documentLikes").innerText = doc.likes;
+                    document.getElementById("documentDislikes").innerText = doc.dislikes;
+                    document.getElementById("documentView").innerText = doc.views;
+                    loadFile(doc.fileUrl);
+                    renderComments(doc.comments || []);
+                })
+                .catch(err => {
+                    console.error("Lỗi khi fetch document", err);
+                    Swal.fire('Lỗi', 'Không thể gửi bình luận!', 'error');
+                });
+        }
+
+        function renderComments(comments) {
+            commentContainer.innerHTML = ''; // Xoá hết comment cũ
+            comments.forEach(renderComment);
+        }
+
+        function renderComment(comment) {
+            const div = document.createElement('div');
+            div.className = "d-flex align-items-start mb-4";
+
+            const replyLink = document.createElement('a');
+            replyLink.href = "#commentInput";
+            replyLink.innerText = "Phản hồi";
+            replyLink.onclick = function () {
+                replyToComment(comment.authorName, comment.commentId);
+            };
+
+            const repliesHTML = renderReplies(comment.replies);
+
+            div.innerHTML = `
+        <div class="me-3"><img src="/assets/img/avatars/1.png" class="rounded-circle" width="40"></div>
+        <div>
+            <strong>${comment.authorName}</strong> <small>${formatDate(comment.createdOn)}</small>
+            <p>${comment.content}</p>
+            <div class="reply-placeholder"></div>
+            ${repliesHTML}
+            <hr/>
+        </div>
+    `;
+
+            // Gắn thẻ replyLink vào div .reply-placeholder
+            div.querySelector(".reply-placeholder").appendChild(replyLink);
+
+            commentContainer.appendChild(div);
+        }
+
+        function renderReplies(replies) {
+            return (replies || []).map(reply => `
+            <div class="ms-4 mt-2">
+                <strong>${reply.authorName}</strong> <small>${formatDate(reply.createdOn)}</small>
+                <p>${reply.content}</p>
+                <a href="#commentInput" onclick="replyToComment('${reply.authorName}', '${reply.commentId}')">Phản hồi</a>
+            </div>
+        `).join('');
+        }
+
+        function replyToComment(authorName, commentId) {
+            const input = document.getElementById("commentInput");
+            const hidden = document.getElementById("parentCommentId");
+            hidden.value = commentId; // 🟢 gán parent comment ID vào hidden field
+
+            input.focus(); // focus vào khung nhập
+            input.value = `@${authorName} `; // mention người được reply
+        }
+
+        function formatDate(dateStr) {
+            const d = new Date(dateStr);
+            return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+        }
+
+        // === Gửi bình luận ===
+        document.getElementById('commentForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const content = document.getElementById('commentInput').value.trim();
+            const parentCommentId = document.getElementById('parentCommentId').value.trim() || null;
+
+            if (!content.trim()) {
+                Swal.fire('Lỗi', 'Bình luận không được để trống!', 'error');
+                return;
+            }
+
+            const formData = new URLSearchParams();
+            formData.append('content', content);
+            formData.append('documentId', documentId);
+            if (parentCommentId !== null) {
+                formData.append('parentCommentId', parentCommentId);
+            }
+
+            fetch('/v1/api/comments/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData,
+                credentials: 'include'
+            })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.code === 200) {
+                        document.getElementById('commentInput').value = '';
+                        document.getElementById('parentCommentId').value = '';
+                        loadDocumentInfo();
+                        location.reload();
+                    } else {
+                        Swal.fire('Lỗi', res.message, 'error');
+                    }
+                })
+                .catch(() => Swal.fire('Lỗi', 'Không thể gửi bình luận!', 'error'));
+        });
+
+        function loadFile(fileUrl) {
+            const container = document.getElementById('pdf-container');
+            container.innerHTML = ''; // Clear
+
+            if (fileUrl.endsWith('.pdf')) {
+                pdfjsLib.GlobalWorkerOptions.workerSrc = '/assets/pdfjs/pdf.worker.min.js';
+                pdfjsLib.getDocument(fileUrl).promise.then(pdf => {
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        pdf.getPage(i).then(page => {
+                            const scale = 1.5;
+                            const viewport = page.getViewport({ scale });
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+                            page.render({ canvasContext: ctx, viewport });
+                            canvas.classList.add('pdf-page');
+                            container.appendChild(canvas);
+                        });
+                    }
+                });
+            } else if (fileUrl.endsWith('.docx') || fileUrl.endsWith('.pptx')) {
+                container.innerHTML = `
+          <iframe src="https://view.officeapps.live.com/op/embed.aspx?src=${window.location.origin}${fileUrl}"
+                  width="100%" height="600px" style="border: none;"></iframe>
+        `;
+            } else {
+                container.innerHTML = `
+          <div class="text-center mt-4">
+              <p>Không thể xem trước định dạng file này. </p>
+              <a href="${fileUrl}" download class="btn btn-primary">Tải tài liệu về</a>
+          </div>
+        `;
+            }
+        }
+        document.getElementById("downloadBtn").addEventListener("click", function () {
+            fetch(`/v1/api/documents/download/${documentId}`, {
+                method: "GET",
+                credentials: "include"
+            })
+                .then(async res => {
+                    if (!res.ok) {
+                        const contentType = res.headers.get("Content-Type");
+
+                        // Nếu trả về JSON (hết lượt tải)
+                        if (contentType && contentType.includes("application/json")) {
+                            const data = await res.json();
+                            if (data.redirectToUpload) {
+                                return Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Hết lượt tải!',
+                                    text: data.message || 'Bạn đã hết lượt tải tài liệu.',
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Tải tài liệu lên để nhận lượt tải',
+                                    cancelButtonText: 'Đóng'
+                                }).then(result => {
+                                    if (result.isConfirmed) {
+                                        window.location.href = "/documents/uploads";
+                                    }
+                                });
+                            } else {
+                                return Swal.fire('Lỗi', data.message || 'Không thể tải tài liệu.', 'error');
+                            }
+                        }
+
+                        // Nếu trả về plain text
+                        const text = await res.text();
+                        Swal.fire('Lỗi', "Lỗi tải xuống: " + text, 'error');
+                        return;
+                    }
+
+                    return res.blob();
+                })
+                .then(blob => {
+                    if (!blob) return;
+
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `document_${documentId}.pdf`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(err => {
+                    console.error("Download error:", err);
+                    Swal.fire('Lỗi', 'Không thể tải tài liệu.', 'error');
+                });
+        });
+    });
+</script>
 
 <!-- Core JS -->
 <!-- build:js assets/vendor/js/core.js -->
@@ -333,6 +560,7 @@
 <script th:src="@{/assets/vendor/libs/i18n/i18n.js}"></script>
 <script th:src="@{/assets/vendor/libs/typeahead-js/typeahead.js}"></script>
 <script th:src="@{/assets/vendor/js/menu.js}"></script>
+<script th:src="@{/assets/js/forms-file-upload.js}"></script>
 
 <!-- endbuild -->
 
@@ -350,6 +578,8 @@
 <script th:src="@{/assets/vendor/libs/nouislider/nouislider.js}"></script>
 <script th:src="@{/assets/vendor/libs/swiper/swiper.js}"></script>
 <script th:src="@{/assets/vendor/js/menu.js}"></script>
+<script th:src="@{/assets/vendor/libs/dropzone/dropzone.js}"></script>
+<script th:src="@{/assets/js/forms-file-upload.js}"></script>
 
 <!-- Main JS -->
 <script th:src="@{/assets/js/main.js}"></script>

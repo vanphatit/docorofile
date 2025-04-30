@@ -1,0 +1,26 @@
+<!-- fragments/document/progress-steps.html -->
+<div th:fragment="progressSteps(currentStep)">
+    <div class="steps">
+        <div class="step-container">
+            <!-- Step 1 -->
+            <div class="step">
+                <div class="step-circle" th:classappend="${currentStep >= 1} ? 'step-active' : 'step-inactive'">1</div>
+                <span class="step-label" th:classappend="${currentStep >= 1} ? 'step-label-active' : 'step-label-inactive'">Upload</span>
+            </div>
+            <div class="step-line" th:classappend="${currentStep >= 2} ? 'step-line-active' : ''"></div>
+
+            <!-- Step 2 -->
+            <div class="step">
+                <div class="step-circle" th:classappend="${currentStep >= 2} ? 'step-active' : 'step-inactive'">2</div>
+                <span class="step-label" th:classappend="${currentStep >= 2} ? 'step-label-active' : 'step-label-inactive'">Details</span>
+            </div>
+            <div class="step-line" th:classappend="${currentStep >= 3} ? 'step-line-active' : ''"></div>
+
+            <!-- Step 3 -->
+            <div class="step">
+                <div class="step-circle" th:classappend="${currentStep >= 3} ? 'step-active' : 'step-inactive'">3</div>
+                <span class="step-label" th:classappend="${currentStep >= 3} ? 'step-label-active' : 'step-label-inactive'">Done</span>
+            </div>
+        </div>
+    </div>
+</div>

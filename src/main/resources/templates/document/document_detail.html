@@ -1,0 +1,174 @@
+<!doctype html>
+
+<html lang="en" class="light-style layout-navbar-fixed layout-menu-fixed layout-compact" dir="ltr"
+      data-theme="theme-default" data-assets-path="../../assets/" data-template="vertical-menu-template"
+      data-style="light"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"
+>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+    <title>Document Detail</title>
+
+    <meta name="description" content="" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" th:href="@{/assets/img/favicon/favicon.ico}" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&ampdisplay=swap"
+          rel="stylesheet" />
+
+    <!-- Icons -->
+    <link rel="stylesheet" th:href="@{/assets/vendor/fonts/remixicon/remixicon.css}" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/fonts/flag-icons.css}" />
+
+    <!-- Menu waves for no-customizer fix -->
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/node-waves/node-waves.css}" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" th:href="@{/assets/vendor/css/rtl/core.css}" class="template-customizer-core-css" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/css/rtl/theme-default.css}" class="template-customizer-theme-css" />
+    <link rel="stylesheet" th:href="@{/assets/css/demo.css}" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css}" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/typeahead-js/typeahead.css}" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/plyr/plyr.css}" />
+
+    <!-- Page CSS -->
+    <link rel="stylesheet" th:href="@{/assets/vendor/css/pages/app-academy-details.css}" />
+
+    <!-- Helpers -->
+    <script th:src="@{/assets/vendor/js/helpers.js}"></script>
+    <script th:src="@{/assets/js/config.js}"></script>
+
+    <!-- Custom -->
+    <style>
+        #pdf-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .pdf-page {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 24px;
+            max-width: 100%;
+        }
+
+        .sticky-sidebar {
+            position: sticky;
+            top: 80px;
+            align-self: flex-start;
+        }
+    </style>
+</head>
+
+<body>
+<div th:attr="data-id=${id}" layout:fragment="content" id="documentInfo" class="container-xxl flex-grow-1 container-p-y">
+    <div class="row">
+        <!-- Cột trái: Thông tin tài liệu -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-full">
+                <div class=" card-body">
+                    <h4 class="mb-3 ">Thông tin tài liệu</h4>
+                    <h5 id="documentTitle"> Document Title</h5>
+                    <p>Tác giả: <span id="documentAuthor">Tên tác giả</span></p>
+                    <p>Ngày tải lên: <span id="documentUpload">01/01/2024</span></p>
+                    <p>Khóa học: <span id="documentCourse">Course Name</span></p>
+                    <p>Trường: <span id="documentUniv">University Name</span></p>
+
+                    <!-- Likes / Dislikes -->
+                    <div class="d-flex gap-4 mt-3">
+                        <div class="text-center">
+                            <i class="ri-thumb-up-line ri-24px text-success"></i>
+                            <div id="documentLikes">0</div>
+                        </div>
+                        <div class="text-center">
+                            <i class="ri-thumb-down-line ri-24px text-danger"></i>
+                            <div id="documentDislikes">0</div>
+                        </div>
+                        <div class="text-center">
+                            <i class="ri-eye-line ri-24px text-muted"></i>
+                            <div id="documentView">0</div>
+                        </div>
+                        <div class="text-center">
+                            <button class="btn btn-primary mt-2" id="downloadBtn">
+                                <span>Download</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5>Các bình luận</h5>
+                    <div id="commentList">
+                        <!-- JavaScript sẽ insert comment HTML vào đây -->
+                    </div>
+                    <h5>Bình luận</h5>
+                    <form id="commentForm">
+                        <!-- Hidden để lưu ID comment đang được reply -->
+                        <input type="hidden" id="parentCommentId" name="parentCommentId" />
+
+                        <textarea id="commentInput" class="form-control mb-2" rows="3" placeholder="Nhập bình luận..."></textarea>
+                        <button type="submit" class="btn btn-primary">Gửi</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột phải: Trình đọc PDF + comment -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <!-- Trình đọc file PDF -->
+                    <h5 class="mb-3">Tài liệu PDF</h5>
+                    <div id="pdf-container">
+                        <iframe id="pdf-frame" src="" width="100%" height="600px" style="border: none;"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- / Content -->
+
+    <div class="content-backdrop fade"></div>
+</div>
+<!-- Content wrapper -->
+
+<!-- Overlay -->
+<div class="layout-overlay layout-menu-toggle"></div>
+
+<!-- Drag Target Area To SlideIn Menu On Small Screens -->
+<div class="drag-target"></div>
+<!-- / Layout wrapper -->
+
+<!-- Core JS -->
+<script th:src="@{/assets/vendor/libs/jquery/jquery.js}"></script>
+<script th:src="@{/assets/vendor/libs/popper/popper.js}"></script>
+<script th:src="@{/assets/vendor/js/bootstrap.js}"></script>
+<script th:src="@{/assets/vendor/libs/node-waves/node-waves.js}"></script>
+<script th:src="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js}"></script>
+<script th:src="@{/assets/vendor/libs/hammer/hammer.js}"></script>
+<script th:src="@{/assets/vendor/libs/i18n/i18n.js}"></script>
+<script th:src="@{/assets/vendor/libs/typeahead-js/typeahead.js}"></script>
+<script th:src="@{/assets/vendor/js/menu.js}"></script>
+
+<!-- Vendors JS -->
+<script th:src="@{/assets/vendor/libs/plyr/plyr.js}"></script>
+
+<!-- Main JS -->
+<script th:src="@{/assets/js/main.js}"></script>
+<script th:src="@{/assets/js/app-academy-course-details.js}"></script>
+</body>
+
+</html>
