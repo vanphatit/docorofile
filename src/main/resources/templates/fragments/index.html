@@ -4,10 +4,586 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 layout:decorate="~{layout}">
 <body>
 <div class="container-fluid flex-grow-1 container-p-y" layout:fragment="content">
-  <div class="layout-demo-info">
-    <h4>Layout fluid</h4>
-    <p>Fluid layout sets a <code>100% width</code> at each responsive breakpoint.</p>
-  </div>
+  <!-- Hero: Start -->
+  <section id="landingHero" class="section-py landing-hero position-relative">
+    <img
+            th:src="@{/assets/img/front-pages/backgrounds/hero-bg-light.png}"
+            alt="hero background"
+            class="position-absolute top-0 start-0 w-100 h-100 z-n1"
+            data-speed="1" />
+    <div class="container">
+      <div class="hero-text-box text-center">
+        <h3 class="text-primary hero-title fs-2">All-in-one academic document platform for your learning journey</h3>
+        <h2 class="h6 mb-8">
+          Find documents by course, university, or keyword.<br />Discuss, rate, and upgrade to unlock all features.
+        </h2>
+        <a href="#landingPricing" class="btn btn-lg btn-primary">Start Exploring for Free</a>
+      </div>
+      <div class="position-relative hero-animation-img">
+        <a href="../vertical-menu-template/app-ecommerce-dashboard.html" target="_blank">
+          <div class="hero-dashboard-img text-center">
+            <img
+                    th:src="@{/assets/img/front-pages/landing-page/hero-dashboard-light.png}"
+                    alt="hero dashboard"
+                    class="animation-img"
+                    data-speed="2" />
+          </div>
+          <div class="position-absolute hero-elements-img">
+            <img
+                    th:src="@{/assets/img/front-pages/landing-page/hero-elements-light.png}"
+                    alt="hero elements"
+                    class="animation-img"
+                    data-speed="4" />
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+  <!-- Hero: End -->
+
+  <!-- Useful features: Start -->
+  <section id="landingFeatures" class="section-py landing-features">
+    <div class="container">
+      <h6 class="text-center d-flex justify-content-center align-items-center mb-6">
+        <img
+                th:src="@{/assets/img/front-pages/icons/section-tilte-icon.png}"
+                alt="section title icon"
+                class="me-3" />
+        <span class="text-uppercase">Useful features</span>
+      </h6>
+      <h5 class="text-center mb-2">
+        <span class="display-5 fs-4 fw-bold">Everything you need</span> to boost your academic success
+      </h5>
+      <p class="text-center fw-medium mb-4 mb-md-12">
+        Easily upload, discover, and collaborate on learning materials — all in one place.
+      </p>
+      <div class="features-icon-wrapper row gx-0 gy-12 gx-sm-6 mt-n4 mt-sm-0">
+        <div class="col-lg-4 col-sm-6 text-center features-icon-box">
+          <div class="features-icon mb-4">
+            <img th:src="@{/assets/img/front-pages/icons/ri--flag-line.png}" alt="flag line" />
+          </div>
+          <h5 class="mb-2">Community Flagging</h5>
+          <p class="features-icon-description">
+            Users can report inappropriate content — violations are reviewed and handled promptly.
+          </p>
+        </div>
+        <div class="col-lg-4 col-sm-6 text-center features-icon-box">
+          <div class="features-icon mb-4">
+            <img th:src="@{/assets/img/front-pages/icons/ri--search-2-line.png}" alt="search" />
+          </div>
+          <h5 class="mb-2">Smart Search</h5>
+          <p class="features-icon-description">
+            Easily find documents by course, subject, or keyword using intelligent filters.
+          </p>
+        </div>
+        <div class="col-lg-4 col-sm-6 text-center features-icon-box">
+          <div class="features-icon mb-4">
+            <img th:src="@{/assets/img/front-pages/icons/ri--brain-line.png}" alt="brain" />
+          </div>
+          <h5 class="mb-2">Smart Moderation</h5>
+          <p class="features-icon-description">
+            Moderators review reported documents to ensure a clean and reliable learning environment.
+          </p>
+        </div>
+        <div class="col-lg-4 col-sm-6 text-center features-icon-box">
+          <div class="features-icon mb-4">
+            <img th:src="@{/assets/img/front-pages/icons/ri--user-star-line.png}" alt="user star" />
+          </div>
+          <h5 class="mb-2">Contributor Recognition	</h5>
+          <p class="features-icon-description">
+            Build your reputation as you share helpful documents and support other learners.
+          </p>
+        </div>
+        <div class="col-lg-4 col-sm-6 text-center features-icon-box">
+          <div class="features-icon mb-4">
+            <img th:src="@{/assets/img/front-pages/icons/ri--line-chart-line.png}" alt="chart" />
+          </div>
+          <h5 class="mb-2">Usage Analytics</h5>
+          <p class="features-icon-description">View how many times your uploads have been viewed, downloaded, or saved.</p>
+        </div>
+        <div class="col-lg-4 col-sm-6 text-center features-icon-box">
+          <div class="features-icon mb-4">
+            <img th:src="@{/assets/img/front-pages/icons/ri--rocket-line.png}" alt="rocket" />
+          </div>
+          <h5 class="mb-2">Free & Premium Access</h5>
+          <p class="features-icon-description">Free users get essential features. Upgrade to Premium for advanced limits and benefits.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Useful features: End -->
+
+  <!-- Pricing plans: Start -->
+  <section id="landingPricing" class="section-py bg-body landing-pricing">
+    <div class="container bg-icon-left position-relative">
+      <img
+              th:src="@{/assets/img/front-pages/icons/bg-left-icon-light.png}"
+              alt="section icon"
+              class="position-absolute top-0 start-0"
+              data-speed="1"/>
+      <h6 class="text-center d-flex justify-content-center align-items-center mb-6">
+        <img
+                th:src="@{/assets/img/front-pages/icons/section-tilte-icon.png}"
+                alt="section title icon"
+                class="me-3" />
+        <span class="text-uppercase">pricing plans</span>
+      </h6>
+      <h5 class="text-center mb-2">
+        <span class="display-5 fs-4 fw-bold">Flexible membership options</span> built for learners
+      </h5>
+      <p class="text-center fw-medium mb-10 mb-md-12 pb-lg-4">
+        Access essential features for free, or unlock more power with Premium.
+        Choose the plan that supports your academic goals.
+      </p>
+      <div id="slider-pricing" class="mb-10 mb-md-12"></div>
+      <div class="row gy-6 pt-md-4">
+        <!-- Free Plan: Start -->
+        <div class="col-xl-6 col-lg-6">
+          <div class="card shadow-none border">
+            <div class="card-header border-0 p-6 p-sm-8">
+              <h4 class="mb-2 pb-1 text-center">Free Plan</h4>
+              <div class="d-flex align-items-center">
+                <h5 class="d-flex mb-0"><sup class="h5 mt-4">VND</sup><span class="display-3 fw-bold">0</span></h5>
+                <div class="ms-2 ps-1">
+                  <h6 class="mb-1">Per month</h6>
+                </div>
+              </div>
+              <img th:src="@{/assets/img/front-pages/icons/smiling-icon.png}" alt="smiling icon" />
+            </div>
+            <div class="card-body p-6 p-sm-8 pt-0">
+              <ul class="list-unstyled">
+                <li>
+                  <h5 class="mb-3">
+                    <img
+                            th:src="@{/assets/img/front-pages/icons/list-arrow-icon.png}"
+                            alt="list arrow icon"
+                            class="me-2 pe-1 scaleX-n1-rtl" />
+                    Download limit for documents
+                  </h5>
+                </li>
+                <li>
+                  <h5 class="mb-3">
+                    <img
+                            th:src="@{/assets/img/front-pages/icons/list-arrow-icon.png}"
+                            alt="list arrow icon"
+                            class="me-2 pe-1 scaleX-n1-rtl" />
+                    Follow up to 3 courses
+                  </h5>
+                </li>
+                <li>
+                  <h5 class="mb-3">
+                    <img
+                            th:src="@{/assets/img/front-pages/icons/list-arrow-icon.png}"
+                            alt="list arrow icon"
+                            class="me-2 pe-1 scaleX-n1-rtl" />
+                    View limit for full documents
+                  </h5>
+                </li>
+                <li>
+                  <h5 class="mb-3">
+                    <img
+                            th:src="@{/assets/img/front-pages/icons/list-arrow-icon.png}"
+                            alt="list arrow icon"
+                            class="me-2 pe-1 scaleX-n1-rtl" />
+                    Join discussions with limit
+                  </h5>
+                </li>
+              </ul>
+              <hr />
+              <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div class="me-1">
+                  <h6 class="mb-1">Basic Support</h6>
+                  <p class="small mb-0">Only Email</p>
+                </div>
+                <span class="badge bg-label-primary rounded-pill">AVG. Time: 24h</span>
+              </div>
+              <div class="text-center mt-6 pt-2">
+                <a href="/member/payment/pricing" class="btn btn-outline-primary w-100">Get Started</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Free Plan: End -->
+
+        <!-- Premium Plan: Start -->
+        <div class="col-xl-6 col-lg-6">
+          <div class="card border-primary border-2 shadow-none">
+            <div class="card-header border-0 p-6 p-sm-8">
+              <h4 class="mb-2 pb-1 text-center">Premium Plan</h4>
+              <div class="d-flex align-items-center">
+                <h5 class="d-flex mb-0"><sup class="h5 mt-4">VND</sup><span class="display-3 fw-bold">80.000</span></h5>
+                <div class="ms-2 ps-1">
+                  <h6 class="mb-1">Per month</h6>
+                </div>
+              </div>
+              <img th:src="@{/assets/img/front-pages/icons/smiling-icon.png}" alt="smiling icon" />
+            </div>
+            <div class="card-body p-6 p-sm-8 pt-0">
+              <ul class="list-unstyled">
+                <li>
+                  <h5 class="mb-3">
+                    <img
+                            th:src="@{/assets/img/front-pages/icons/list-arrow-icon.png}"
+                            alt="list arrow icon"
+                            class="me-2 pe-1 scaleX-n1-rtl" />
+                    Everything in basic
+                  </h5>
+                </li>
+                <li>
+                  <h5 class="mb-3">
+                    <img
+                            th:src="@{/assets/img/front-pages/icons/list-arrow-icon.png}"
+                            alt="list arrow icon"
+                            class="me-2 pe-1 scaleX-n1-rtl" />
+                    Unlimited document downloads
+                  </h5>
+                </li>
+                <li>
+                  <h5 class="mb-3">
+                    <img
+                            th:src="@{/assets/img/front-pages/icons/list-arrow-icon.png}"
+                            alt="list arrow icon"
+                            class="me-2 pe-1 scaleX-n1-rtl" />
+                    Full access to all documents
+                  </h5>
+                </li>
+                <li>
+                  <h5 class="mb-3">
+                    <img
+                            th:src="@{/assets/img/front-pages/icons/list-arrow-icon.png}"
+                            alt="list arrow icon"
+                            class="me-2 pe-1 scaleX-n1-rtl" />
+                    Unlimited course follows
+                  </h5>
+                </li>
+                <li>
+                  <h5 class="mb-3">
+                    <img
+                            th:src="@{/assets/img/front-pages/icons/list-arrow-icon.png}"
+                            alt="list arrow icon"
+                            class="me-2 pe-1 scaleX-n1-rtl" />
+                    Join discussions with no limit
+                  </h5>
+                </li>
+              </ul>
+              <hr />
+              <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div class="me-1">
+                  <h6 class="mb-1">Standard Support</h6>
+                  <p class="small mb-0">Email</p>
+                </div>
+                <span class="badge bg-label-primary rounded-pill">AVG. Time: 6h</span>
+              </div>
+              <div class="text-center mt-6 pt-2">
+                <a href="/member/payment/pricing" class="btn btn-primary w-100">Get Started</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Premium Plan: End -->
+      </div>
+    </div>
+  </section>
+  <!-- Pricing plans: End -->
+
+  <!-- Fun facts: Start -->
+  <section id="landingFunFacts" class="section-py landing-fun-facts py-12 my-4">
+    <div class="container">
+      <div class="row gx-0 gy-6 gx-sm-6">
+        <div class="col-md-3 col-sm-6 text-center">
+              <span class="badge rounded-pill bg-label-hover-primary fun-facts-icon mb-6 p-5"
+              ><i class="tf-icons ri-layout-line ri-42px"></i
+              ></span>
+          <h2 class="fw-bold mb-0 fun-facts-text">137+</h2>
+          <h6 class="mb-0 text-body">Completed Sites</h6>
+        </div>
+        <div class="col-md-3 col-sm-6 text-center">
+              <span class="badge rounded-pill bg-label-hover-success fun-facts-icon mb-6 p-5"
+              ><i class="tf-icons ri-time-line ri-42px"></i
+              ></span>
+          <h2 class="fw-bold mb-0 fun-facts-text">1,100+</h2>
+          <h6 class="mb-0 text-body">Working Hours</h6>
+        </div>
+        <div class="col-md-3 col-sm-6 text-center">
+              <span class="badge rounded-pill bg-label-hover-warning fun-facts-icon mb-6 p-5"
+              ><i class="tf-icons ri-user-smile-line ri-42px"></i
+              ></span>
+          <h2 class="fw-bold mb-0 fun-facts-text">137+</h2>
+          <h6 class="mb-0 text-body">Happy Customers</h6>
+        </div>
+        <div class="col-md-3 col-sm-6 text-center">
+              <span class="badge rounded-pill bg-label-hover-info fun-facts-icon mb-6 p-5"
+              ><i class="tf-icons ri-award-line ri-42px"></i
+              ></span>
+          <h2 class="fw-bold mb-0 fun-facts-text">23+</h2>
+          <h6 class="mb-0 text-body">Awards Winning</h6>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Fun facts: End -->
+
+  <!-- FAQ: Start -->
+  <section id="landingFAQ" class="section-py bg-body landing-faq">
+    <div class="container bg-icon-right">
+      <img
+              th:src="@{/assets/img/front-pages/icons/bg-right-icon-light.png}"
+              alt="section icon"
+              class="position-absolute top-0 end-0"
+              data-speed="1"/>
+      <h6 class="text-center d-flex justify-content-center align-items-center mb-6">
+        <img
+                th:src="@{/assets/img/front-pages/icons/section-tilte-icon.png}"
+                alt="section title icon"
+                class="me-3" />
+        <span class="text-uppercase">faq</span>
+      </h6>
+      <h5 class="text-center mb-2">Frequently asked<span class="display-5 fs-4 fw-bold"> questions</span></h5>
+      <p class="text-center fw-medium mb-4 mb-md-12 pb-4">
+        Browse through these FAQs to find answers to commonly asked questions.
+      </p>
+      <div class="row gy-5">
+        <div class="col-lg-5">
+          <div class="text-center">
+            <img
+                    th:src="@{/assets/img/front-pages/landing-page/sitting-girl-with-laptop.png}"
+                    alt="sitting girl with laptop"
+                    class="faq-image scaleX-n1-rtl" />
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <div class="accordion" id="accordionFront">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="head-One">
+                <button
+                        type="button"
+                        class="accordion-button collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#accordionOne"
+                        aria-expanded="true"
+                        aria-controls="accordionOne">
+                  Is DoCoroFile free to use?
+                </button>
+              </h2>
+
+              <div
+                      id="accordionOne"
+                      class="accordion-collapse collapse"
+                      data-bs-parent="#accordionFront"
+                      aria-labelledby="accordionOne">
+                <div class="accordion-body">
+                  Yes. You can browse, download, and upload documents for free.
+                  However, Premium users enjoy higher download limits and access to advanced features.
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item previous-active">
+              <h2 class="accordion-header" id="head-Two">
+                <button
+                        type="button"
+                        class="accordion-button collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#accordionTwo"
+                        aria-expanded="false"
+                        aria-controls="accordionTwo">
+                  What are the benefits of Premium membership?
+                </button>
+              </h2>
+              <div
+                      id="accordionTwo"
+                      class="accordion-collapse collapse"
+                      aria-labelledby="accordionTwo"
+                      data-bs-parent="#accordionFront">
+                <div class="accordion-body">
+                  Unlimited document downloads.
+                  Full access to all documents.
+                  Unlimited course follows.
+                  Join discussions with no limit.
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item active">
+              <h2 class="accordion-header" id="head-Three">
+                <button
+                        type="button"
+                        class="accordion-button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#accordionThree"
+                        aria-expanded="true"
+                        aria-controls="accordionThree">
+                  Can I upload any type of document?
+                </button>
+              </h2>
+              <div
+                      id="accordionThree"
+                      class="accordion-collapse collapse show"
+                      aria-labelledby="accordionThree"
+                      data-bs-parent="#accordionFront">
+                <div class="accordion-body">
+                  Yes, as long as it is educational and complies with our terms of service.
+                  We do not allow copyrighted, harmful, or irrelevant content.
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="head-Four">
+                <button
+                        type="button"
+                        class="accordion-button collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#accordionFour"
+                        aria-expanded="false"
+                        aria-controls="accordionFour">
+                  How are violations handled?
+                </button>
+              </h2>
+              <div
+                      id="accordionFour"
+                      class="accordion-collapse collapse"
+                      aria-labelledby="accordionFour"
+                      data-bs-parent="#accordionFront">
+                <div class="accordion-body">
+                  DoCoroFile relies on community flagging.
+                  Reported documents are reviewed by moderators and removed if they violate our policies.
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="head-Five">
+                <button
+                        type="button"
+                        class="accordion-button collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#accordionFive"
+                        aria-expanded="false"
+                        aria-controls="accordionFive">
+                  Which file formats are supported?
+                </button>
+              </h2>
+              <div
+                      id="accordionFive"
+                      class="accordion-collapse collapse"
+                      aria-labelledby="accordionFive"
+                      data-bs-parent="#accordionFront">
+                <div class="accordion-body">
+                  PDF, DOCX, and other common academic formats.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- FAQ: End -->
+
+  <!-- CTA: Start -->
+  <section id="landingCTA" class="section-py landing-cta p-lg-0 pb-0 position-relative">
+    <img
+            th:src="@{/assets/img/front-pages/backgrounds/cta-bg.png}"
+            class="position-absolute bottom-0 end-0 scaleX-n1-rtl h-100 w-100 z-n1"
+            alt="cta image" />
+    <div class="container">
+      <div class="row align-items-center gy-5 gy-lg-0">
+        <div class="col-lg-6 text-center text-lg-start">
+          <h3 class="display-5 text-primary fw-bold mb-1 h3">Ready to Get Started?</h3>
+          <p class="fw-medium mb-6 mb-md-8">Discuss, rate, and upgrade to unlock all features.</p>
+          <a href="payment-page.html" class="btn btn-primary"
+          >Start Exploring for Free! <i class="ri-arrow-right-line ri-16px ms-2 scaleX-n1-rtl"></i
+          ></a>
+        </div>
+        <div class="col-lg-6 pt-lg-12">
+          <img
+                  th:src="@{/assets/img/front-pages/landing-page/cta-dashboard.png}"
+                  alt="cta dashboard"
+                  class="img-fluid" />
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- CTA: End -->
+
+  <!-- Contact Us: Start
+  <section id="landingContact" class="section-py bg-body landing-contact">
+    <div class="container bg-icon-left position-relative">
+      <img
+              src="../../assets/img/front-pages/icons/bg-left-icon-light.png"
+              alt="section icon"
+              class="position-absolute top-0 start-0"
+              data-speed="1"
+              data-app-light-img="front-pages/icons/bg-left-icon-light.png"
+              data-app-dark-img="front-pages/icons/bg-left-icon-dark.png" />
+      <h6 class="text-center d-flex justify-content-center align-items-center mb-6">
+        <img
+                src="../../assets/img/front-pages/icons/section-tilte-icon.png"
+                alt="section title icon"
+                class="me-3" />
+        <span class="text-uppercase">contact us</span>
+      </h6>
+      <h5 class="text-center mb-2"><span class="display-5 fs-4 fw-bold">Lets work</span> together</h5>
+      <p class="text-center fw-medium mb-4 mb-md-12 pb-3">Any question or remark? just write us a message</p>
+      <div class="row gy-6">
+        <div class="col-lg-5">
+          <div class="card h-100">
+            <div class="bg-primary rounded-4 text-white card-body p-8">
+              <p class="fw-medium mb-1_5 tagline">Let’s contact with us</p>
+              <h4 class="text-white mb-5 title">Share your ideas or requirement with our experts.</h4>
+              <img
+                      src="../../assets/img/front-pages/landing-page/let’s-contact.png
+              "
+                      alt="let’s contact"
+                      class="w-100 mb-5" />
+              <p class="mb-0 description">
+                Looking for more customisation, more features, and more anything? Don’t worry, We’ve provide you
+                with an entire team of experienced professionals.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="mb-6">Share your ideas</h5>
+              <form>
+                <div class="row g-5">
+                  <div class="col-md-6">
+                    <div class="form-floating form-floating-outline">
+                      <input type="text" class="form-control" id="basic-default-fullname" placeholder="John Doe" />
+                      <label for="basic-default-fullname">Full name</label>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="form-floating form-floating-outline">
+                      <input
+                              type="email"
+                              class="form-control"
+                              id="basic-default-email"
+                              placeholder="johndoe99@gmail.com" />
+                      <label for="basic-default-email">Email address</label>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="form-floating form-floating-outline">
+                          <textarea
+                                  class="form-control h-px-250"
+                                  placeholder="Message"
+                                  aria-label="Message"
+                                  id="basic-default-message"></textarea>
+                      <label for="basic-default-message">Message</label>
+                    </div>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-5">Send inquiry</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  Contact Us: End -->
 </div>
 </body>
 </html>

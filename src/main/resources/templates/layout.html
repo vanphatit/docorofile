@@ -33,6 +33,7 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     <link rel="stylesheet" th:href="@{/assets/vendor/css/rtl/core.css}" class="template-customizer-core-css" />
     <link rel="stylesheet" th:href="@{/assets/vendor/css/rtl/theme-default.css}" class="template-customizer-theme-css" />
     <link rel="stylesheet" th:href="@{/assets/css/demo.css}" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/css/pages/front-page.css}" />
 
     <!-- Vendors CSS -->
     <link rel="stylesheet" th:href="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css}"/>
@@ -46,11 +47,14 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     <link rel="stylesheet" th:href="@{/assets/vendor/libs/animate-css/animate.css}" />
     <link rel="stylesheet" th:href="@{/assets/vendor/libs/sweetalert2/sweetalert2.css}" />
     <link rel="stylesheet" th:href="@{/assets/vendor/libs/tagify/tagify.css}" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/nouislider/nouislider.css}" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/swiper/swiper.css}" />
 
     <!-- Page CSS -->
     <link rel="stylesheet" th:href="@{/assets/vendor/css/pages/page-user-view.css}" />
     <link rel="stylesheet" th:href="@{/assets/vendor/css/pages/app-chat.css}" />
-    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <link th:href="@{https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css}" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/assets/vendor/css/pages/front-page-landing.css}" />
 
     <!-- Helpers -->
     <script th:src="@{/assets/vendor/js/helpers.js}"></script>
@@ -1360,11 +1364,15 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 <script th:src="@{/assets/vendor/libs/cleavejs/cleave-phone.js}"></script>
 <script th:src="@{/assets/vendor/libs/sweetalert2/sweetalert2.js}"></script>
 <script th:src="@{/assets/vendor/libs/tagify/tagify.js}"></script>
+<script th:src="@{/assets/vendor/libs/nouislider/nouislider.js}"></script>
+<script th:src="@{/assets/vendor/libs/swiper/swiper.js}"></script>
 
 <!-- Main JS -->
 <script th:src="@{/assets/js/main.js}"></script>
+<script th:src="@{/assets/js/front-main.js}"></script>
 
 <!-- Page JS -->
+<script th:src="@{/assets/js/front-page-landing.js}"></script>
 <script th:src="@{/assets/js/app-user-list.js}"></script>
 <script th:src="@{/assets/js/modal-edit-user.js}"></script>
 <script th:src="@{/assets/js/app-user-view.js}"></script>
