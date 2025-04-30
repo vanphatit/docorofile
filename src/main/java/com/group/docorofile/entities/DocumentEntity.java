@@ -2,6 +2,7 @@ package com.group.docorofile.entities;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import com.group.docorofile.enums.EDocumentStatus;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -35,7 +36,8 @@ public class DocumentEntity implements Serializable {
     @ManyToOne(optional = false)
     private MemberEntity author;
 
-    @ManyToOne(optional = false)
+    @ManyToOne
+    @JoinColumn(name = "course_course_id", nullable = true) // <-- rõ ràng cho JPA + DB
     private CourseEntity course;
 
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL)

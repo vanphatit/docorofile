@@ -57,4 +57,6 @@ public interface iUserService {
     int getTotalMembersWithPlan(String plan);
 
     Optional<UserEntity> findByEmail(String email);
+
+    Optional<UserEntity> findById(UUID id);
 }

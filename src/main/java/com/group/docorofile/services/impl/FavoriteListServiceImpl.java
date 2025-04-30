@@ -79,7 +79,8 @@ public class FavoriteListServiceImpl implements iFavoriteListService {
 
         // Chuyển đổi sang UserDocumentDTO
         return favoriteList.stream()
-                .map(favorite -> DocumentMapper.toUserDTO(favorite.getDocument()))
+                .map(favorite -> DocumentMapper
+                        .toUserDTO(favorite.getDocument()))
                 .toList();
     }
 
