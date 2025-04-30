@@ -1273,8 +1273,6 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
             document.getElementById('fullName').innerText = result.data.name || 'Người dùng';
             document.getElementById('membershipName').innerText = result.data.membershipName || 'Thành viên';
 
-
-
             fetch("/v1/api/users/stats", {
                 method: 'GET',
                 headers: {
@@ -1366,6 +1364,7 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 <script th:src="@{/assets/vendor/libs/tagify/tagify.js}"></script>
 <script th:src="@{/assets/vendor/libs/nouislider/nouislider.js}"></script>
 <script th:src="@{/assets/vendor/libs/swiper/swiper.js}"></script>
+<script th:src="@{/assets/vendor/js/menu.js}"></script>
 
 <!-- Main JS -->
 <script th:src="@{/assets/js/main.js}"></script>
