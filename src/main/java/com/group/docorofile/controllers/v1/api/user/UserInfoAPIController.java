@@ -9,13 +9,17 @@ import com.group.docorofile.models.dto.UserInfoDTO;
 import com.group.docorofile.models.users.CreateUserRequest;
 import com.group.docorofile.entities.UserEntity;
 import com.group.docorofile.models.users.UpdateProfileRequest;
+import com.group.docorofile.models.users.UpdateUserRequest;
 import com.group.docorofile.repositories.UserRepository;
 import com.group.docorofile.response.CreatedResponse;
 import com.group.docorofile.response.SuccessResponse;
 import com.group.docorofile.response.NotFoundError;
+import com.group.docorofile.response.UnauthorizedError;
+import com.group.docorofile.security.CustomUserDetails;
 import com.group.docorofile.services.impl.UserServiceImpl;
 import com.group.docorofile.services.specifications.UserSpecifications;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,6 +29,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -32,13 +39,14 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/v1/api/users")
+@RequiredArgsConstructor
 public class UserInfoAPIController {
 
-    @Autowired
-    private UserServiceImpl userService;
+    private final UserServiceImpl userService;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/newMember")
     public ResponseEntity<SuccessResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
@@ -118,14 +126,14 @@ public class UserInfoAPIController {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new DataTableResponse<>(draw, 0, 0, Collections.emptyList()));
     }
 
-//    // Cập nhật user theo ID
-//    @PreAuthorize("hasRole('ROLE_ADMIN)')")
-//    @PutMapping("/{id}")
-//    public ResponseEntity<SuccessResponse> updateUser(@PathVariable UUID id, @Valid @RequestBody CreateUserRequest request) {
-//        UserEntity user = userService.updateUser(id, request);
-//        SuccessResponse response = new SuccessResponse("User updated successfully", HttpStatus.OK.value(), user, LocalDateTime.now());
-//        return ResponseEntity.ok(response);
-//    }
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<SuccessResponse> updateUser(@PathVariable UUID id,
+                                                      @ModelAttribute UpdateUserRequest request) {
+        userService.updateUserByID(id, request);
+        return ResponseEntity.ok(new SuccessResponse("User updated successfully", 200, null, LocalDateTime.now()));
+    }
+
 
     @PreAuthorize("hasRole('ROLE_MEMBER')")
     @PutMapping("/updateMyProfile")
@@ -173,6 +181,30 @@ public class UserInfoAPIController {
         boolean result = userService.checkMembership(userId);
         SuccessResponse response = new SuccessResponse("Checked membership successfully", HttpStatus.OK.value(), result, LocalDateTime.now());
         return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping("/upgrade-plan/{userId}")
+    public ResponseEntity<SuccessResponse> upgradeMembership(
+            @PathVariable UUID userId,
+            @RequestParam("plan") String plan) {
+
+        boolean result = userService.upgradeMembership(userId, plan.toUpperCase());
+        SuccessResponse response = new SuccessResponse("Membership upgraded successfully", HttpStatus.OK.value(), result, LocalDateTime.now());
+        return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestParam("userId") String id,
+                                            @RequestParam("newPassword") String newPassword) {
+        UUID userId = UUID.fromString(id);
+        System.out.println("User ID: " + userId);
+        System.out.println("New Password: " + newPassword);
+        SuccessResponse successResponse = new SuccessResponse(
+                "Đổi mật khẩu thành công!", HttpStatus.OK.value(),
+                userService.changePasswordById(userId, newPassword), LocalDateTime.now());
+        return ResponseEntity.ok(successResponse);
     }
 
 }

@@ -14,6 +14,7 @@ public class DatabaseSeeder {
     private final UserSeeder userSeeder;
     private final FollowCourseSeeder followCourseSeeder;
     private final ChatRoomSeeder chatRoomSeeder;
+    private final PaymentSeeder paymentSeeder;
 
     @PostConstruct
     public void seedAll() {
@@ -23,6 +24,7 @@ public class DatabaseSeeder {
         userSeeder.seedUsers();
 //        followCourseSeeder.seedFollowCourses();
         chatRoomSeeder.seedChatRooms();
+        paymentSeeder.seedPayments();
         System.out.println("✅ Database seeded successfully!");
     }
 }

@@ -7,6 +7,7 @@ import com.group.docorofile.enums.EMembershipLevel;
 import com.group.docorofile.enums.ENotificationType;
 import com.group.docorofile.enums.EPaymentStatus;
 import com.group.docorofile.models.dto.PaymentDTO;
+import com.group.docorofile.models.dto.PaymentTableDTO;
 import com.group.docorofile.observer.NotificationCenter;
 import com.group.docorofile.repositories.MemberRepository;
 import com.group.docorofile.repositories.PaymentRepository;
@@ -16,6 +17,8 @@ import com.group.docorofile.services.impl.NotificationServiceImpl;
 import com.group.docorofile.utils.VNPayUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -152,5 +155,7 @@ public class PaymentService {
                 .build();
     }
 
-
+    public Page<PaymentEntity> getPaymentsByUser(UUID userId, Pageable pageable) {
+        return paymentRepository.findByPayer_UserId(userId, pageable);
+    }
 }

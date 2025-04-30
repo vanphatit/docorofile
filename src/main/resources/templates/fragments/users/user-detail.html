@@ -6,7 +6,7 @@
 <div class="container-fluid flex-grow-1 container-p-y" layout:fragment="content">
     <div class="row gy-6 gy-md-0">
         <!-- User Sidebar -->
-        <div class="col-xl-4 col-lg-5 col-md-5 order-1 order-md-0">
+        <div class="col-xl-6 col-lg-6 col-md-6 order-1 order-md-0">
             <!-- User Card -->
             <div class="card mb-6">
                 <div class="card-body pt-12">
@@ -128,7 +128,7 @@
                     <small id="userInfo-membershipContains">4 days remaining</small>
                     <div class="d-grid w-100 mt-6">
                         <button class="btn btn-primary" data-bs-target="#upgradePlanModal" data-bs-toggle="modal">
-                            Upgrade Plan
+                            Change Plan
                         </button>
                     </div>
                 </div>
@@ -138,29 +138,7 @@
         <!--/ User Sidebar -->
 
         <!-- User Content -->
-        <div class="col-xl-8 col-lg-7 col-md-7 order-0 order-md-1">
-            <!-- User Tabs -->
-            <div class="nav-align-top">
-                <ul class="nav nav-pills flex-column flex-md-row mb-6 row-gap-2">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="javascript:void(0);"
-                        ><i class="ri-group-line me-2"></i>Account</a
-                        >
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="app-user-view-security.html"
-                        ><i class="ri-lock-2-line me-2"></i>Security</a
-                        >
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="app-user-view-billing.html"
-                        ><i class="ri-bookmark-line me-2"></i>Billing & Plans</a
-                        >
-                    </li>
-                </ul>
-            </div>
-            <!--/ User Tabs -->
-
+        <div class="col-xl-6 col-lg-6 col-md-6 order-0 order-md-1">
             <!-- Activity Timeline
             <div class="card mb-6">
                 <h5 class="card-header">User Activity Timeline</h5>
@@ -260,8 +238,61 @@
             </div>
             /Activity Timeline -->
 
+            <!-- Change Password -->
+            <div id="card-change-password" class="card mb-6">
+                <h5 class="card-header">Change Password</h5>
+                <div class="card-body">
+                    <form id="formChangePassword">
+                        <div class="alert alert-warning alert-dismissible" role="alert">
+                            <h5 class="alert-heading mb-1">Ensure that these requirements are met</h5>
+                            <span>Minimum 8 characters long, uppercase & symbol</span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        <div class="row gx-5">
+                            <div class="mb-3 col-12 col-sm-6 form-password-toggle">
+                                <div class="input-group input-group-merge">
+                                    <div class="form-floating form-floating-outline">
+                                        <input
+                                                class="form-control"
+                                                type="password"
+                                                id="newPassword"
+                                                name="newPassword"
+                                                placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
+                                        <label for="newPassword">New Password</label>
+                                    </div>
+                                    <span class="input-group-text cursor-pointer text-heading"
+                                    ><i class="ri-eye-off-line"></i
+                                    ></span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3 col-12 col-sm-6 form-password-toggle">
+                                <div class="input-group input-group-merge">
+                                    <div class="form-floating form-floating-outline">
+                                        <input
+                                                class="form-control"
+                                                type="password"
+                                                name="confirmPassword"
+                                                id="confirmPassword"
+                                                placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
+                                        <label for="confirmPassword">Confirm New Password</label>
+                                    </div>
+                                    <span class="input-group-text cursor-pointer text-heading"
+                                    ><i class="ri-eye-off-line"></i
+                                    ></span>
+                                </div>
+                            </div>
+                            <div>
+                                <button id="change-password-submit" type="submit" class="btn btn-primary me-2">Change Password</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!--/ Change Password -->
+
             <!-- Invoice table -->
-            <div class="card">
+            <div id="card-invoice" class="card">
                 <div class="table-responsive mb-4">
                     <table class="table datatable-invoice">
                         <thead>
@@ -271,7 +302,6 @@
                             <th>Status</th>
                             <th>Total</th>
                             <th>Issued Date</th>
-                            <th>Action</th>
                         </tr>
                         </thead>
                     </table>
@@ -291,110 +321,83 @@
                 <div class="modal-body p-0">
                     <div class="text-center mb-6">
                         <h4 class="mb-2">Edit User Information</h4>
-                        <p class="mb-6">Updating user details will receive a privacy audit.</p>
+                        <p class="mb-6">Updating details for this user.</p>
                     </div>
-                    <form id="editUserForm" class="row g-5" onsubmit="return false">
+                    <form id="editUserForm" class="row g-5">
                         <div class="col-12 col-md-6">
                             <div class="form-floating form-floating-outline">
                                 <input
                                         type="text"
-                                        id="modalEditUserFirstName"
-                                        name="modalEditUserFirstName"
+                                        id="modalEditUserFullName"
+                                        name="modalEditUserFullName"
                                         class="form-control"
-                                        value="Oliver"
                                         placeholder="Oliver" />
-                                <label for="modalEditUserFirstName">First Name</label>
+                                <label for="modalEditUserFullName">Full name</label>
                             </div>
                         </div>
                         <div class="col-12 col-md-6">
                             <div class="form-floating form-floating-outline">
                                 <input
                                         type="text"
-                                        id="modalEditUserLastName"
-                                        name="modalEditUserLastName"
+                                        id="modalEditUserDownloadLimit"
+                                        name="modalEditUserDownloadLimit"
                                         class="form-control"
-                                        value="Queen"
-                                        placeholder="Queen" />
-                                <label for="modalEditUserLastName">Last Name</label>
+                                        placeholder="0" />
+                                <label for="modalEditUserDownloadLimit">Download limit</label>
                             </div>
                         </div>
-                        <div class="col-12">
-                            <div class="form-floating form-floating-outline">
-                                <input
-                                        type="text"
-                                        id="modalEditUserName"
-                                        name="modalEditUserName"
-                                        class="form-control"
-                                        value="oliver.queen"
-                                        placeholder="oliver.queen" />
-                                <label for="modalEditUserName">Username</label>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="form-floating form-floating-outline">
-                                <input
-                                        type="text"
-                                        id="modalEditUserEmail"
-                                        name="modalEditUserEmail"
-                                        class="form-control"
-                                        value="oliverqueen@gmail.com"
-                                        placeholder="oliverqueen@gmail.com" />
-                                <label for="modalEditUserEmail">Email</label>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-md-6" id="li-modalEditUniversity">
                             <div class="form-floating form-floating-outline">
                                 <select
-                                        id="modalEditUserStatus"
-                                        name="modalEditUserStatus"
+                                        id="modalEditUniversity"
+                                        name="modalEditUniversity"
                                         class="form-select"
                                         aria-label="Default select example">
-                                    <option value="1" selected>Active</option>
-                                    <option value="2">Inactive</option>
-                                    <option value="3">Suspended</option>
                                 </select>
-                                <label for="modalEditUserStatus">Status</label>
+                                <label for="modalEditUniversity">University</label>
                             </div>
                         </div>
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-md-6" id="li-modalEditIsChat">
                             <div class="form-floating form-floating-outline">
-                                <input
-                                        type="text"
-                                        id="modalEditTaxID"
-                                        name="modalEditTaxID"
-                                        class="form-control modal-edit-tax-id"
-                                        placeholder="123 456 7890" />
-                                <label for="modalEditTaxID">Tax ID</label>
+                                <select
+                                        id="modalEditIsChat"
+                                        name="modalEditIsChat"
+                                        class="form-select"
+                                        aria-label="Default select example">
+                                    <option value="True" selected>True</option>
+                                    <option value="False">False</option>
+                                </select>
+                                <label for="modalEditIsChat">Can chat</label>
                             </div>
                         </div>
-                        <div class="col-12 col-md-6">
-                            <div class="input-group input-group-merge">
-                                <span class="input-group-text">US (+1)</span>
-                                <div class="form-floating form-floating-outline">
-                                    <input
-                                            type="text"
-                                            id="modalEditUserPhone"
-                                            name="modalEditUserPhone"
-                                            class="form-control phone-number-mask"
-                                            value="+1 609 933 4422"
-                                            placeholder="+1 609 933 4422" />
-                                    <label for="modalEditUserPhone">Phone Number</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-md-6" id="li-modalEditIsComment">
                             <div class="form-floating form-floating-outline">
-                                <input
-                                        id="TagifyLanguageSuggestion"
-                                        name="TagifyLanguageSuggestion"
-                                        class="form-control h-auto"
-                                        placeholder="select language"
-                                        value="English" />
-                                <label for="TagifyLanguageSuggestion">Language</label>
+                                <select
+                                        id="modalEditIsComment"
+                                        name="modalEditIsComment"
+                                        class="form-select"
+                                        aria-label="Default select example">
+                                    <option value="True" selected>True</option>
+                                    <option value="False">False</option>
+                                </select>
+                                <label for="modalEditIsComment">Can comment</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6" id="li-modalEditIsReportManager">
+                            <div class="form-floating form-floating-outline">
+                                <select
+                                        id="modalEditIsReportManager"
+                                        name="modalEditIsReportManager"
+                                        class="form-select"
+                                        aria-label="Default select example">
+                                    <option value="True" selected>True</option>
+                                    <option value="False">False</option>
+                                </select>
+                                <label for="modalEditIsReportManager">Can manage report</label>
                             </div>
                         </div>
                         <div class="col-12 text-center d-flex flex-wrap justify-content-center gap-4 row-gap-4">
-                            <button type="submit" class="btn btn-primary">Submit</button>
+                            <button id="btn-modelSubmit" type="submit" class="btn btn-primary">Submit</button>
                             <button
                                     type="reset"
                                     class="btn btn-outline-secondary"
@@ -417,10 +420,10 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 <div class="modal-body pt-md-0 px-0">
                     <div class="text-center mb-6">
-                        <h4 class="mb-2">Upgrade Plan</h4>
+                        <h4 class="mb-2">Change Plan</h4>
                         <p class="mb-10">Choose the best plan for user.</p>
                     </div>
-                    <form id="upgradePlanForm" class="row g-4 d-flex align-items-center" onsubmit="return false">
+                    <form id="upgradePlanForm" class="row g-4 d-flex align-items-center">
                         <div class="col-sm-9">
                             <select
                                     id="choosePlan"
@@ -428,9 +431,8 @@
                                     class="form-select form-select-sm"
                                     aria-label="Choose Plan">
                                 <option selected>Choose Plan</option>
-                                <option value="standard">Standard - $99/month</option>
-                                <option value="exclusive">Exclusive - $249/month</option>
-                                <option value="Enterprise">Enterprise - $499/month</option>
+                                <option value="FREE">Free - 0VND/month</option>
+                                <option value="PREMIUM">PREMIUM - 80.000VND/month</option>
                             </select>
                         </div>
                         <div class="col-sm-3 d-flex align-items-end">
@@ -440,14 +442,13 @@
                 </div>
                 <hr class="my-1" />
                 <div class="modal-body pb-md-0 px-0">
-                    <p class="mb-1">User current plan is standard plan</p>
+                    <p id="modalChangePlan-CurrentPlan" class="mb-1">User current plan is standard plan</p>
                     <div class="d-flex justify-content-between align-items-center flex-wrap">
                         <div class="d-flex justify-content-center me-2 mt-4">
-                            <sup class="h5 pricing-currency mt-5 mb-0 me-1 text-primary">$</sup>
-                            <h1 class="mb-0 text-primary">99</h1>
+                            <sup class="h5 pricing-currency mt-5 mb-0 me-1 text-primary">VND</sup>
+                            <h2 id="modelChangePlan-CurrentPlanPrice" class="mb-0 text-primary">99</h2>
                             <sub class="h5 pricing-duration mt-auto mb-3 small fw-normal">/month</sub>
                         </div>
-                        <button class="btn btn-outline-danger cancel-subscription mt-4">Cancel Subscription</button>
                     </div>
                 </div>
             </div>
