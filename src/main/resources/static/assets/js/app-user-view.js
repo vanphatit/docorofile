@@ -5,10 +5,29 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
     const parts = window.location.pathname.split('/').filter(p => p);
-    const userId = parts[parts.length - 1];
+    let userId = parts[parts.length - 1];
+
+    const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if(!regex.test(userId)) {
+        const response = await fetch('/v1/api/auth/current-user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include' // ⚠️ QUAN TRỌNG: gửi cookie (JWT) kèm request
+        });
+
+        if (!response.ok) {
+            throw new Error('Không thể lấy thông tin người dùng');
+        }
+
+        const result = await response.json();
+        const data = result.data;
+        if (!data) return;
+        userId = data.id;
+    }
 
     try {
-
         await fetch(`/v1/api/users/checkMembership/${userId}`, {
             method: 'POST',
             credentials: 'include'
@@ -149,7 +168,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-(function () {
+(async function () {
     const formChangePass = document.querySelector('#formChangePassword');
     const btnChangePass = document.querySelector('#change-password-submit');
 
@@ -207,7 +226,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         const parts = window.location.pathname.split('/').filter(p => p);
-        const userId = parts[parts.length - 1];
+        let userId = parts[parts.length - 1];
+
+        const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if(!regex.test(userId)) {
+            const response = await fetch('/v1/api/auth/current-user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include' // ⚠️ QUAN TRỌNG: gửi cookie (JWT) kèm request
+            });
+
+            if (!response.ok) {
+                throw new Error('Không thể lấy thông tin người dùng');
+            }
+
+            const result = await response.json();
+            const data = result.data;
+            if (!data) return;
+            userId = data.id;
+        }
         // Handle form submission
         btnChangePass.addEventListener('click', async (e) => {
             e.preventDefault();
@@ -253,7 +292,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (suspendUser) {
         suspendUser.onclick = async function () {
             const parts = window.location.pathname.split('/').filter(p => p);
-            const userId = parts[parts.length - 1];
+            let userId = parts[parts.length - 1];
+
+            const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+            if(!regex.test(userId)) {
+                const response = await fetch('/v1/api/auth/current-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include' // ⚠️ QUAN TRỌNG: gửi cookie (JWT) kèm request
+                });
+
+                if (!response.ok) {
+                    throw new Error('Không thể lấy thông tin người dùng');
+                }
+
+                const result = await response.json();
+                const data = result.data;
+                if (!data) return;
+                userId = data.id;
+            }
             const userStatusEl = document.getElementById('user-info-active');
             const currentStatus = userStatusEl ? userStatusEl.innerText : null;
 
@@ -331,7 +390,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             e.preventDefault();
 
             const parts = window.location.pathname.split('/').filter(p => p);
-            const userId = parts[parts.length - 1];
+            let userId = parts[parts.length - 1];
+
+            const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+            if(!regex.test(userId)) {
+                const response = await fetch('/v1/api/auth/current-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include' // ⚠️ QUAN TRỌNG: gửi cookie (JWT) kèm request
+                });
+
+                if (!response.ok) {
+                    throw new Error('Không thể lấy thông tin người dùng');
+                }
+
+                const result = await response.json();
+                const data = result.data;
+                if (!data) return;
+                userId = data.id;
+            }
             const plan = document.getElementById('choosePlan').value;
 
             if (plan === "Choose Plan") {

@@ -1,0 +1,16 @@
+package com.group.docorofile.controllers.client;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@PreAuthorize("hasRole('ROLE_MEMBER')")
+@RequestMapping("/member")
+public class UserController {
+    @GetMapping("/profiles")
+    public String showProfilePage() {
+        return "fragments/users/user-profile";
+    }
+}
