@@ -8,7 +8,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class UserDocumentDTO extends DocumentDTO {
-    private String memberShip;
     private int downloadCount;
 }
 

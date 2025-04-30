@@ -8,4 +8,6 @@ public interface iReactionRepository {
     int countLike(UUID documentId);
 
     int countDislike(UUID documentId);
+
+    String getUserReaction(UUID userId, UUID documentId);
 }

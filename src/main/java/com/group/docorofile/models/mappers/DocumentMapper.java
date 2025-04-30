@@ -32,7 +32,6 @@ public class DocumentMapper {
         userDocumentDTO.setUploadedDate(document.getUploadedDate());
         userDocumentDTO.setViewCount(document.getViewCount());
         userDocumentDTO.setAuthorName(document.getAuthor().getFullName());
-        userDocumentDTO.setMemberShip(document.getAuthor().getMembership().getLevel().toString());
         userDocumentDTO.setDownloadCount(document.getAuthor().getDownloadLimit());
         userDocumentDTO.setCourseName(document.getCourse() != null ? document.getCourse().getCourseName() : null);
         userDocumentDTO.setUniversityName(document.getCourse() != null ? document.getCourse().getUniversity().getUnivName() : null);

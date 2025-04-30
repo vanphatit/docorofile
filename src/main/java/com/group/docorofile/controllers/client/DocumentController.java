@@ -18,7 +18,6 @@ import java.util.UUID;
 @RequestMapping("/documents")
 public class DocumentController {
 
-    @PreAuthorize("hasAnyRole('ROLE_MEMBER')")
     @GetMapping("/{id}")
     public String viewDocument(@PathVariable UUID id, Model model) {
         model.addAttribute("id", id);

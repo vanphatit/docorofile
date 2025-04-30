@@ -69,80 +69,125 @@
             top: 80px;
             align-self: flex-start;
         }
+
+        .scroll-row::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scroll-row {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;     /* Firefox */
+        }
+
     </style>
 </head>
 
 <body>
 <div th:attr="data-id=${id}" layout:fragment="content" id="documentInfo" class="container-xxl flex-grow-1 container-p-y">
-    <div class="row">
-        <!-- Cột trái: Thông tin tài liệu -->
-        <div class="col-lg-4 mb-4">
-            <div class="card h-full">
-                <div class=" card-body">
-                    <h4 class="mb-3 ">Thông tin tài liệu</h4>
-                    <h5 id="documentTitle"> Document Title</h5>
-                    <p>Tác giả: <span id="documentAuthor">Tên tác giả</span></p>
-                    <p>Ngày tải lên: <span id="documentUpload">01/01/2024</span></p>
-                    <p>Khóa học: <span id="documentCourse">Course Name</span></p>
-                    <p>Trường: <span id="documentUniv">University Name</span></p>
+    <div class="document-page-wrapper">
+        <!-- Thông tin tài liệu (Sticky) -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h4 class="mb-3">Thông tin tài liệu</h4>
+                <h5 id="documentTitle">Document Title</h5>
 
-                    <!-- Likes / Dislikes -->
-                    <div class="d-flex gap-4 mt-3">
-                        <div class="text-center">
-                            <i class="ri-thumb-up-line ri-24px text-success"></i>
-                            <div id="documentLikes">0</div>
-                        </div>
-                        <div class="text-center">
-                            <i class="ri-thumb-down-line ri-24px text-danger"></i>
-                            <div id="documentDislikes">0</div>
-                        </div>
-                        <div class="text-center">
-                            <i class="ri-eye-line ri-24px text-muted"></i>
-                            <div id="documentView">0</div>
-                        </div>
-                        <div class="text-center">
-                            <button class="btn btn-primary mt-2" id="downloadBtn">
-                                <span>Download</span>
-                            </button>
-                        </div>
+                <div class="row mb-4">
+                    <div class="col-sm-6">
+                        <p class="mb-1 fw-semibold text-muted">Tác giả:</p>
+                        <p id="documentAuthor">Tên tác giả</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <p class="mb-1 fw-semibold text-muted">Ngày tải lên:</p>
+                        <p id="documentUpload">01/01/2024</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <p class="mb-1 fw-semibold text-muted">Khóa học:</p>
+                        <p id="documentCourse">Course Name</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <p class="mb-1 fw-semibold text-muted">Trường:</p>
+                        <p id="documentUniv">University Name</p>
                     </div>
                 </div>
-            </div>
-            <div class="card mt-4">
-                <div class="card-body">
-                    <h5>Các bình luận</h5>
-                    <div id="commentList">
-                        <!-- JavaScript sẽ insert comment HTML vào đây -->
-                    </div>
-                    <h5>Bình luận</h5>
-                    <form id="commentForm">
-                        <!-- Hidden để lưu ID comment đang được reply -->
-                        <input type="hidden" id="parentCommentId" name="parentCommentId" />
 
-                        <textarea id="commentInput" class="form-control mb-2" rows="3" placeholder="Nhập bình luận..."></textarea>
-                        <button type="submit" class="btn btn-primary">Gửi</button>
-                    </form>
+                <!-- Likes / Dislikes -->
+                <div class="row align-items-center">
+                    <div class="col-sm-6">
+                        <div class="d-flex gap-4">
+                            <div class="text-center">
+                                <i id="likeBtn" class="ri-thumb-up-line ri-24px text-success"></i>
+                                <div id="documentLikes">0</div>
+                            </div>
+                            <div class="text-center">
+                                <i id="dislikeBtn" class="ri-thumb-down-line ri-24px text-danger"></i>
+                                <div id="documentDislikes">0</div>
+                            </div>
+                            <div class="text-center">
+                                <i class="ri-eye-line ri-24px text-muted"></i>
+                                <div id="documentView">0</div>
+                            </div>
+                            <!-- Share -->
+                            <div class="text-center">
+                                <i id="shareBtn" class="ri-share-line ri-24px text-info" style="cursor: pointer;" onclick="handleShare()"></i>
+                                <div>Share</div>
+                            </div>
+                            <!-- Favorite -->
+                            <div class="text-center">
+                                <i id="favBtn" class="ri-heart-line ri-24px text-pink" style="cursor: pointer;" onclick="toggleFavorite(this)"></i>
+                                <div>Save</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 d-flex justify-content-end gap-2 mt-3 mt-sm-0">
+                        <button class="btn btn-outline-danger" id="reportBtn">
+                            <i class="ri-flag-line"></i> Report
+                        </button>
+                        <button class="btn btn-primary" id="downloadBtn">
+                            <i class="ri-download-line"></i> Download
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- Cột phải: Trình đọc PDF + comment -->
-        <div class="col-lg-8">
-            <div class="card">
-                <div class="card-body">
-                    <!-- Trình đọc file PDF -->
-                    <h5 class="mb-3">Tài liệu PDF</h5>
-                    <div id="pdf-container">
-                        <iframe id="pdf-frame" src="" width="100%" height="600px" style="border: none;"></iframe>
-                    </div>
+        <hr class="my-4" />
+        <!-- PDF Viewer -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="mb-3">Tài liệu PDF</h5>
+                <div id="pdf-container">
+                    <iframe id="pdf-frame" src="" width="100%" height="600px" style="border: none;"></iframe>
+                </div>
+            </div>
+        </div>
+        <hr class="my-4" />
+        <!-- Comments -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>Các bình luận</h5>
+                <div id="commentList"></div>
+                <h5 class="mt-3">Bình luận</h5>
+                <form id="commentForm">
+                    <input type="hidden" id="parentCommentId" name="parentCommentId" />
+                    <textarea id="commentInput" class="form-control mb-2" rows="3" placeholder="Nhập bình luận..."></textarea>
+                    <button type="submit" class="btn btn-primary">Gửi</button>
+                </form>
+            </div>
+        </div>
+        <hr class="my-4" />
+        <!-- Related Documents -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="mb-3">Tài liệu liên quan</h5>
+                <div class="scroll-row d-flex flex-nowrap overflow-auto gap-3 px-2 py-3" id="relatedDocumentsContainer">
+                    <!-- JS render card -->
                 </div>
             </div>
         </div>
     </div>
+</div>
     <!-- / Content -->
 
     <div class="content-backdrop fade"></div>
-</div>
 <!-- Content wrapper -->
 
 <!-- Overlay -->

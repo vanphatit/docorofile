@@ -14,12 +14,14 @@ import com.group.docorofile.response.NotFoundError;
 import com.group.docorofile.response.UnauthorizedError;
 import com.group.docorofile.services.iDocumentService;
 import com.group.docorofile.services.specifications.DocumentSpecification;
-import com.group.docorofile.services.utils.FileStorageService;
+import com.group.docorofile.utils.FileStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -436,10 +438,18 @@ public class DocumentServiceImpl implements iDocumentService {
     }
 
     @Override
-    public List<DocumentEntity> getRelatedDocuments(UUID documentId) {
+    public Page<DocumentEntity> getRelatedDocuments(UUID documentId, int page, int size) {
         // Dùng Specification để tìm tài liệu liên quan
-        Specification<DocumentEntity> spec = DocumentSpecification.relatedDocuments(documentId);
-        return documentRepository.findAll(spec);
+        DocumentEntity document = documentRepository.findById(documentId)
+                .orElseThrow(() -> new RuntimeException("Tài liệu không tồn tại"));
+        Specification<DocumentEntity> spec = DocumentSpecification.relatedDocuments(document);
+        return documentRepository.findAll(spec, PageRequest.of(page, size));
+    }
+
+    @Override
+    public Page<UserDocumentDTO> getRelatedDocumentsForUI(UUID documentId, int page, int size) {
+        Page<DocumentEntity> relatedDocuments = getRelatedDocuments(documentId, page, size);
+        return relatedDocuments.map(DocumentMapper::toUserDTO);
     }
 
     @Override

@@ -14,7 +14,7 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" th:href="@{/images/logo.png}" />
-
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <!-- Fonts -->
     <link rel="preconnect" th:href="@{https://fonts.googleapis.com}" />
     <link rel="preconnect" th:href="@{https://fonts.gstatic.com}" crossorigin />
@@ -1461,7 +1461,7 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
             })
                 .then(res => res.json())
                 .then(res => {
-                    if (res.code === 200) {
+                    if (res.statusCode  === 200) {
                         document.getElementById('commentInput').value = '';
                         document.getElementById('parentCommentId').value = '';
                         loadDocumentInfo();
@@ -1475,39 +1475,84 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 
         function loadFile(fileUrl) {
             const container = document.getElementById('pdf-container');
-            container.innerHTML = ''; // Clear
+            container.innerHTML = '';
 
-            if (fileUrl.endsWith('.pdf')) {
-                pdfjsLib.GlobalWorkerOptions.workerSrc = '/assets/pdfjs/pdf.worker.min.js';
-                pdfjsLib.getDocument(fileUrl).promise.then(pdf => {
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        pdf.getPage(i).then(page => {
-                            const scale = 1.5;
-                            const viewport = page.getViewport({ scale });
-                            const canvas = document.createElement('canvas');
-                            const ctx = canvas.getContext('2d');
-                            canvas.height = viewport.height;
-                            canvas.width = viewport.width;
-                            page.render({ canvasContext: ctx, viewport });
-                            canvas.classList.add('pdf-page');
-                            container.appendChild(canvas);
-                        });
+            if (!fileUrl.endsWith('.pdf')) return;
+
+            fetch('/v1/api/auth/current-user', {
+                method: 'POST',
+                credentials: 'include'
+            })
+                .then(res => {
+                    if (!res.ok) {
+                        renderPdf(fileUrl, 3); // GUEST
                     }
+                    return res.json();
+                })
+                .then(userRes => {
+                    const user = userRes.data;
+                    const role = user.role;
+                    const userId = user.id;
+
+                    // Nếu là ADMIN hoặc MODERATOR thì load full
+                    if (role === 'ROLE_ADMIN' || role === 'ROLE_MODERATOR') {
+                        return renderPdf(fileUrl, null); // null = không giới hạn
+                    }
+
+                    // Nếu là MEMBER thì kiểm tra membership
+                    if (role === 'ROLE_MEMBER') {
+                        return fetch(`/v1/api/user/checkMembership/${userId}`, {
+                            method: 'POST',
+                            credentials: 'include'
+                        })
+                            .then(res => res.json())
+                            .then(memRes => {
+                                const hasPremium = memRes.data === true;
+                                return renderPdf(fileUrl, hasPremium ? null : 3);
+                            });
+                    }
+
+                    // Các role khác như GUEST thì giới hạn 3 trang
+                    return renderPdf(fileUrl, 3);
+                })
+                .catch(err => {
+                    console.warn("Defaulting to GUEST due to error:", err);
+                    return renderPdf(fileUrl, 3);
                 });
-            } else if (fileUrl.endsWith('.docx') || fileUrl.endsWith('.pptx')) {
-                container.innerHTML = `
-          <iframe src="https://view.officeapps.live.com/op/embed.aspx?src=${window.location.origin}${fileUrl}"
-                  width="100%" height="600px" style="border: none;"></iframe>
-        `;
-            } else {
-                container.innerHTML = `
-          <div class="text-center mt-4">
-              <p>Không thể xem trước định dạng file này. </p>
-              <a href="${fileUrl}" download class="btn btn-primary">Tải tài liệu về</a>
-          </div>
-        `;
-            }
         }
+
+        function renderPdf(fileUrl, pageLimit) {
+            const container = document.getElementById('pdf-container');
+            container.innerHTML = '';
+
+            pdfjsLib.GlobalWorkerOptions.workerSrc = '/assets/pdfjs/pdf.worker.min.js';
+            pdfjsLib.getDocument(fileUrl).promise.then(pdf => {
+                const totalPages = pdf.numPages;
+                const pagesToRender = pageLimit ? Math.min(pageLimit, totalPages) : totalPages;
+
+                for (let i = 1; i <= pagesToRender; i++) {
+                    pdf.getPage(i).then(page => {
+                        const scale = 1.5;
+                        const viewport = page.getViewport({ scale });
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+                        page.render({ canvasContext: ctx, viewport });
+                        canvas.classList.add('pdf-page');
+                        container.appendChild(canvas);
+                    });
+                }
+
+                if (pageLimit && pageLimit < totalPages) {
+                    const notice = document.createElement('div');
+                    notice.className = "alert alert-warning mt-3";
+                    notice.innerText = "Bạn cần tài khoản Premium để xem toàn bộ tài liệu.";
+                    container.appendChild(notice);
+                }
+            });
+        }
+
         document.getElementById("downloadBtn").addEventListener("click", function () {
             fetch(`/v1/api/documents/download/${documentId}`, {
                 method: "GET",
@@ -1561,6 +1606,184 @@ xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
                     Swal.fire('Lỗi', 'Không thể tải tài liệu.', 'error');
                 });
         });
+        fetch(`/v1/api/documents/related/${documentId}`, {
+            credentials: 'include'
+        })
+            .then(res => res.json())
+            .then(res => {
+                const container = document.getElementById("relatedDocumentsContainer");
+                if (!res.data.content || res.data.content.length === 0) {
+                    container.innerHTML = '<p class="text-muted">No related documents found.</p>';
+                    return;
+                }
+
+                res.data.content.forEach(doc => {
+                    const col = document.createElement("div");
+                    col.className = "col-md-4 mb-4";
+
+                    col.innerHTML = `
+                    <div class="card h-100 shadow-sm border-0" style="cursor: pointer;" onclick="window.location.href='/documents/${doc.documentId}'">
+                        <img src="${doc.coverImageUrl}" class="card-img-top" style="height: 180px; object-fit: cover;" alt="cover image">
+                        <div class="card-body">
+                            <h5 class="card-title text-truncate" title="${doc.title}">${doc.title}</h5>
+                            <p class="card-text text-muted text-truncate">${doc.description || "No description."}</p>
+                        </div>
+                        <div class="card-footer bg-white d-flex justify-content-between small text-muted px-3 py-2">
+                            <div class="d-flex gap-3 align-items-center small text-muted">
+                                <div class="d-flex align-items-center gap-1">
+                                    <i class="ri-thumb-up-line text-success"></i><span>${doc.likes}</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-1">
+                                    <i class="ri-thumb-down-line text-danger"></i><span>${doc.dislikes}</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-1">
+                                    <i class="ri-eye-line text-secondary"></i><span>${doc.viewCount}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                    container.appendChild(col);
+                });
+            })
+            .catch(err => {
+                console.error("Failed to load related documents:", err);
+            });
+
+        const likeBtn = document.getElementById('likeBtn');
+        const dislikeBtn = document.getElementById('dislikeBtn');
+        const favBtn = document.getElementById('favBtn');
+
+        let userReact = null;
+
+        // === Gọi API để biết user đã like/dislike gì chưa
+        fetch(`/v1/api/reactions/status?documentId=${documentId}`, { credentials: 'include' })
+            .then(res => res.json())
+            .then(res => {
+                if (res.statusCode === 200) {
+                    userReact = res.data; // 'like', 'dislike', or null
+                    updateIcons(); // cập nhật icon theo trạng thái ban đầu
+                }
+            });
+
+        // === Xử lý nhấn Like
+        likeBtn.addEventListener("click", () => {
+            const isUnlike = userReact === 'like';
+            fetch('/v1/api/reactions/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                credentials: 'include',
+                body: new URLSearchParams({
+                    documentId,
+                    isLike: !isUnlike,
+                    isDislike: false
+                })
+            })
+                .then(res => res.json())
+                .then(() => {
+                    userReact = isUnlike ? null : 'like';
+                    updateIcons();
+                    refreshReactionCounts();
+                    location.reload();
+                });
+        });
+
+        // === Xử lý nhấn Dislike
+        dislikeBtn.addEventListener("click", () => {
+            const isUnDislike = userReact === 'dislike';
+            fetch('/v1/api/reactions/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                credentials: 'include',
+                body: new URLSearchParams({
+                    documentId,
+                    isLike: false,
+                    isDislike: !isUnDislike
+                })
+            })
+                .then(res => res.json())
+                .then(() => {
+                    userReact = isUnDislike ? null : 'dislike';
+                    updateIcons();
+                    refreshReactionCounts();
+                    location.reload();
+                });
+        });
+
+        function updateIcons() {
+            // Reset
+            likeBtn.classList.remove("ri-thumb-up-fill", "ri-thumb-up-line");
+            dislikeBtn.classList.remove("ri-thumb-down-fill", "ri-thumb-down-line");
+
+            // Set lại theo trạng thái
+            if (userReact === 'like') {
+                likeBtn.classList.add("ri-thumb-up-fill");
+                dislikeBtn.classList.add("ri-thumb-down-line");
+            } else if (userReact === 'dislike') {
+                likeBtn.classList.add("ri-thumb-up-line");
+                dislikeBtn.classList.add("ri-thumb-down-fill");
+            } else {
+                likeBtn.classList.add("ri-thumb-up-line");
+                dislikeBtn.classList.add("ri-thumb-down-line");
+            }
+        }
+
+        function refreshReactionCounts() {
+            fetch(`/v1/api/documents/count/${documentId}`, {
+                credentials: 'include'
+            })
+                .then(res => res.json())
+                .then(res => {
+                    const doc = res.data;
+                    document.getElementById("documentLikes").innerText = doc.likes;
+                    document.getElementById("documentDislikes").innerText = doc.dislikes;
+                });
+        }
+
+        // === 3. Check trạng thái yêu thích ban đầu ===
+        fetch(`/v1/api/favorites/check?documentId=${documentId}`, { credentials: 'include' })
+            .then(res => res.json())
+            .then(res => {
+                if (res.statusCode === 200 && res.data === true) {
+                    favBtn.classList.remove('ri-heart-line');
+                    favBtn.classList.add('ri-heart-fill');
+                    favBtn.classList.add('text-danger');
+                }
+            });
+
+        // === 4. Toggle yêu thích (Save/Unsave) ===
+        window.toggleFavorite = function () {
+            const isSaved = favBtn.classList.contains('ri-heart-fill');
+            const url = isSaved
+                ? `/v1/api/favorites/remove?documentId=${documentId}`
+                : `/v1/api/favorites/add?documentId=${documentId}`;
+            const method = isSaved ? "DELETE" : "POST";
+
+            fetch(url, {
+                method: method,
+                credentials: 'include'
+            })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.statusCode === 200) {
+                        favBtn.classList.toggle('ri-heart-line');
+                        favBtn.classList.toggle('ri-heart-fill');
+                        favBtn.classList.toggle('text-danger');
+                        Swal.fire("Thành công", res.message, "success");
+                    } else {
+                        Swal.fire("Lỗi", res.message, "error");
+                    }
+                })
+                .catch(() => Swal.fire("Lỗi", "Không thể cập nhật yêu thích!", "error"));
+        };
+
+        // === 5. Share (copy link) ===
+        window.handleShare = function () {
+            const link = `${window.location.origin}/documents/${documentId}`;
+            navigator.clipboard.writeText(link)
+                .then(() => Swal.fire("Đã sao chép!", "Link đã được copy vào clipboard.", "success"))
+                .catch(() => Swal.fire("Lỗi", "Không thể sao chép link!", "error"));
+        };
     });
 </script>
 

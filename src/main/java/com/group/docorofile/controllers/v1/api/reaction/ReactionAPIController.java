@@ -8,6 +8,7 @@ import com.group.docorofile.security.JwtTokenUtil;
 import com.group.docorofile.services.iUserService;
 import com.group.docorofile.services.impl.ReactionServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -27,11 +28,12 @@ public class ReactionAPIController {
     @Autowired
     private JwtTokenUtil jwtUtils;
 
+    @PreAuthorize("hasRole('ROLE_MEMBER')")
     @PostMapping("/update")
     public Object updateReaction(@RequestParam UUID documentId,
                                  @RequestParam boolean isLike,
                                  @RequestParam boolean isDislike,
-                                 @CookieValue(value = "jwtToken", required = false) String token) {
+                                 @CookieValue(value = "JWT", required = false) String token) {
         if (token == null || token.isEmpty()) {
             return new UnauthorizedError("Bạn chưa đăng nhập!");
         }
@@ -50,6 +52,18 @@ public class ReactionAPIController {
         } catch (RuntimeException e) {
             return new NotFoundError(e.getMessage());
         }
+    }
+
+    @GetMapping("/status")
+    public Object getReactionStatus(@RequestParam UUID documentId,
+                                    @CookieValue(value = "JWT", required = false) String token) {
+        if (token == null || token.isEmpty())
+            return new UnauthorizedError("Bạn chưa đăng nhập!");
+
+        String username = jwtUtils.getUsernameFromToken(token);
+        UUID userId = userService.findByEmail(username).get().getUserId();
+        String status = reactionService.getUserReaction(userId, documentId); // "like" | "dislike" | null
+        return new SuccessResponse("Lấy trạng thái thành công", 200, status, LocalDateTime.now());
     }
 
     @GetMapping("/count/{documentId}")
