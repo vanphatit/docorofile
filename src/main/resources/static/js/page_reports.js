@@ -1,4 +1,3 @@
-var token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBleGFtcGxlLmNvbSIsInJvbGUiOlt7ImF1dGhvcml0eSI6IlJPTEVfQURNSU4ifV0sImlhdCI6MTc0NDkzOTIzNywiZXhwIjoxNzQ0OTQyODM3fQ.fD6KzzzBgSQsrJ2AsAPTaRHkDMZlEyvepm7TqA6kf4E'
 function loadReports(page = 0, size = 1) {
     $.ajax({
         url: `/v1/api/reports?page=${page}&size=${size}`,
@@ -81,10 +80,11 @@ function loadReports(page = 0, size = 1) {
 
 function showReportModal(documentId) {
     $.ajax({
-        url: `/v1/api/documents/${documentId}`,
+        url: `/v1/api/documents/view/${documentId}`,
         type: 'GET',
         dataType: 'json',
         success: function (doc) {
+            console.log("Doc", doc)
             // Gán dữ liệu vào modal
             $.ajax({
                 url: `/v1/api/reports/${documentId}`, // Gọi API lấy danh sách chi tiết
@@ -161,8 +161,17 @@ function showReportModal(documentId) {
                     }
                 });
             });
-            const modal = new bootstrap.Modal(document.getElementById('reportModal'));
-            modal.show();
+            const modalElement = document.getElementById('reportModal');
+            if (modalElement) {
+                let modal = new bootstrap.Modal(modalElement, {
+                    backdrop: 'static'
+                });
+                modal.show();
+            } else {
+                console.error("Modal element not found");
+            }
+            // const modal = new bootstrap.Modal(document.getElementById('reportModal'));
+            // modal.show();
         },
         error: function (err) {
             showToast("Không thể tải chi tiết báo cáo", "danger")
@@ -173,7 +182,10 @@ function showReportModal(documentId) {
 function showToast(message, type = "success") {
     const toastEl = document.getElementById("reportToast");
     const toastBody = document.getElementById("toastBody");
+    if (!toastEl || !toastBody) return;
+
     const toastHeader = toastEl.querySelector(".toast-header");
+    if (!toastHeader) return;
 
     // Xóa class cũ
     toastEl.classList.remove("bg-success", "bg-danger", "bg-warning");

@@ -1,5 +1,5 @@
 <div class="layout-navbar container-fluid navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
-     th:fragment="header"
+     th:fragment="header" style="padding-left: 20px"
      id="layout-navbar">
 
     <link rel="stylesheet" th:href="@{/assets/css/search-suggestion.css}" />
@@ -34,102 +34,18 @@
 
         <ul class="navbar-nav flex-row align-items-center ms-auto">
 
-            <!-- Quick links  -->
-            <li class="nav-item dropdown-shortcuts navbar-dropdown dropdown me-1 me-xl-0">
-                <a
-                        class="nav-link btn btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow"
-                        href="javascript:void(0);"
-                        data-bs-toggle="dropdown"
-                        data-bs-auto-close="outside"
-                        aria-expanded="false">
-                    <i class="ri-star-smile-line ri-22px"></i>
-                </a>
-                <div class="dropdown-menu dropdown-menu-end py-0">
-                    <div class="dropdown-menu-header border-bottom py-50">
-                        <div class="dropdown-header d-flex align-items-center py-2">
-                            <h6 class="mb-0 me-auto">Shortcuts</h6>
-                            <a
-                                    href="javascript:void(0)"
-                                    class="btn btn-text-secondary rounded-pill btn-icon dropdown-shortcuts-add text-heading"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-placement="top"
-                                    title="Add shortcuts"
-                            ><i class="ri-add-line ri-24px"></i
-                            ></a>
-                        </div>
-                    </div>
-                    <div class="dropdown-shortcuts-list scrollable-container">
-                        <div class="row row-bordered overflow-visible g-0">
-                            <div class="dropdown-shortcuts-item col">
-                          <span class="dropdown-shortcuts-icon rounded-circle mb-3">
-                            <i class="ri-calendar-line ri-26px text-heading"></i>
-                          </span>
-                                <a href="app-calendar.html" class="stretched-link">Calendar</a>
-                                <small class="mb-0">Appointments</small>
-                            </div>
-                            <div class="dropdown-shortcuts-item col">
-                          <span class="dropdown-shortcuts-icon rounded-circle mb-3">
-                            <i class="ri-file-text-line ri-26px text-heading"></i>
-                          </span>
-                                <a href="app-invoice-list.html" class="stretched-link">Invoice App</a>
-                                <small class="mb-0">Manage Accounts</small>
-                            </div>
-                        </div>
-                        <div class="row row-bordered overflow-visible g-0">
-                            <div class="dropdown-shortcuts-item col">
-                          <span class="dropdown-shortcuts-icon rounded-circle mb-3">
-                            <i class="ri-user-line ri-26px text-heading"></i>
-                          </span>
-                                <a href="app-user-list.html" class="stretched-link">User App</a>
-                                <small class="mb-0">Manage Users</small>
-                            </div>
-                            <div class="dropdown-shortcuts-item col">
-                          <span class="dropdown-shortcuts-icon rounded-circle mb-3">
-                            <i class="ri-computer-line ri-26px text-heading"></i>
-                          </span>
-                                <a href="app-access-roles.html" class="stretched-link">Role Management</a>
-                                <small class="mb-0">Permission</small>
-                            </div>
-                        </div>
-                        <div class="row row-bordered overflow-visible g-0">
-                            <div class="dropdown-shortcuts-item col">
-                          <span class="dropdown-shortcuts-icon rounded-circle mb-3">
-                            <i class="ri-pie-chart-2-line ri-26px text-heading"></i>
-                          </span>
-                                <a href="index.html" class="stretched-link">Dashboard</a>
-                                <small class="mb-0">Analytics</small>
-                            </div>
-                            <div class="dropdown-shortcuts-item col">
-                          <span class="dropdown-shortcuts-icon rounded-circle mb-3">
-                            <i class="ri-settings-4-line ri-26px text-heading"></i>
-                          </span>
-                                <a href="pages-account-settings-account.html" class="stretched-link">Setting</a>
-                                <small class="mb-0">Account Settings</small>
-                            </div>
-                        </div>
-                        <div class="row row-bordered overflow-visible g-0">
-                            <div class="dropdown-shortcuts-item col">
-                          <span class="dropdown-shortcuts-icon rounded-circle mb-3">
-                            <i class="ri-question-line ri-26px text-heading"></i>
-                          </span>
-                                <a href="pages-faq.html" class="stretched-link">FAQs</a>
-                                <small class="mb-0">FAQs & Articles</small>
-                            </div>
-                            <div class="dropdown-shortcuts-item col">
-                          <span class="dropdown-shortcuts-icon rounded-circle mb-3">
-                            <i class="ri-tv-2-line ri-26px text-heading"></i>
-                          </span>
-                                <a href="modal-examples.html" class="stretched-link">Modals</a>
-                                <small class="mb-0">Useful Popups</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- Admin/ Moderator -->
+            <li id="badge-role"
+                class="nav-item dropdown-notifications navbar-dropdown dropdown me-4 me-xl-1 d-none">
+                <span class="nav-link btn btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow"
+                   data-bs-auto-close="outside">
+                    <i class="ri-admin-line ri-22px"></i>
+                </span>
             </li>
             <!-- Quick links -->
 
             <!-- Notification -->
-            <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-4 me-xl-1">
+            <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-4 me-xl-1 d-none">
                 <a class="nav-link btn btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow"
                    href="javascript:void(0);"
                    data-bs-toggle="dropdown"
@@ -176,7 +92,7 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>
-                        <a class="dropdown-item" href="pages-account-settings-account.html">
+                        <a class="dropdown-item" href="/member/profiles/">
                             <div class="d-flex">
                                 <div class="flex-shrink-0 me-2">
                                     <div class="avatar avatar-online">
@@ -194,20 +110,15 @@
                         <div class="dropdown-divider"></div>
                     </li>
                     <li id="profile-dropdown-menu">
-                        <a class="dropdown-item" href="pages-profile-user.html">
+                        <a class="dropdown-item" href="/member/profiles/">
                             <i class="ri-user-3-line ri-22px me-3"></i><span class="align-middle">My Profile</span>
                         </a>
                     </li>
-                    <li id="setting-dropdown-menu">
-                        <a class="dropdown-item" href="pages-account-settings-account.html">
-                            <i class="ri-settings-4-line ri-22px me-3"></i><span class="align-middle">Settings</span>
-                        </a>
-                    </li>
-                    <li id="faq-dropdown-menu">
-                        <a class="dropdown-item" href="pages-faq.html">
-                            <i class="ri-question-line ri-22px me-3"></i><span class="align-middle">FAQ</span>
-                        </a>
-                    </li>
+<!--                    <li id="setting-dropdown-menu">-->
+<!--                        <a class="dropdown-item" href="pages-account-settings-account.html">-->
+<!--                            <i class="ri-settings-4-line ri-22px me-3"></i><span class="align-middle">Settings</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
                     <li>
                         <div class="d-grid px-4 pt-2 pb-1">
                             <a id="auth-button" class="btn btn-sm btn-danger d-flex" href="/auth/logout">
@@ -280,20 +191,13 @@
                 }
             });
 
-            document.addEventListener("click", function (e) {
-                if (!suggestionsBox.contains(e.target) && e.target !== input) {
-                    suggestionsBox.classList.remove("show");
-                }
-            });
-
-            // Giữ lại keyword sau khi chuyển trang tìm kiếm
-            const searchInput = document.getElementById("globalSearchInput");
-            const searchParams = new URLSearchParams(window.location.search);
-            const keywordParam = searchParams.get("keyword");
-            if (keywordParam) {
-                searchInput.value = decodeURIComponent(keywordParam);
-            }
-
-        });
-    </script>
+    <!-- Search Small Screens -->
+    <div class="navbar-search-wrapper search-input-wrapper d-none">
+        <input
+                type="text"
+                class="form-control search-input container-fluid border-0"
+                placeholder="Search..."
+                aria-label="Search..." />
+        <i class="ri-close-fill search-toggler cursor-pointer"></i>
+    </div>
 </div>
