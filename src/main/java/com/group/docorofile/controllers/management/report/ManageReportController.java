@@ -7,10 +7,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class ManageReportController {
+    @PreAuthorize("hasRole('ROLE_MODERATOR')")
+    @GetMapping("/moderator/manage-reports")
+    public String showManageReportPageOfModerator() {
+        return "report/reports";
+    }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
-    @GetMapping("/reports")
-    public String showManageReportPage() {
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/admin/manage-reports")
+    public String showManageReportPageOfAdmin() {
         return "report/reports";
     }
 }
