@@ -84,16 +84,9 @@ public class UserInfoAPIController {
     @GetMapping("/user-detail/{userId}")
     public ResponseEntity<SuccessResponse> getUserDetail(@PathVariable UUID userId,
                                                          Authentication authentication) {
-        CustomUserDetails currentUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        var user = currentUserDetails.getUser();
+        UUID trueUserId = getTrueUserId(userId, authentication);
 
-        if(userId == null) {
-            userId = user.getUserId();
-        } else if(!user.getUserId().equals(userId ) ) {
-            throw new BadCredentialsException("Chưa xác thực người dùng!");
-        }
-
-        UserDetailDTO userInfo = userService.getUserDetailById(userId);
+        UserDetailDTO userInfo = userService.getUserDetailById(trueUserId);
         if( userInfo == null) {
             throw new NotFoundError("User not found");
         }
@@ -172,18 +165,7 @@ public class UserInfoAPIController {
     @DeleteMapping("/{id}")
     public ResponseEntity<SuccessResponse> deactivateUser(@PathVariable String id,
                                                           Authentication authentication) {
-        CustomUserDetails currentUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        var user = currentUserDetails.getUser();
-
-        UUID userId = null;
-
-        if(id == null) {
-            userId = user.getUserId();
-        } else if(!user.getUserId().equals(UUID.fromString(id) ) ) {
-            throw new BadCredentialsException("Chưa xác thực người dùng!");
-        } else {
-            userId = UUID.fromString(id);
-        }
+        UUID userId = getTrueUserId(UUID.fromString(id), authentication);
 
         userService.deactivateUser(userId);
         SuccessResponse response = new SuccessResponse("User deactivated successfully", HttpStatus.OK.value(), null, LocalDateTime.now());
@@ -195,18 +177,7 @@ public class UserInfoAPIController {
     @PostMapping("/activate/{id}")
     public ResponseEntity<SuccessResponse> activateUser(@PathVariable String id,
                                                         Authentication authentication) {
-        CustomUserDetails currentUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        var user = currentUserDetails.getUser();
-
-        UUID userId = null;
-
-        if(id == null) {
-            userId = user.getUserId();
-        } else if(!user.getUserId().equals(UUID.fromString(id) ) ) {
-            throw new BadCredentialsException("Chưa xác thực người dùng!");
-        } else {
-            userId = UUID.fromString(id);
-        }
+        UUID userId = getTrueUserId(UUID.fromString(id), authentication);
 
         userService.activateUser(userId);
         SuccessResponse response = new SuccessResponse("User deactivated successfully", HttpStatus.OK.value(), null, LocalDateTime.now());
@@ -222,7 +193,6 @@ public class UserInfoAPIController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(new SuccessResponse("Bạn chưa đăng nhập!", HttpStatus.UNAUTHORIZED.value(), null, LocalDateTime.now()));
             }
-
 
             String username = jwtTokenUtil.getUsernameFromToken(token);
             UUID memberId = userService.findByEmail(username).orElseThrow().getUserId();
@@ -271,16 +241,9 @@ public class UserInfoAPIController {
     public ResponseEntity<SuccessResponse> upgradeMembership(
             @PathVariable UUID userId,
             @RequestParam("plan") String plan, Authentication authentication) {
-        CustomUserDetails currentUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        var user = currentUserDetails.getUser();
+        UUID trueUserId = getTrueUserId(userId, authentication);
 
-        if(userId == null) {
-            userId = user.getUserId();
-        } else if(!user.getUserId().equals(UUID.fromString(userId.toString()) ) ) {
-            throw new BadCredentialsException("Chưa xác thực người dùng!");
-        }
-
-        boolean result = userService.upgradeMembership(userId, plan.toUpperCase());
+        boolean result = userService.upgradeMembership(trueUserId, plan.toUpperCase());
         SuccessResponse response = new SuccessResponse("Membership upgraded successfully", HttpStatus.OK.value(), result, LocalDateTime.now());
         return ResponseEntity.ok(response);
     }
@@ -290,18 +253,7 @@ public class UserInfoAPIController {
     public ResponseEntity<?> changePassword(@RequestParam("userId") String id,
                                             @RequestParam("newPassword") String newPassword,
                                             Authentication authentication) {
-        CustomUserDetails currentUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        var user = currentUserDetails.getUser();
-
-        UUID userId = null;
-
-        if(id == null) {
-            userId = user.getUserId();
-        } else if(!user.getUserId().equals(UUID.fromString(id) ) ) {
-            throw new BadCredentialsException("Chưa xác thực người dùng!");
-        } else {
-            userId = UUID.fromString(id);
-        }
+        UUID userId = getTrueUserId(UUID.fromString(id), authentication);
 
         SuccessResponse successResponse = new SuccessResponse(
                 "Đổi mật khẩu thành công!", HttpStatus.OK.value(),
@@ -309,4 +261,14 @@ public class UserInfoAPIController {
         return ResponseEntity.ok(successResponse);
     }
 
+    public UUID getTrueUserId(UUID id, Authentication authentication) {
+        CustomUserDetails currentUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        var user = currentUserDetails.getUser();
+
+        if(id == null || !(user instanceof AdminEntity)) {
+            return user.getUserId();
+        } else {
+            return id;
+        }
+    }
 }

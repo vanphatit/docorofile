@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let userId = parts[parts.length - 1];
 
     const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if(!regex.test(userId)) {
+    if(!regex.test(userId) && parts[0] !== "admin") {
         const response = await fetch('/v1/api/auth/current-user', {
             method: 'POST',
             headers: {
@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         let userId = parts[parts.length - 1];
 
         const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-        if(!regex.test(userId)) {
+        if(!regex.test(userId) && parts[0] !== "admin") {
             const response = await fetch('/v1/api/auth/current-user', {
                 method: 'POST',
                 headers: {
@@ -295,7 +295,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             let userId = parts[parts.length - 1];
 
             const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-            if(!regex.test(userId)) {
+            if(!regex.test(userId) && parts[0] !== "admin") {
                 const response = await fetch('/v1/api/auth/current-user', {
                     method: 'POST',
                     headers: {
@@ -393,7 +393,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             let userId = parts[parts.length - 1];
 
             const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-            if(!regex.test(userId)) {
+            if(!regex.test(userId) && parts[0] !== "admin") {
                 const response = await fetch('/v1/api/auth/current-user', {
                     method: 'POST',
                     headers: {

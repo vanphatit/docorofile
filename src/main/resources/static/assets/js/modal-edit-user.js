@@ -4,8 +4,6 @@
 
 'use strict';
 
-'use strict';
-
 document.addEventListener('DOMContentLoaded', async function () {
   const editUserModal = document.getElementById('editUser');
   const formEditUser = document.getElementById('editUserForm');
@@ -21,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     currentUserId = parts[parts.length - 1];
 
     const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if(!regex.test(currentUserId)) {
+    if(!regex.test(userId) && parts[0] !== "admin") {
       const response = await fetch('/v1/api/auth/current-user', {
         method: 'POST',
         headers: {
