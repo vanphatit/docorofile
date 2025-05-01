@@ -105,13 +105,21 @@ public class DocumentServiceImpl implements iDocumentService {
     }
 
     @Override
-    public List<UserDocumentDTO> getAllUserDocuments() {
-        return documentRepository.findAll().stream().map(DocumentMapper::toUserDTO).collect(Collectors.toList());
+    public Page<UserDocumentDTO> getAllUserDocuments(int page, int size) {
+        List <UserDocumentDTO> documents = documentRepository.findAll().stream().map(DocumentMapper::toUserDTO).toList();
+        int start = Math.min(page * size, documents.size());
+        int end = Math.min(start + size, documents.size());
+        List<UserDocumentDTO> pagedList = documents.subList(start, end);
+        return new PageImpl<>(pagedList, PageRequest.of(page, size), documents.size());
     }
 
     @Override
-    public List<AdminDocumentDTO> getAllAdminDocuments() {
-        return documentRepository.findAll().stream().map(DocumentMapper::toAdminDTO).collect(Collectors.toList());
+    public Page<AdminDocumentDTO> getAllAdminDocuments( int page, int size) {
+        List<AdminDocumentDTO> documents = documentRepository.findAll().stream().map(DocumentMapper::toAdminDTO).toList();
+        int start = Math.min(page * size, documents.size());
+        int end = Math.min(start + size, documents.size());
+        List<AdminDocumentDTO> pagedList = documents.subList(start, end);
+        return new PageImpl<>(pagedList, PageRequest.of(page, size), documents.size());
     }
 
     @Override
@@ -124,7 +132,7 @@ public class DocumentServiceImpl implements iDocumentService {
             // Tăng viewCount
             document.setViewCount(document.getViewCount() + 1);
             documentRepository.save(document);
-            if (role.equals("ROLE_MEMBER")) {
+            if (role.contains("ROLE_MEMBER")) {
                 // Kiểm tra xem user này đã xem tài liệu chưa
                 MemberEntity currentMem = (MemberEntity) userRepository.findByEmail(userName).get();
                 boolean alreadyViewed = documentViewRepository.existsByDocument_DocumentIdAndMember_UserId(documentId, currentMem.getUserId());
@@ -142,7 +150,7 @@ public class DocumentServiceImpl implements iDocumentService {
                 }
             }
             // Kiểm tra vai trò từ token
-            if (role.equals("ROLE_ADMIN") || role.equals("ROLE_MODERATOR")) {
+            if (role.contains("ROLE_ADMIN") || role.contains("ROLE_MODERATOR")) {
                 return DocumentMapper.toAdminDTO(document);
             } else {
                 return DocumentMapper.toUserDTO(document);
@@ -153,20 +161,57 @@ public class DocumentServiceImpl implements iDocumentService {
     }
 
     @Override
-    public Object searchDocuments(String keyword, String role) {
+    public Page<UserDocumentDTO> searchDocumentsForGuest(String keyword, int page, int size) {
+        List<DocumentEntity> documents = documentRepository.findAll(
+                DocumentSpecification.searchByKeyword(keyword)
+        );
+
+        if (documents.isEmpty()) {
+            throw new NotFoundError("Không tìm thấy tài liệu nào!");
+        }
+
+        // Chỉ trả về các tài liệu đã duyệt/public (ví dụ: status = APPROVED)
+        List<UserDocumentDTO> filtered = documents.stream()
+                .filter(doc -> doc.getStatus().equals("APPROVED"))
+                .map(DocumentMapper::toUserDTO)
+                .toList();
+
+        int start = Math.min(page * size, filtered.size());
+        int end = Math.min(start + size, filtered.size());
+        List<UserDocumentDTO> paged = filtered.subList(start, end);
+
+        return new PageImpl<>(paged, PageRequest.of(page, size), filtered.size());
+    }
+
+    @Override
+    public Object searchDocumentsForAuthUser(String keyword, int page, int size, String role) {
         try {
-            List<DocumentEntity> documents = documentRepository.findAll(DocumentSpecification.searchByKeyword(keyword));
+            List<DocumentEntity> documents = documentRepository.findAll(
+                    DocumentSpecification.searchByKeyword(keyword)
+            );
+
             if (documents.isEmpty()) {
                 return new NotFoundError("Không tìm thấy tài liệu nào!");
             }
 
-            if (role.equals("ROLE_ADMIN") || role.equals("ROLE_MODERATOR")) {
-                return documents.stream().map(DocumentMapper::toAdminDTO).collect(Collectors.toList());
+            if (role.contains("ROLE_ADMIN") || role.contains("ROLE_MODERATOR")) {
+                List<AdminDocumentDTO> adminDocs = documents.stream()
+                        .map(DocumentMapper::toAdminDTO)
+                        .toList();
+                int start = Math.min(page * size, adminDocs.size());
+                int end = Math.min(start + size, adminDocs.size());
+                return new PageImpl<>(adminDocs.subList(start, end), PageRequest.of(page, size), adminDocs.size());
             } else {
-                return documents.stream().map(DocumentMapper::toUserDTO).collect(Collectors.toList());
+                List<UserDocumentDTO> userDocs = documents.stream()
+                        .map(DocumentMapper::toUserDTO)
+                        .toList();
+                int start = Math.min(page * size, userDocs.size());
+                int end = Math.min(start + size, userDocs.size());
+                return new PageImpl<>(userDocs.subList(start, end), PageRequest.of(page, size), userDocs.size());
             }
+
         } catch (RuntimeException e) {
-            return new UnauthorizedError(e.getMessage());
+            return new InternalServerError(e.getMessage());
         }
     }
 
@@ -185,13 +230,24 @@ public class DocumentServiceImpl implements iDocumentService {
     }
 
     @Override
-    public Object filterDocuments(UUID courseId, UUID universityId, LocalDateTime uploadDate, boolean sortByViews, boolean sortByLikes, boolean sortByDisLike, String status, boolean isAdmin) {
+    public Object filterDocuments(String keyword, UUID courseId, UUID universityId, LocalDateTime uploadDate,
+                                  boolean sortByViews, boolean sortByLikes, boolean sortByDisLike,
+                                  boolean sortByNewest, boolean sortByOldest, boolean sortByReportCount,
+                                  String status, boolean isAdmin, int page, int size) {
         try {
-            List<DocumentEntity> documents = documentRepository.findAll(DocumentSpecification.filterDocuments(courseId, universityId, uploadDate, sortByViews, sortByLikes, sortByDisLike, status, isAdmin));
+            List<DocumentEntity> documents = documentRepository.findAll(DocumentSpecification.filterDocuments(courseId, universityId, uploadDate, sortByViews, sortByLikes, sortByDisLike, sortByNewest, sortByOldest, sortByReportCount, status, isAdmin));
             if (isAdmin) {
-                return documents.stream().map(DocumentMapper::toAdminDTO).collect(Collectors.toList());
+                List<AdminDocumentDTO> adDocDTO = documents.stream().map(DocumentMapper::toAdminDTO).toList();
+                int start = Math.min(page * size, adDocDTO.size());
+                int end = Math.min(start + size, adDocDTO.size());
+                List<AdminDocumentDTO> pagedList = adDocDTO.subList(start, end);
+                return new PageImpl<>(pagedList, PageRequest.of(page, size), adDocDTO.size());
             } else {
-                return documents.stream().map(DocumentMapper::toUserDTO).collect(Collectors.toList());
+                List<UserDocumentDTO> userDocDTO = documents.stream().map(DocumentMapper::toUserDTO).toList();
+                int start = Math.min(page * size, userDocDTO.size());
+                int end = Math.min(start + size, userDocDTO.size());
+                List<UserDocumentDTO> pagedList = userDocDTO.subList(start, end);
+                return new PageImpl<>(pagedList, PageRequest.of(page, size), userDocDTO.size());
             }
         } catch (RuntimeException e) {
             return new UnauthorizedError(e.getMessage());
@@ -540,7 +596,6 @@ public class DocumentServiceImpl implements iDocumentService {
     @Override
     public Page<DocumentEntity> getDocumentByCourseAndFollowedByMember(UUID memberId, int page, int size) {
         try {
-            System.out.println("Member ID: " + memberId);
             List<UUID> courseIds = courseRepository.findFollowedCoursesByMemberId(memberId);
             return documentRepository.findAll(DocumentSpecification.recommendDocuments(courseIds, null), PageRequest.of(page, size));
         } catch (RuntimeException e) {
@@ -551,7 +606,6 @@ public class DocumentServiceImpl implements iDocumentService {
     @Override
     public Page<UserDocumentDTO> getDocumentByCourseAndFollowedByMemberForUI(UUID memberId, int page, int size) {
         try {
-            System.out.println("Member ID: " + memberId);
             Page<DocumentEntity> documents = getDocumentByCourseAndFollowedByMember(memberId, page, size);
             return documents.map(DocumentMapper::toUserDTO);
         } catch (RuntimeException e) {

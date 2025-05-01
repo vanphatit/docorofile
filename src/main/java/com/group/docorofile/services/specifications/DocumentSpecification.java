@@ -43,7 +43,11 @@ public class DocumentSpecification {
         };
     }
 
-    public static Specification<DocumentEntity> filterDocuments(UUID courseId, UUID universityId, LocalDateTime uploadDate, boolean sortByViews, boolean sortByLikes, boolean sortByDisLike, String status, boolean isAdmin) {
+    public static Specification<DocumentEntity> filterDocuments(UUID courseId, UUID universityId, LocalDateTime uploadDate,
+                                                                boolean sortByViews, boolean sortByLikes, boolean sortByDisLike,
+                                                                boolean sortByNewest, boolean sortByOldest, boolean sortByReportCount,
+                                                                String status, boolean isAdmin
+    ) {
         return (Root<DocumentEntity> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -88,6 +92,13 @@ public class DocumentSpecification {
             } else if (isAdmin && sortByDisLike) {
                 query.groupBy(root.get("documentId")); // Gom nhóm theo tài liệu
                 query.orderBy(cb.desc(cb.count(reactionJoin.get("isDisLike")))); // Sắp xếp giảm dần theo số lượt dislike
+            } else if (sortByReportCount) {
+                query.groupBy(root.get("documentId")); // Gom nhóm theo tài liệu
+                query.orderBy(cb.desc(cb.count(root.get("reportCount")))); // Sắp xếp giảm dần theo số lượt report
+            } else if (sortByNewest) {
+                query.orderBy(cb.desc(root.get("uploadedDate"))); // Sắp xếp giảm dần theo ngày upload
+            } else if (sortByOldest) {
+                query.orderBy(cb.asc(root.get("uploadedDate"))); // Sắp xếp tăng dần theo ngày upload
             }
             else {
                 query.orderBy(cb.desc(root.get("uploadedDate"))); // Sắp xếp giảm dần theo ngày upload

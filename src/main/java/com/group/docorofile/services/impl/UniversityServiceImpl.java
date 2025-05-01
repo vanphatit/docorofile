@@ -91,6 +91,10 @@ public class UniversityServiceImpl implements iUniversityService {
         universityRepository.delete(university);
     }
 
+    @Override
+    public List<UniversityEntity> findAllUniversities() {
+        return universityRepository.findAll();
+    }
 }
 
 

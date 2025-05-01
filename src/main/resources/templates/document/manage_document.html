@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en"
+      class="light-style layout-navbar-fixed layout-menu-fixed layout-compact"
+      data-theme="theme-default" data-assets-path="../../assets/"
+      data-template="vertical-menu-template" data-style="light"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý tài liệu</title>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+    <style>
+        .badge-status {
+            padding: 0.35em 0.65em;
+            border-radius: 0.25rem;
+            font-size: 0.8em;
+            font-weight: 500;
+            color: white;
+        }
+        .status-PUBLIC { background-color: #28a745; }
+        .status-DRAFT { background-color: #6c757d; }
+        .status-FLAGGED { background-color: #ffc107; }
+        .status-DELETED { background-color: #dc3545; }
+
+        .highlight-likes { background-color: #fff3cd; }
+        .highlight-dislikes { background-color: #f8d7da; }
+        .highlight-views { background-color: #d1ecf1; }
+
+        .card-doc {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container py-4">
+        <h3 class="mb-3">Quản lý tài liệu</h3>
+
+        <div class="row g-2 mb-3">
+            <div class="col-md"><input type="date" class="form-control" id="filterUploadDate"></div>
+            <div class="col-md"><select id="filterUniversity" class="form-select"></select></div>
+            <div class="col-md"><select id="filterCourse" class="form-select"></select></div>
+            <div class="col-md">
+                <select id="filterStatus" class="form-select">
+                    <option value="">-- Trạng thái --</option>
+                    <option value="PUBLIC">Public</option>
+                    <option value="DRAFT">Draft</option>
+                    <option value="FLAGGED">Flagged</option>
+                    <option value="DELETED">Deleted</option>
+                </select>
+            </div>
+            <div class="col-md">
+                <select id="sortBy" class="form-select">
+                    <option value="">-- Sắp xếp theo --</option>
+                    <option value="likes">Lượt thích</option>
+                    <option value="dislikes">Lượt không thích</option>
+                    <option value="views">Lượt xem</option>
+                    <option value="newest">Mới nhất</option>
+                    <option value="oldest">Cũ nhất</option>
+                    <option value="report">Lượt báo cáo</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="adminDocumentList"></div>
+    </div>
+
+    <script th:inline="javascript" src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script th:inline="javascript">
+        async function fetchFilterData() {
+            const [courses, universities] = await Promise.all([
+                fetch("/v1/api/courses/all").then(res => res.json()),
+                fetch("/v1/api/universities/tags").then(res => res.json())
+            ]);
+
+            const courseSelect = document.getElementById("filterCourse");
+            courseSelect.innerHTML = '<option value="">-- Khóa học --</option>';
+            (courses.data || []).forEach(c => {
+                courseSelect.innerHTML += `<option value="${c.courseId}">${c.courseName}</option>`;
+            });
+
+            const universitySelect = document.getElementById("filterUniversity");
+            universitySelect.innerHTML = '<option value="">-- Trường --</option>';
+            (universities.data || []).forEach(u => {
+                universitySelect.innerHTML += `<option value="${u.univId}">${u.univName}</option>`;
+            });
+        }
+
+        function renderDocument(doc, highlightClass = "") {
+            const statusBadge = `<span class="badge-status status-${doc.status}">${doc.status}</span>`;
+            return `
+                <div class="card-doc ${highlightClass}">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="mb-0">${doc.title}</h5>
+                        ${statusBadge}
+                    </div>
+                    <p class="mb-1"><strong>Khóa học:</strong> ${doc.courseName} | <strong>Trường:</strong> ${doc.universityName}</p>
+                    <p class="mb-1"><strong>Lượt xem:</strong> ${doc.views} | <strong>Likes:</strong> ${doc.likes} | <strong>Dislikes:</strong> ${doc.dislikes} | <strong>Report Count:</strong> ${doc.reportCount}</p>
+                    <p class="mb-2"><strong>Ngày upload:</strong> ${new Date(doc.uploadedDate).toLocaleDateString()}</p>
+                    <div class="d-flex gap-2">
+                        <a href="/documents/${doc.documentId}" class="btn btn-sm btn-info">Xem</a>
+                        <button class="btn btn-sm btn-danger" onclick="confirmDelete('${doc.documentId}')">Xóa</button>
+                    </div>
+                </div>`;
+        }
+
+        function confirmDelete(id) {
+            Swal.fire({
+                title: "Xóa tài liệu?",
+                text: "Bạn muốn xóa mềm hay xóa cứng?",
+                icon: "warning",
+                showDenyButton: true,
+                showCancelButton: true,
+                confirmButtonText: "Xóa mềm",
+                denyButtonText: "Xóa cứng",
+                cancelButtonText: "Hủy"
+            }).then(result => {
+                if (result.isConfirmed) {
+                    deleteDocument(id, false);
+                } else if (result.isDenied) {
+                    deleteDocument(id, true);
+                }
+            });
+        }
+
+        function deleteDocument(id, hard) {
+            fetch(`/v1/api/documents/${id}?hard=${hard}`, {
+                method: "DELETE"
+            }).then(res => res.json())
+                .then(res => {
+                    Swal.fire("Thành công", res.message || "Đã xóa tài liệu", "success");
+                    loadDocuments(); // refresh
+                });
+        }
+
+        function loadDocuments() {
+            const keyword = document.getElementById("adminSearchInput")?.value ?? "";
+            const universityId = document.getElementById("filterUniversity").value;
+            const courseId = document.getElementById("filterCourse").value;
+            const status = document.getElementById("filterStatus").value;
+            const uploadDate = document.getElementById("filterUploadDate").value;
+            const sort = document.getElementById("sortBy").value;
+
+            const isInitialLoad = !keyword && !universityId && !courseId && !status && !uploadDate && !sort;
+            const url = isInitialLoad
+                ? "/v1/api/documents/list?page=0&size=100"
+                : `/v1/api/documents/filter?page=0&size=100`
+                + (keyword ? `&keyword=${encodeURIComponent(keyword)}` : "")
+                + (universityId ? `&universityId=${universityId}` : "")
+                + (courseId ? `&courseId=${courseId}` : "")
+                + (status ? `&status=${status}` : "")
+                + (uploadDate ? `&uploadDate=${uploadDate}T00:00:00` : "")
+                + (sort === 'views' ? `&sortByViews=true` : "")
+                + (sort === 'likes' ? `&sortByLikes=true` : "")
+                + (sort === 'dislikes' ? `&sortByDisLike=true` : "")
+                + (sort === 'newest' ? `&sortByNewest=true` : "")
+                + (sort === 'oldest' ? `&sortByOldest=true` : "")
+                + (sort === 'report' ? `&sortByReportCount=true` : "");
+
+            fetch(url, { credentials: 'include' })
+                .then(res => res.json())
+                .then(res => {
+                    const container = document.getElementById("adminDocumentList");
+                    container.innerHTML = "";
+                    const docs = res.data?.content || res.data || [];
+
+                    docs.forEach((doc, i) => {
+                        let highlight = "";
+                        if (sort === "likes" && i < 10) highlight = "highlight-likes";
+                        if (sort === "dislikes" && i < 10) highlight = "highlight-dislikes";
+                        if (sort === "views" && i < 10) highlight = "highlight-views";
+                        if (sort === "newest" && i < 10) highlight = "bg-light border border-success";
+                        if (sort === "oldest" && i < 10) highlight = "bg-light border border-secondary";
+                        if (sort === "report" && i < 10) highlight = "bg-light border border-danger";
+
+                        container.innerHTML += renderDocument(doc, highlight);
+                    });
+                });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchFilterData().then(() => {
+                ["adminSearchInput", "filterCourse", "filterUniversity", "filterStatus", "sortBy", "filterUploadDate"].forEach(id => {
+                    document.getElementById(id).addEventListener("change", loadDocuments);
+                });
+                document.getElementById("adminSearchInput").addEventListener("keyup", e => {
+                    if (e.key === "Enter") loadDocuments();
+                });
+                loadDocuments();
+            });
+            loadDocuments()
+        });
+    </script>
+</div>
+</body>
+</html>

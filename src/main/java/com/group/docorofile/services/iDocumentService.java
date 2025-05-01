@@ -24,17 +24,22 @@ public interface iDocumentService {
 
     List<DocumentEntity> getAllDocuments();
 
-    List<UserDocumentDTO> getAllUserDocuments();
+    Page<UserDocumentDTO> getAllUserDocuments(int page, int size);
 
-    List<AdminDocumentDTO> getAllAdminDocuments();
+    Page<AdminDocumentDTO> getAllAdminDocuments(int page, int size);
 
     Object viewDocumentByIdForUI(UUID documentId, String role, String userName);
 
-    Object searchDocuments(String keyword, String role);
+    Page<UserDocumentDTO> searchDocumentsForGuest(String keyword, int page, int size);
+
+    Object searchDocumentsForAuthUser(String keyword, int page, int size, String role);
 
     Page<UserDocumentDTO> getSearchSuggestions(String keyword);
 
-    Object filterDocuments(UUID courseId, UUID universityId, LocalDateTime uploadDate, boolean sortByViews, boolean sortByLikes, boolean sortByDisLike, String status, boolean isAdmin);
+    Object filterDocuments(String keyword, UUID courseId, UUID universityId, LocalDateTime uploadDate,
+                           boolean sortByViews, boolean sortByLikes, boolean sortByDisLike,
+                           boolean sortByNewest, boolean sortByOldest, boolean sortByReportCount,
+                           String status, boolean isAdmin, int page, int size);
 
     void updateStatus(UUID documentId, String status);
 

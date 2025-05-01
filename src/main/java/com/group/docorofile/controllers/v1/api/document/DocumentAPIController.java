@@ -40,13 +40,20 @@ public class DocumentAPIController {
     @Autowired
     private iFavoriteListService favoriteListService;
 
+
     @GetMapping("/list")
-    public Object getAllDocuments(@CookieValue(value = "JWT", required = false) String token) {
+    public Object getAllDocuments(@RequestParam(defaultValue = "0") int page,
+                                  @RequestParam(defaultValue = "12") int size,
+                                  @CookieValue(value = "JWT", required = false) String token) {
         try {
-            if (jwtTokenUtil.getRoleFromToken(token).equals("ROLE_ADMIN") || jwtTokenUtil.getRoleFromToken(token).equals("ROLE_MODERATOR")) {
-                return new SuccessResponse("Lấy danh sách tài liệu thành công!", 200, documentService.getAllAdminDocuments(), LocalDateTime.now());
+            if (token == null || token.isEmpty()) {
+                return new UnauthorizedError("Bạn chưa đăng nhập!");
+            }
+            String role = jwtTokenUtil.getRoleFromToken(token);
+            if (role.contains("ROLE_ADMIN") || role.contains("ROLE_MODERATOR")) {
+                return new SuccessResponse("Lấy danh sách tài liệu thành công!", 200, documentService.getAllAdminDocuments(page, size), LocalDateTime.now());
             } else {
-                return new SuccessResponse("Lấy danh sách tài liệu thành công!", 200, documentService.getAllUserDocuments(), LocalDateTime.now());
+                return new SuccessResponse("Lấy danh sách tài liệu thành công!", 200, documentService.getAllUserDocuments(page, size), LocalDateTime.now());
             }
         } catch (RuntimeException e) {
             return new InternalServerError(e.getMessage());
@@ -149,13 +156,21 @@ public class DocumentAPIController {
     }
 
     @GetMapping("/search")
-    public Object searchDocuments(@RequestParam String keyword,
-                                  @CookieValue(value = "JWT", required = false) String token) {
+    public Object searchDocuments(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size,
+            @CookieValue(value = "JWT", required = false) String token
+    ) {
         try {
-            if (token == null || token.isEmpty()) {
-                return new UnauthorizedError("Bạn chưa đăng nhập!");
+            if (token != null && !token.isEmpty()) {
+                String role = jwtTokenUtil.getRoleFromToken(token);
+                return new SuccessResponse("Search tài liệu thành công!", 200,
+                        documentService.searchDocumentsForAuthUser(keyword, page, size, role), LocalDateTime.now());
+            } else {
+                return new SuccessResponse("Search tài liệu thành công!", 200,
+                        documentService.searchDocumentsForGuest(keyword, page, size), LocalDateTime.now());
             }
-            return documentService.searchDocuments(keyword, token);
         } catch (RuntimeException e) {
             return new InternalServerError(e.getMessage());
         }
@@ -172,22 +187,31 @@ public class DocumentAPIController {
     }
 
     @GetMapping("/filter")
-    public Object filterDocuments(@RequestParam(required = false) UUID courseId,
+    public Object filterDocuments(@RequestParam(required = false) String keyword,
+                                  @RequestParam(required = false) UUID courseId,
                                   @RequestParam(required = false) UUID universityId,
                                   @RequestParam(required = false) LocalDateTime uploadDate,
                                   @RequestParam(required = false) boolean sortByViews,
                                   @RequestParam(required = false) boolean sortByLikes,
                                   @RequestParam(required = false) boolean sortByDisLike,
+                                  @RequestParam(required = false) boolean sortByNewest,
+                                  @RequestParam(required = false) boolean sortByOldest,
+                                  @RequestParam(required = false) boolean sortByReportCount,
                                   @RequestParam(required = false) String status,
+                                  @RequestParam(defaultValue = "0") int page,
+                                  @RequestParam(defaultValue = "12") int size,
                                   @CookieValue(value = "JWT", required = false) String token) {
         try {
             boolean isAdmin = false;
             if (token == null || token.isEmpty()) {
                 return new UnauthorizedError("Bạn chưa đăng nhập!");
-            } else if (jwtTokenUtil.getRoleFromToken(token).equals("ROLE_ADMIN")) {
+            } else if (jwtTokenUtil.getRoleFromToken(token).contains("ROLE_ADMIN")) {
                 isAdmin = true;
             }
-            return documentService.filterDocuments(courseId, universityId, uploadDate, sortByViews, sortByLikes, sortByDisLike, status, isAdmin);
+            return new SuccessResponse(
+                    "Lọc tài liệu thành công!", 200,
+                    documentService.filterDocuments(keyword, courseId, universityId, uploadDate, sortByViews, sortByLikes, sortByDisLike, sortByNewest, sortByOldest, sortByReportCount, status, isAdmin, page, size),
+                    LocalDateTime.now());
         } catch (RuntimeException e) {
             return new InternalServerError(e.getMessage());
         }
@@ -224,6 +248,7 @@ public class DocumentAPIController {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     @DeleteMapping("/delete/{documentId}")
     public Object deleteDocument(@PathVariable UUID documentId,
+                                 @RequestParam (required = false) boolean isHard,
                                  @CookieValue(value = "JWT", required = false) String token) {
         try {
             // Kiểm tra nếu token không tồn tại
@@ -232,12 +257,12 @@ public class DocumentAPIController {
             }
 
             // Kiểm tra vai trò (chỉ ADMIN hoặc MODERATOR mới được xóa)
-            if (jwtTokenUtil.getRoleFromToken(token) == null || (!jwtTokenUtil.getRoleFromToken(token).equals("ROLE_ADMIN") && !jwtTokenUtil.getRoleFromToken(token).equals("ROLE_MODERATOR"))) {
+            if (jwtTokenUtil.getRoleFromToken(token) == null || (!jwtTokenUtil.getRoleFromToken(token).contains("ROLE_ADMIN") && !jwtTokenUtil.getRoleFromToken(token).contains("ROLE_MODERATOR"))) {
                 return new ForbiddenError("Bạn không có quyền xóa tài liệu này!");
             }
 
             // Nếu là MODERATOR thì kiểm tra xem ta liệu có số lượng report >= 3 không
-            if (jwtTokenUtil.getRoleFromToken(token).equals("ROLE_MODERATOR")) {
+            if (jwtTokenUtil.getRoleFromToken(token).contains("ROLE_MODERATOR")) {
                 if (!jwtTokenUtil.getIsReportManageFromToken(token)) {
                     return new ForbiddenError("Bạn không có quyền xóa tài liệu này!");
                 }
@@ -247,15 +272,20 @@ public class DocumentAPIController {
 
             if (document == null) {
                 return new NotFoundError("Không tìm thấy tài liệu này!");
-            } else if (document.getReportCount() <= 3 && jwtTokenUtil.getRoleFromToken(token).equals("ROLE_MODERATOR")) {
+            } else if (document.getReportCount() <= 3 && jwtTokenUtil.getRoleFromToken(token).contains("ROLE_MODERATOR")) {
                 return new ForbiddenError("Tài liệu này chưa đủ số lượng report để xóa!");
             }
 
-            boolean deleted = documentService.softDeleteDocument(documentId);
-            if (deleted) {
-                return new SuccessResponse("Tài liệu đã được xóa!", 200, null, LocalDateTime.now());
+            if (isHard) {
+                documentService.deleteDocument(documentId);
+                return new SuccessResponse("Xóa tài liệu thành công!", 200, null, LocalDateTime.now());
             } else {
-                return new ConflictError("Tài liệu này đã bị xóa trước đó!");
+                boolean deleted = documentService.softDeleteDocument(documentId);
+                if (deleted) {
+                    return new SuccessResponse("Tài liệu đã được xóa!", 200, null, LocalDateTime.now());
+                } else {
+                    return new ConflictError("Tài liệu này đã bị xóa trước đó!");
+                }
             }
 
         } catch (RuntimeException e) {

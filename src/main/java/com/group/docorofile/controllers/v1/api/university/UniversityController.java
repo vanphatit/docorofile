@@ -3,6 +3,7 @@ package com.group.docorofile.controllers.v1.api.university;
 import com.group.docorofile.entities.UniversityEntity;
 import com.group.docorofile.models.university.UniversityDTO;
 import com.group.docorofile.models.university.UniversityNameDTO;
+import com.group.docorofile.models.university.UniversityTagDTO;
 import com.group.docorofile.response.CreatedResponse;
 import com.group.docorofile.response.SuccessResponse;
 import com.group.docorofile.services.impl.UniversityServiceImpl;
@@ -114,5 +115,20 @@ public class UniversityController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/tags")
+    public ResponseEntity<SuccessResponse> getAllUniversityIds() {
+        List<UniversityEntity> univs = universityService.findAllUniversities();
+        List<UniversityTagDTO> univTag = univs.stream()
+                .map(university -> new UniversityTagDTO(university.getUnivId(), university.getUnivName()))
+                .toList();
 
+        SuccessResponse response = new SuccessResponse(
+                "University names retrieved successfully",
+                HttpStatus.OK.value(),
+                univTag,
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.ok(response);
+    }
 }

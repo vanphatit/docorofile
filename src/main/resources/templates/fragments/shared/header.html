@@ -261,7 +261,7 @@
                 if (e.key === "Enter") {
                     const keyword = input.value.trim();
                     if (keyword.length > 0) {
-                        window.location.href = `/search?keyword=${encodeURIComponent(keyword)}`;
+                        window.location.href = `/documents/search?keyword=${encodeURIComponent(keyword)}`;
                     }
                 }
             });
@@ -271,6 +271,15 @@
                     suggestionsBox.classList.remove("show");
                 }
             });
+
+            // Giữ lại keyword sau khi chuyển trang tìm kiếm
+            const searchInput = document.getElementById("globalSearchInput");
+            const searchParams = new URLSearchParams(window.location.search);
+            const keywordParam = searchParams.get("keyword");
+            if (keywordParam) {
+                searchInput.value = decodeURIComponent(keywordParam);
+            }
+
         });
     </script>
 </div>
