@@ -75,27 +75,5 @@ public class FavoriteAPIController {
         boolean isFav = favoriteListService.isFavorited(userId, documentId);
         return new SuccessResponse("Kiểm tra thành công", 200, isFav, LocalDateTime.now());
     }
-
-    @PreAuthorize( "hasRole('ROLE_MEMBER')" )
-    @GetMapping("/list")
-    public Object getFavorites(@CookieValue(value = "JWT", required = false) String token) {
-        if (token == null || token.isEmpty()) {
-            return new UnauthorizedError("Bạn chưa đăng nhập!");
-        }
-
-        String userName = jwtUtils.getUsernameFromToken(token);
-        UUID userId = userService.findByEmail(userName).get().getUserId();
-        if (userId == null) {
-            return new UnauthorizedError("Token không hợp lệ!");
-        }
-
-        List<UserDocumentDTO> favoriteDocuments = favoriteListService.getFavorites(userId);
-
-        if (favoriteDocuments.isEmpty()) {
-            return new NotFoundError("Danh sách yêu thích trống!");
-        }
-
-        return new SuccessResponse("Danh sách tài liệu yêu thích!", 200, favoriteDocuments, LocalDateTime.now());
-    }
 }
 

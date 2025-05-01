@@ -14,8 +14,7 @@ import java.util.UUID;
 @Repository
 public interface FollowCourseRepository extends JpaRepository<FollowCourseEntity, UUID> {
 
-    @Query("SELECT f FROM FollowCourseEntity f WHERE f.follower = :follower")
-    boolean existsByFollower (UUID follower);
+    boolean existsByFollower_UserId (UUID follower);
 
     boolean existsByFollowerAndCourse(UserEntity follower, CourseEntity course);
 

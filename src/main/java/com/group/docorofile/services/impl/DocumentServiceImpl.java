@@ -21,6 +21,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
@@ -453,7 +454,7 @@ public class DocumentServiceImpl implements iDocumentService {
     }
 
     @Override
-    public List<DocumentEntity> getRecommendedDocuments(UUID memberId) {
+    public Page<DocumentEntity> getRecommendedDocuments(UUID memberId, int page, int size) {
         // Kiểm tra người dùng có tồn tại không
         MemberEntity member = (MemberEntity) userRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
@@ -464,30 +465,43 @@ public class DocumentServiceImpl implements iDocumentService {
         // Nếu không theo dõi khóa học nào, lấy danh sách tài liệu đã xem
         List<UUID> viewedDocumentIds = documentViewRepository.findViewedDocumentsByMemberId(memberId);
 
-        return documentRepository.findAll(DocumentSpecification.recommendDocuments(courseIds, viewedDocumentIds));
+        Specification<DocumentEntity> spec = DocumentSpecification.recommendDocuments(courseIds, viewedDocumentIds);
+
+        return documentRepository.findAll(spec, PageRequest.of(page, size));
     }
 
     @Override
-    public List<DocumentEntity> getHistoryDocuments(UUID memberId) {
+    public Page<UserDocumentDTO> getRecommendedDocumentsForUI(UUID memberId, int page, int size) {
+        Page<DocumentEntity> recommendedDocuments = getRecommendedDocuments(memberId, page, size);
+        return recommendedDocuments.map(DocumentMapper::toUserDTO);
+    }
+
+    @Override
+    public Page<DocumentEntity> getHistoryDocuments(UUID memberId, int page, int size) {
         try {
             MemberEntity member = (MemberEntity) userRepository.findById(memberId)
                     .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
-            List<DocumentViewEntity> historyViewDocuments = documentViewRepository.findHistoryDocumentsByMemberId(memberId);
-            System.out.println(historyViewDocuments);
-            return historyViewDocuments.stream().map(DocumentViewEntity::getDocument).collect(Collectors.toList());
+
+            List<DocumentViewEntity> historyViewDocuments = documentViewRepository.findHistoryDocumentsByMemberId(member.getUserId());
+            List<DocumentEntity> allDocuments = historyViewDocuments.stream()
+                    .map(DocumentViewEntity::getDocument)
+                    .collect(Collectors.toList());
+
+            int start = Math.min(page * size, allDocuments.size());
+            int end = Math.min(start + size, allDocuments.size());
+            List<DocumentEntity> pagedList = allDocuments.subList(start, end);
+
+            return new PageImpl<>(pagedList, PageRequest.of(page, size), allDocuments.size());
         } catch (RuntimeException e) {
             throw new InternalServerError(e.getMessage());
         }
     }
 
     @Override
-    public List<UserDocumentDTO> getHistoryDocumentsForUI(UUID memberId) {
+    public Page<UserDocumentDTO> getHistoryDocumentsForUI(UUID memberId, int page, int size) {
         try {
-            MemberEntity member = (MemberEntity) userRepository.findById(memberId)
-                    .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
-            List<DocumentEntity> historyViewDocuments = getHistoryDocuments(memberId);
-            System.out.println(historyViewDocuments);
-            return historyViewDocuments.stream().map(DocumentMapper::toUserDTO).collect(Collectors.toList());
+            Page<DocumentEntity> historyViewDocuments = getHistoryDocuments(memberId, page, size);
+            return historyViewDocuments.map(DocumentMapper::toUserDTO);
         } catch (RuntimeException e) {
             throw new InternalServerError(e.getMessage());
         }
@@ -509,34 +523,40 @@ public class DocumentServiceImpl implements iDocumentService {
     }
 
     @Override
-    public List<DocumentEntity> getDocumentByCourseAndFollowedByMember(UUID memberId) {
+    public Page<DocumentEntity> getDocumentByCourseAndFollowedByMember(UUID memberId, int page, int size) {
         try {
-            MemberEntity member = (MemberEntity) userRepository.findById(memberId)
-                    .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+            System.out.println("Member ID: " + memberId);
             List<UUID> courseIds = courseRepository.findFollowedCoursesByMemberId(memberId);
-            return documentRepository.findAll(DocumentSpecification.recommendDocuments(courseIds, null));
+            return documentRepository.findAll(DocumentSpecification.recommendDocuments(courseIds, null), PageRequest.of(page, size));
         } catch (RuntimeException e) {
             throw new InternalServerError(e.getMessage());
         }
     }
 
     @Override
-    public List<UserDocumentDTO> getDocumentByCourseAndFollowedByMemberForUI(UUID memberId) {
+    public Page<UserDocumentDTO> getDocumentByCourseAndFollowedByMemberForUI(UUID memberId, int page, int size) {
         try {
-            MemberEntity member = (MemberEntity) userRepository.findById(memberId)
-                    .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
-            List<DocumentEntity> documents = getDocumentByCourseAndFollowedByMember(memberId);
-            return documents.stream().map(DocumentMapper::toUserDTO).collect(Collectors.toList());
+            System.out.println("Member ID: " + memberId);
+            Page<DocumentEntity> documents = getDocumentByCourseAndFollowedByMember(memberId, page, size);
+            return documents.map(DocumentMapper::toUserDTO);
         } catch (RuntimeException e) {
             throw new InternalServerError(e.getMessage());
         }
     }
 
     @Override
-    public List<UserDocumentDTO> getDocumentByAuthor(UUID authorId) {
+    public Page<UserDocumentDTO> getDocumentByAuthor(UUID authorId, int page, int size) {
         try {
             List<DocumentEntity> documents = documentRepository.findByAuthor_UserId(authorId);
-            return documents.stream().map(DocumentMapper::toUserDTO).collect(Collectors.toList());
+            List<UserDocumentDTO> dtos = documents.stream()
+                    .map(DocumentMapper::toUserDTO)
+                    .collect(Collectors.toList());
+
+            int start = Math.min(page * size, dtos.size());
+            int end = Math.min(start + size, dtos.size());
+            List<UserDocumentDTO> pagedList = dtos.subList(start, end);
+
+            return new PageImpl<>(pagedList, PageRequest.of(page, size), dtos.size());
         } catch (RuntimeException e) {
             throw new InternalServerError(e.getMessage());
         }

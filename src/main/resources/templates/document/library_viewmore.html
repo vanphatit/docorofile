@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en"
+      class="light-style layout-navbar-fixed layout-menu-fixed layout-compact"
+      data-theme="theme-default" data-assets-path="../../assets/"
+      data-template="vertical-menu-template" data-style="light"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Xem thêm</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" th:href="@{/assets/vendor/fonts/remixicon/remixicon.css}" />
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 2rem;
+        }
+
+        .back-link {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .document-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .document-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+        }
+
+        .document-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-3px);
+        }
+
+        .document-grid {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        .thumbnail {
+            height: 180px;
+            background-color: #f7f6fd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .card-content {
+            padding: 1rem;
+        }
+
+        .card-content h4 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .card-meta {
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        .pagination {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .pagination button {
+            background: transparent;
+            border: 1px solid #ccc;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .pagination button.active {
+            background: #007bff;
+            color: #fff;
+            border-color: #007bff;
+        }
+    </style>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="container">
+        <div class="back-link" onclick="window.history.back()">
+            <i class="ri-arrow-left-line"></i> <strong>Quay lại</strong>
+        </div>
+        <h2 id="pageTitle"><strong>Xem thêm</strong></h2>
+
+        <div id="documentGrid" class="document-grid"></div>
+
+        <div class="pagination" id="pagination"></div>
+    </div>
+    <script th:inline="javascript">
+        const queryParams = new URLSearchParams(window.location.search);
+        const type = queryParams.get("type") || "history";
+        let currentPage = 0;
+
+        const titleMap = {
+            history: "Tài liệu đã xem gần đây",
+            recommend: "Tài liệu đề xuất cho bạn",
+            getDocumentsUpload: "Tài liệu bạn đã tải lên",
+            documentsByCourseFollowed: "Tài liệu từ khóa học đã theo dõi",
+            fav_list: "Tài liệu yêu thích",
+        };
+
+        document.getElementById("pageTitle").innerText = titleMap[type] || "Xem thêm";
+
+        function loadPage(page) {
+            fetch(`/v1/api/documents/${type}?page=${page}&size=12`, { credentials: "include" })
+                .then(res => res.json())
+                .then(res => {
+                    const container = document.getElementById("documentGrid");
+                    const pagination = document.getElementById("pagination");
+                    container.innerHTML = "";
+                    pagination.innerHTML = "";
+
+                    if (!res.data?.content?.length) {
+                        container.innerHTML = "<p>Không có tài liệu nào.</p>";
+                        return;
+                    }
+
+                    res.data.content.forEach(doc => {
+                        const div = document.createElement("div");
+                        div.className = "document-card";
+                        div.onclick = () => window.location.href = `/documents/${doc.documentId}`;
+                        div.innerHTML = `
+                            <div class="thumbnail">
+                              <img src="${doc.coverImageUrl || '/assets/svg/icons/laptop.svg'}" alt="cover" />
+                            </div>
+                            <div class="card-content">
+                              <h4>${doc.title}</h4>
+                              <div class="card-meta">${doc.courseName}</div>
+                              <div class="card-meta">${doc.authorName || ''} • ${new Date(doc.uploadedDate).toLocaleDateString()}</div>
+                            </div>
+                          `;
+                        container.appendChild(div);
+                    });
+
+                    const totalPages = res.data.totalPages;
+                    for (let i = 0; i < totalPages; i++) {
+                        const btn = document.createElement("button");
+                        btn.innerText = i + 1;
+                        if (i === page) btn.classList.add("active");
+                        btn.onclick = () => {
+                            currentPage = i;
+                            loadPage(i);
+                        };
+                        pagination.appendChild(btn);
+                    }
+                });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadPage(currentPage);
+        });
+    </script>
+</div>
+</body>
+</html>

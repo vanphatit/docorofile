@@ -11,6 +11,7 @@ import com.group.docorofile.request.DocumentMetadataRequest;
 import com.group.docorofile.response.*;
 import com.group.docorofile.security.JwtTokenUtil;
 import com.group.docorofile.services.iDocumentService;
+import com.group.docorofile.services.iFavoriteListService;
 import com.group.docorofile.services.iUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -35,6 +36,9 @@ public class DocumentAPIController {
 
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
+
+    @Autowired
+    private iFavoriteListService favoriteListService;
 
     @GetMapping("/list")
     public Object getAllDocuments(@CookieValue(value = "JWT", required = false) String token) {
@@ -179,12 +183,15 @@ public class DocumentAPIController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_MEMBER')")
     @GetMapping("/recommend")
-    public Object getRecommendedDocuments(@CookieValue(value = "JWT", required = false) String token) {
+    public Object getRecommendedDocuments( @RequestParam(defaultValue = "0") int page,
+                                          @RequestParam(defaultValue = "6") int size,
+                                          @CookieValue(value = "JWT", required = false) String token) {
         try {
             UUID memberId = userService.findByEmail(jwtTokenUtil.getUsernameFromToken(token)).get().getUserId();
 
-            List<DocumentEntity> recommendations = documentService.getRecommendedDocuments(memberId);
+            Page<UserDocumentDTO> recommendations = documentService.getRecommendedDocumentsForUI(memberId, page, size);
             if (recommendations.isEmpty()) {
                 return new NotFoundError("Không có tài liệu nào để gợi ý.");
             }
@@ -248,9 +255,11 @@ public class DocumentAPIController {
 
     @GetMapping("/history")
     @PreAuthorize("hasRole('ROLE_MEMBER')")
-    public Object getHistoryDocuments(@CookieValue(value = "JWT", required = false) String token) {
+    public Object getHistoryDocuments( @RequestParam(defaultValue = "0") int page,
+                                       @RequestParam(defaultValue = "6") int size,
+                                       @CookieValue(value = "JWT", required = false) String token)
+    {
         try {
-            System.out.println("Token: " + token);
             String email = jwtTokenUtil.getUsernameFromToken(token);
             Optional<UserEntity> optionalUser = userService.findByEmail(email);
 
@@ -259,7 +268,7 @@ public class DocumentAPIController {
             }
 
             UUID memberId = optionalUser.get().getUserId();
-            List<UserDocumentDTO> historyDocuments = documentService.getHistoryDocumentsForUI(memberId);
+            Page<UserDocumentDTO> historyDocuments = documentService.getHistoryDocumentsForUI(memberId, page, size);
 
             if (historyDocuments.isEmpty()) {
                 return new NotFoundError("Không có tài liệu nào trong lịch sử xem!");
@@ -289,14 +298,21 @@ public class DocumentAPIController {
 
     @PreAuthorize("hasRole('ROLE_MEMBER')")
     @GetMapping("/documentsByCourseFollowed")
-    public Object getDocumentsByCourseFollowed (@CookieValue(value = "JWT", required = false) String token) {
+    public Object getDocumentsByCourseFollowed (@RequestParam(defaultValue = "0") int page,
+                                                @RequestParam(defaultValue = "6") int size,
+                                                @CookieValue(value = "JWT", required = false) String token) {
         try {
             UUID memberId = userService.findByEmail(jwtTokenUtil.getUsernameFromToken(token)).get().getUserId();
+            if (memberId == null) {
+                return new UnauthorizedError("Bạn chưa đăng nhập!");
+            }
+            System.out.println("===================== " + memberId);
             boolean courseFollowed = userService.courseFollowedByMember(memberId);
+
             if (!courseFollowed) {
                 return new NotFoundError("Bạn chưa theo dõi khóa học nào!");
             }
-            List<UserDocumentDTO> documents = documentService.getDocumentByCourseAndFollowedByMemberForUI(memberId);
+            Page<UserDocumentDTO> documents = documentService.getDocumentByCourseAndFollowedByMemberForUI(memberId, page, size);
             if (documents.isEmpty()) {
                 return new NotFoundError("Không có tài liệu nào trong khóa học đã theo dõi!");
             }
@@ -308,10 +324,12 @@ public class DocumentAPIController {
 
     @PreAuthorize("hasRole('ROLE_MEMBER')")
     @GetMapping("/getDocumentsUpload")
-    public Object getDocumentsUpload(@CookieValue(value = "JWT", required = false) String token) {
+    public Object getDocumentsUpload(@RequestParam(defaultValue = "0") int page,
+                                     @RequestParam(defaultValue = "6") int size,
+                                     @CookieValue(value = "JWT", required = false) String token) {
         try {
             UUID memberId = userService.findByEmail(jwtTokenUtil.getUsernameFromToken(token)).get().getUserId();
-            List<UserDocumentDTO> documents = documentService.getDocumentByAuthor(memberId);
+            Page<UserDocumentDTO> documents = documentService.getDocumentByAuthor(memberId, page, size);
             if (documents.isEmpty()) {
                 return new NotFoundError("Không có tài liệu nào đã tải lên!");
             }
@@ -319,6 +337,29 @@ public class DocumentAPIController {
         } catch (RuntimeException e) {
             return new InternalServerError(e.getMessage());
         }
+    }
+
+    @PreAuthorize( "hasRole('ROLE_MEMBER')" )
+    @GetMapping("/fav_list")
+    public Object getFavorites(@RequestParam(defaultValue = "0") int page,
+                               @RequestParam(defaultValue = "6") int size,
+                               @CookieValue(value = "JWT", required = false) String token) {
+        if (token == null || token.isEmpty()) {
+            return new UnauthorizedError("Bạn chưa đăng nhập!");
+        }
+
+        UUID memberId = userService.findByEmail(jwtTokenUtil.getUsernameFromToken(token)).get().getUserId();
+        if (memberId == null) {
+            return new UnauthorizedError("Token không hợp lệ!");
+        }
+
+        Page<UserDocumentDTO> favoriteDocuments = favoriteListService.getFavoritesUI(memberId, page, size);
+
+        if (favoriteDocuments.isEmpty()) {
+            return new NotFoundError("Danh sách yêu thích trống!");
+        }
+
+        return new SuccessResponse("Danh sách tài liệu yêu thích!", 200, favoriteDocuments, LocalDateTime.now());
     }
 
     @GetMapping("/view/{documentId}")

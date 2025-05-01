@@ -21,5 +21,4 @@ public interface DocumentViewRepository extends JpaRepository<DocumentViewEntity
     @Query("SELECT dv FROM DocumentViewEntity dv WHERE dv.member.userId = :memberId ORDER BY dv.viewedAt DESC")
     List<DocumentViewEntity> findHistoryDocumentsByMemberId(UUID memberId);
 
-
 }

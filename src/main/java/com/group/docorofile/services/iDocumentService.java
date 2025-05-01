@@ -54,11 +54,13 @@ public interface iDocumentService {
 
     Page<UserDocumentDTO> getRelatedDocumentsForUI(UUID documentId, int page, int size);
 
-    List<DocumentEntity> getRecommendedDocuments(UUID memberId);
+    Page<DocumentEntity> getRecommendedDocuments(UUID memberId, int page, int size);
 
-    List<DocumentEntity> getHistoryDocuments(UUID memberId);
+    Page<UserDocumentDTO> getRecommendedDocumentsForUI(UUID memberId, int page, int size);
 
-    List<UserDocumentDTO> getHistoryDocumentsForUI(UUID memberId);
+    Page<DocumentEntity> getHistoryDocuments(UUID memberId, int page, int size);
+
+    Page<UserDocumentDTO> getHistoryDocumentsForUI(UUID memberId, int page, int size);
 
     List<DocumentEntity> getDocumentByCourseId(UUID courseId);
 
@@ -66,11 +68,11 @@ public interface iDocumentService {
 
     List<DocumentEntity> getDocumentByUniversityAndCourse(String univName, String courseName);
 
-    List<DocumentEntity> getDocumentByCourseAndFollowedByMember(UUID memberId);
+    Page<DocumentEntity> getDocumentByCourseAndFollowedByMember(UUID memberId, int page, int size);
 
-    List<UserDocumentDTO> getDocumentByCourseAndFollowedByMemberForUI(UUID memberId);
+    Page<UserDocumentDTO> getDocumentByCourseAndFollowedByMemberForUI(UUID memberId, int page, int size);
 
-    List<UserDocumentDTO> getDocumentByAuthor(UUID authorId);
+    Page<UserDocumentDTO> getDocumentByAuthor(UUID authorId, int page, int size);
 
     List<CourseEntity> findAllWithUniversity();
 }

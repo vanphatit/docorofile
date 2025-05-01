@@ -11,6 +11,9 @@ import com.group.docorofile.repositories.UserRepository;
 import com.group.docorofile.response.NotFoundError;
 import com.group.docorofile.services.iFavoriteListService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -82,6 +85,17 @@ public class FavoriteListServiceImpl implements iFavoriteListService {
                 .map(favorite -> DocumentMapper
                         .toUserDTO(favorite.getDocument()))
                 .toList();
+    }
+
+    @Override
+    public Page<UserDocumentDTO> getFavoritesUI(UUID memberId, int page, int size) {
+        List<UserDocumentDTO> favList = getFavorites(memberId); // lấy toàn bộ danh sách
+
+        int start = Math.min(page * size, favList.size());
+        int end = Math.min(start + size, favList.size());
+        List<UserDocumentDTO> subList = favList.subList(start, end);
+
+        return new PageImpl<>(subList, PageRequest.of(page, size), favList.size());
     }
 
     // Kiểm tra tài liệu có trong danh sách yêu thích không
