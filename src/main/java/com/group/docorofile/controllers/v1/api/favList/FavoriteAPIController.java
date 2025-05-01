@@ -9,6 +9,7 @@ import com.group.docorofile.security.JwtTokenUtil;
 import com.group.docorofile.services.iUserService;
 import com.group.docorofile.services.impl.FavoriteListServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -28,9 +29,10 @@ public class FavoriteAPIController {
     @Autowired
     private JwtTokenUtil jwtUtils;
 
+    @PreAuthorize( "hasRole('ROLE_MEMBER')" )
     @PostMapping("/add")
     public Object addToFavorites(@RequestParam UUID documentId,
-                                 @CookieValue(value = "jwtToken", required = false) String token) {
+                                 @CookieValue(value = "JWT", required = false) String token) {
         if (token == null || token.isEmpty()) {
             return new UnauthorizedError("Bạn chưa đăng nhập!");
         }
@@ -45,9 +47,10 @@ public class FavoriteAPIController {
         return new SuccessResponse(message, 200, null, LocalDateTime.now());
     }
 
+    @PreAuthorize( "hasRole('ROLE_MEMBER')" )
     @DeleteMapping("/remove")
     public Object removeFromFavorites(@RequestParam UUID documentId,
-                                      @CookieValue(value = "jwtToken", required = false) String token) {
+                                      @CookieValue(value = "JWT", required = false) String token) {
         if (token == null || token.isEmpty()) {
             return new UnauthorizedError("Bạn chưa đăng nhập!");
         }
@@ -62,8 +65,20 @@ public class FavoriteAPIController {
         return new SuccessResponse(message, 200, null, LocalDateTime.now());
     }
 
+    @PreAuthorize( "hasRole('ROLE_MEMBER')" )
+    @GetMapping("/check")
+    public Object isFavorited(@RequestParam UUID documentId,
+                              @CookieValue(value = "JWT", required = false) String token) {
+        if (token == null || token.isEmpty()) return new UnauthorizedError("Bạn chưa đăng nhập!");
+        String username = jwtUtils.getUsernameFromToken(token);
+        UUID userId = userService.findByEmail(username).get().getUserId();
+        boolean isFav = favoriteListService.isFavorited(userId, documentId);
+        return new SuccessResponse("Kiểm tra thành công", 200, isFav, LocalDateTime.now());
+    }
+
+    @PreAuthorize( "hasRole('ROLE_MEMBER')" )
     @GetMapping("/list")
-    public Object getFavorites(@CookieValue(value = "jwtToken", required = false) String token) {
+    public Object getFavorites(@CookieValue(value = "JWT", required = false) String token) {
         if (token == null || token.isEmpty()) {
             return new UnauthorizedError("Bạn chưa đăng nhập!");
         }

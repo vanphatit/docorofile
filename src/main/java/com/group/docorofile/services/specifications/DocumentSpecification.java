@@ -1,6 +1,8 @@
 package com.group.docorofile.services.specifications;
 
+import com.group.docorofile.entities.CourseEntity;
 import com.group.docorofile.entities.DocumentEntity;
+import com.group.docorofile.entities.UniversityEntity;
 import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -95,31 +97,24 @@ public class DocumentSpecification {
         };
     }
 
-    public static Specification<DocumentEntity> relatedDocuments(UUID documentId) {
-        return (root, query, criteriaBuilder) -> {
-            // JOIN với CourseEntity
-            Join<DocumentEntity, Object> courseJoin = root.join("course", JoinType.INNER);
+    public static Specification<DocumentEntity> relatedDocuments(DocumentEntity originalDoc) {
+        return (root, query, cb) -> {
+            // Join document.course
+            Join<DocumentEntity, CourseEntity> courseJoin = root.join("course", JoinType.LEFT);
 
-            // JOIN với UniversityEntity
-            Join<Object, Object> universityJoin = root.join("university", JoinType.INNER);
+            // Join course.university
+            Join<CourseEntity, UniversityEntity> universityJoin = courseJoin.join("university", JoinType.LEFT);
 
-            // Lấy tài liệu gốc (tài liệu người dùng đang xem)
-            Subquery<DocumentEntity> subquery = query.subquery(DocumentEntity.class);
-            Root<DocumentEntity> subRoot = subquery.from(DocumentEntity.class);
-            subquery.select(subRoot)
-                    .where(criteriaBuilder.equal(subRoot.get("documentId"), documentId));
+            // Điều kiện
+            Predicate notSameDoc = cb.notEqual(root.get("documentId"), originalDoc.getDocumentId());
+            Predicate sameCourse = cb.equal(courseJoin.get("courseId"), originalDoc.getCourse().getCourseId());
+            Predicate sameUniversity = cb.equal(universityJoin.get("univId"), originalDoc.getCourse().getUniversity().getUnivId());
+            Predicate similarTitle = cb.like(cb.lower(root.get("title")), "%" + originalDoc.getTitle().toLowerCase() + "%");
+            Predicate similarDesc = cb.like(cb.lower(root.get("description")), "%" + originalDoc.getDescription().toLowerCase() + "%");
 
-            // Điều kiện: cùng khóa học hoặc cùng trường hoặc có tiêu đề/mô tả tương tự
-            Predicate sameCourse = criteriaBuilder.equal(root.get("course"), subRoot.get("course"));
-            Predicate sameUniversity = criteriaBuilder.equal(universityJoin.get("univId"), subRoot.get("university").get("univId"));
-
-            Predicate similarTitle = criteriaBuilder.like(root.get("title"), "%" + subRoot.get("title") + "%");
-            Predicate similarDescription = criteriaBuilder.like(root.get("description"), "%" + subRoot.get("description") + "%");
-
-            // Trả về danh sách tài liệu liên quan, nhưng bỏ qua chính tài liệu đó
-            return criteriaBuilder.and(
-                    criteriaBuilder.notEqual(root.get("documentId"), documentId),
-                    criteriaBuilder.or(sameCourse, sameUniversity, similarTitle, similarDescription)
+            return cb.and(
+                    notSameDoc,
+                    cb.or(sameCourse, sameUniversity, similarTitle, similarDesc)
             );
         };
     }

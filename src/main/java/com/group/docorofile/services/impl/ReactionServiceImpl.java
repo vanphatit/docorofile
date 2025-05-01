@@ -74,4 +74,17 @@ public class ReactionServiceImpl implements iReactionRepository {
     public int countDislike(UUID documentId) {
         return reactionRepository.countDislikeByDocumentId(documentId);
     }
+
+    @Override
+    public String getUserReaction(UUID userId, UUID documentId) {
+        Optional<ReactionEntity> reaction = reactionRepository.findByUserAndDocument(userId, documentId);
+        if (reaction.isPresent()) {
+            if (reaction.get().isLike()) {
+                return "like";
+            } else if (reaction.get().isDislike()) {
+                return "dislike";
+            }
+        }
+        return null; // Không có phản ứng nào
+    }
 }

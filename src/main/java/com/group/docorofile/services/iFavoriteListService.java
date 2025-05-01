@@ -15,4 +15,7 @@ public interface iFavoriteListService {
 
     // Lấy danh sách tài liệu yêu thích của user
     List<UserDocumentDTO> getFavorites(UUID memberId);
+
+    // Kiểm tra tài liệu có trong danh sách yêu thích không
+    boolean isFavorited(UUID memberId, UUID documentId);
 }

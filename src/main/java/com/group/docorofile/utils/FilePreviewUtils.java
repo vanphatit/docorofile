@@ -3,6 +3,8 @@ package com.group.docorofile.utils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.rendering.ImageType;
+import org.apache.poi.hwpf.HWPFDocument;
+import org.apache.poi.hwpf.extractor.WordExtractor;
 import org.apache.poi.xslf.usermodel.XMLSlideShow;
 import org.apache.poi.xslf.usermodel.XSLFSlide;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -52,6 +54,9 @@ public class FilePreviewUtils {
                 case "docx":
                     image = renderDocx(file);
                     break;
+                case "doc":
+                    image = renderDoc(file);  // THÊM DÒNG NÀY
+                    break;
                 case "pptx":
                     image = renderPptx(file);
                     break;
@@ -95,6 +100,18 @@ public class FilePreviewUtils {
         }
 
         return renderTextToImage(sb.toString(), 20); // font size 20
+    }
+
+    private static BufferedImage renderDoc(File file) throws IOException {
+        HWPFDocument doc = new HWPFDocument(new FileInputStream(file));
+        WordExtractor extractor = new WordExtractor(doc);
+        String[] paragraphs = extractor.getParagraphText();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < Math.min(paragraphs.length, 3); i++) {
+            sb.append(paragraphs[i].trim()).append("\n");
+        }
+        extractor.close();
+        return renderTextToImage(sb.toString(), 20);  // font size 20
     }
 
     private static BufferedImage renderPptx(File file) throws IOException {

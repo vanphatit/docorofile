@@ -178,7 +178,6 @@ public class UserInfoAPIController {
                         .body(new SuccessResponse("Bạn chưa đăng nhập!", HttpStatus.UNAUTHORIZED.value(), null, LocalDateTime.now()));
             }
 
-
             String username = jwtTokenUtil.getUsernameFromToken(token);
             UUID memberId = userService.findByEmail(username).orElseThrow().getUserId();
             MemberEntity member = (MemberEntity) userService.findById(memberId).orElseThrow();
@@ -190,6 +189,7 @@ public class UserInfoAPIController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new SuccessResponse("Error downloading turn info", HttpStatus.INTERNAL_SERVER_ERROR.value(), null, LocalDateTime.now()));
         }
+    }
       
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/stats")

@@ -5,6 +5,7 @@ import com.group.docorofile.entities.DocumentEntity;
 import com.group.docorofile.models.dto.AdminDocumentDTO;
 import com.group.docorofile.models.dto.UserDocumentDTO;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -49,7 +50,9 @@ public interface iDocumentService {
 
     ResponseEntity<Resource> downloadDocument(UUID memberId, UUID documentId);
 
-    List<DocumentEntity> getRelatedDocuments(UUID documentId);
+    Page<DocumentEntity> getRelatedDocuments(UUID documentId, int page, int size);
+
+    Page<UserDocumentDTO> getRelatedDocumentsForUI(UUID documentId, int page, int size);
 
     List<DocumentEntity> getRecommendedDocuments(UUID memberId);
 

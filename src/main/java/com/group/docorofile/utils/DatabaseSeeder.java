@@ -24,7 +24,7 @@ public class DatabaseSeeder {
         userSeeder.seedUsers();
 //        followCourseSeeder.seedFollowCourses();
         chatRoomSeeder.seedChatRooms();
-        paymentSeeder.seedPayments();
+//        paymentSeeder.seedPayments();
         System.out.println("✅ Database seeded successfully!");
     }
 }

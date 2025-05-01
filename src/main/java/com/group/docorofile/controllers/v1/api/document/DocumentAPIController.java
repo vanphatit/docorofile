@@ -14,6 +14,7 @@ import com.group.docorofile.services.iDocumentService;
 import com.group.docorofile.services.iUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -271,9 +272,12 @@ public class DocumentAPIController {
     }
 
     @GetMapping("/related/{documentId}")
-    public Object getRelatedDocuments(@PathVariable UUID documentId) {
+    public Object getRelatedDocumentsPaginated(
+            @PathVariable UUID documentId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size) {
         try {
-            List<DocumentEntity> relatedDocuments = documentService.getRelatedDocuments(documentId);
+            Page<UserDocumentDTO> relatedDocuments = documentService.getRelatedDocumentsForUI(documentId, page, size);
             if (relatedDocuments.isEmpty()) {
                 return new NotFoundError("Không có tài liệu nào liên quan!");
             }

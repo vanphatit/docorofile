@@ -84,4 +84,9 @@ public class FavoriteListServiceImpl implements iFavoriteListService {
                 .toList();
     }
 
+    // Kiểm tra tài liệu có trong danh sách yêu thích không
+    @Override
+    public boolean isFavorited(UUID memberId, UUID documentId) {
+        return favoriteListRepository.existsByMember_UserIdAndDocument_DocumentId(memberId, documentId);
+    }
 }
