@@ -257,11 +257,25 @@
                     });
             });
 
-            input.addEventListener("keydown", function (e) {
+            input.addEventListener("keydown", async function (e) {
+                const response = await fetch('/v1/api/auth/current-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include' // ⚠️ QUAN TRỌNG: gửi cookie (JWT) kèm request
+                });
+                if (response.status === 200) {
+                    const data = await response.json();
+                    window.currentUserRole = data.data.role;
+                }
                 if (e.key === "Enter") {
                     const keyword = input.value.trim();
                     if (keyword.length > 0) {
-                        window.location.href = `/documents/search?keyword=${encodeURIComponent(keyword)}`;
+                        const targetUrl = (window.currentUserRole === 'ROLE_ADMIN' || window.currentUserRole === 'ROLE_MODERATOR')
+                            ? `/documents/manage?keyword=${encodeURIComponent(keyword)}`
+                            : `/documents/search?keyword=${encodeURIComponent(keyword)}`;
+                        window.location.href = targetUrl;
                     }
                 }
             });

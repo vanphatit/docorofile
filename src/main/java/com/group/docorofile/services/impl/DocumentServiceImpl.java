@@ -230,12 +230,20 @@ public class DocumentServiceImpl implements iDocumentService {
     }
 
     @Override
-    public Object filterDocuments(String keyword, UUID courseId, UUID universityId, LocalDateTime uploadDate,
+    public Object filterDocuments(String keyword, UUID courseId, UUID universityId, String uploadDate,
                                   boolean sortByViews, boolean sortByLikes, boolean sortByDisLike,
                                   boolean sortByNewest, boolean sortByOldest, boolean sortByReportCount,
                                   String status, boolean isAdmin, int page, int size) {
         try {
-            List<DocumentEntity> documents = documentRepository.findAll(DocumentSpecification.filterDocuments(courseId, universityId, uploadDate, sortByViews, sortByLikes, sortByDisLike, sortByNewest, sortByOldest, sortByReportCount, status, isAdmin));
+            List<DocumentEntity> searchDocuments = documentRepository.findAll(
+                    DocumentSpecification.searchByKeyword(keyword)
+            );
+            // covert String uploadDate to LocalDateTime
+            LocalDateTime uploadDateTime = null;
+            if (uploadDate != null && !uploadDate.isEmpty()) {
+                uploadDateTime = LocalDateTime.parse(uploadDate);
+            }
+            List<DocumentEntity> documents = documentRepository.findAll(DocumentSpecification.filterDocuments(searchDocuments, courseId, universityId, uploadDateTime, sortByViews, sortByLikes, sortByDisLike, sortByNewest, sortByOldest, sortByReportCount, status, isAdmin));
             if (isAdmin) {
                 List<AdminDocumentDTO> adDocDTO = documents.stream().map(DocumentMapper::toAdminDTO).toList();
                 int start = Math.min(page * size, adDocDTO.size());

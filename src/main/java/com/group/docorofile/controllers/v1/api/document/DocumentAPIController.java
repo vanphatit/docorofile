@@ -190,7 +190,7 @@ public class DocumentAPIController {
     public Object filterDocuments(@RequestParam(required = false) String keyword,
                                   @RequestParam(required = false) UUID courseId,
                                   @RequestParam(required = false) UUID universityId,
-                                  @RequestParam(required = false) LocalDateTime uploadDate,
+                                  @RequestParam(required = false) String uploadDate,
                                   @RequestParam(required = false) boolean sortByViews,
                                   @RequestParam(required = false) boolean sortByLikes,
                                   @RequestParam(required = false) boolean sortByDisLike,

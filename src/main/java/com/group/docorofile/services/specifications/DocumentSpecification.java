@@ -43,13 +43,23 @@ public class DocumentSpecification {
         };
     }
 
-    public static Specification<DocumentEntity> filterDocuments(UUID courseId, UUID universityId, LocalDateTime uploadDate,
+    public static Specification<DocumentEntity> filterDocuments(List<DocumentEntity> searchDocuments, UUID courseId, UUID universityId, LocalDateTime uploadDate,
                                                                 boolean sortByViews, boolean sortByLikes, boolean sortByDisLike,
                                                                 boolean sortByNewest, boolean sortByOldest, boolean sortByReportCount,
                                                                 String status, boolean isAdmin
     ) {
         return (Root<DocumentEntity> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             List<Predicate> predicates = new ArrayList<>();
+
+            // Nếu có tài liệu tìm kiếm, thêm điều kiện vào
+            if (searchDocuments != null && !searchDocuments.isEmpty()) {
+                List<Predicate> searchPredicates = new ArrayList<>();
+                for (DocumentEntity document : searchDocuments) {
+                    Predicate idPredicate = cb.equal(root.get("documentId"), document.getDocumentId());
+                    searchPredicates.add(idPredicate);
+                }
+                predicates.add(cb.or(searchPredicates.toArray(new Predicate[0])));
+            }
 
             // JOIN với CourseEntity
             Join<DocumentEntity, Object> courseJoin = root.join("course", JoinType.INNER);
@@ -72,7 +82,9 @@ public class DocumentSpecification {
 
             // Lọc theo ngày upload
             if (uploadDate != null) {
-                predicates.add(cb.equal(cb.function("DATE", LocalDateTime.class, root.get("uploadedDate")), uploadDate));
+                LocalDateTime startOfDay = uploadDate.toLocalDate().atStartOfDay();
+                LocalDateTime endOfDay = startOfDay.plusDays(1);
+                predicates.add(cb.between(root.get("uploadedDate"), startOfDay, endOfDay));
             }
 
             // Nếu là admin, lọc theo status
@@ -91,7 +103,7 @@ public class DocumentSpecification {
                 query.orderBy(cb.desc(cb.count(reactionJoin.get("isLike"))), cb.desc(root.get("viewCount"))); // Sắp xếp giảm dần theo số lượt like và lượt xem
             } else if (isAdmin && sortByDisLike) {
                 query.groupBy(root.get("documentId")); // Gom nhóm theo tài liệu
-                query.orderBy(cb.desc(cb.count(reactionJoin.get("isDisLike")))); // Sắp xếp giảm dần theo số lượt dislike
+                query.orderBy(cb.desc(cb.count(reactionJoin.get("isDislike")))); // Sắp xếp giảm dần theo số lượt dislike
             } else if (sortByReportCount) {
                 query.groupBy(root.get("documentId")); // Gom nhóm theo tài liệu
                 query.orderBy(cb.desc(cb.count(root.get("reportCount")))); // Sắp xếp giảm dần theo số lượt report

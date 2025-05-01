@@ -137,7 +137,7 @@
         }
 
         function loadDocuments() {
-            const keyword = document.getElementById("adminSearchInput")?.value ?? "";
+            const keyword = new URLSearchParams(window.location.search).get("keyword")?.trim() || "";
             const universityId = document.getElementById("filterUniversity").value;
             const courseId = document.getElementById("filterCourse").value;
             const status = document.getElementById("filterStatus").value;
@@ -183,15 +183,26 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             fetchFilterData().then(() => {
-                ["adminSearchInput", "filterCourse", "filterUniversity", "filterStatus", "sortBy", "filterUploadDate"].forEach(id => {
-                    document.getElementById(id).addEventListener("change", loadDocuments);
+                const filterIds = [
+                    "filterCourse", "filterUniversity", "filterStatus",
+                    "sortBy", "filterUploadDate"
+                ];
+
+                filterIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.addEventListener("change", loadDocuments);
                 });
-                document.getElementById("adminSearchInput").addEventListener("keyup", e => {
-                    if (e.key === "Enter") loadDocuments();
-                });
-                loadDocuments();
+
+                // Nếu có truyền keyword qua URL
+                const keyword = new URLSearchParams(window.location.search).get("keyword")?.trim() || "";
+                if (keyword) {
+                    // Nếu muốn giữ trong ô input (tùy design)
+                    const searchBox = document.querySelector('input[type="search"]');
+                    if (searchBox) searchBox.value = keyword;
+                }
+
+                loadDocuments(); // luôn gọi ban đầu
             });
-            loadDocuments()
         });
     </script>
 </div>
