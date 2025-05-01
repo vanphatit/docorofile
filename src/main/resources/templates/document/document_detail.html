@@ -184,6 +184,65 @@
             </div>
         </div>
     </div>
+    <!-- Report Modal -->
+    <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form id="reportForm" class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reportModalLabel">BÁO CÁO TÀI LIỆU</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Có phải tài liệu này đang có vấn đề không?</p>
+                    <textarea id="reportContent" class="form-control" rows="4" placeholder="Nội dung" required></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", () => {
+            const reportBtn = document.getElementById("reportBtn");
+            const reportForm = document.getElementById("reportForm");
+
+            reportBtn.addEventListener("click", () => {
+                const modal = new bootstrap.Modal(document.getElementById("reportModal"));
+                modal.show();
+            });
+
+            reportForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const content = document.getElementById("reportContent").value.trim();
+                const documentId = document.getElementById("documentInfo").getAttribute("data-id");
+
+                if (!content) return;
+
+                fetch(`/v1/api/reports`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        documentId: documentId,
+                        content: content
+                    })
+                })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (res.status === 200) {
+                            Swal.fire("Thành công", "Đã gửi báo cáo!", "success");
+                            const modal = bootstrap.Modal.getInstance(document.getElementById("reportModal"));
+                            modal.hide();
+                            document.getElementById("reportContent").value = "";
+                        } else {
+                            Swal.fire("Lỗi", res.message || "Không gửi được báo cáo", "error");
+                        }
+                    })
+                    .catch(err => Swal.fire("Lỗi", "Có lỗi xảy ra khi gửi báo cáo", "error"));
+            });
+        });
+    </script>
 </div>
     <!-- / Content -->
 
