@@ -1,0 +1,25 @@
+#globalSearchSuggestions {
+    display: none;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1050;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+
+#globalSearchSuggestions.show {
+    display: block;
+}
+
+#globalSearchSuggestions .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+}
+
+#globalSearchSuggestions .dropdown-item img {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: 4px;
+}

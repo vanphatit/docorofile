@@ -23,6 +23,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -167,6 +168,20 @@ public class DocumentServiceImpl implements iDocumentService {
         } catch (RuntimeException e) {
             return new UnauthorizedError(e.getMessage());
         }
+    }
+
+    @Override
+    public Page<UserDocumentDTO> getSearchSuggestions(String keyword) {
+        Pageable limitFive = PageRequest.of(0, 5); // Giới hạn top 5 gợi ý
+
+        Page<DocumentEntity> documentPage = documentRepository
+                .findByTitleContainingIgnoreCase(keyword, limitFive);
+
+        if (documentPage.isEmpty()) {
+            throw new NotFoundError("Không có gợi ý phù hợp!");
+        }
+
+        return documentPage.map(DocumentMapper::toUserDTO);
     }
 
     @Override

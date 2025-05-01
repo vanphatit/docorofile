@@ -161,6 +161,16 @@ public class DocumentAPIController {
         }
     }
 
+    @GetMapping("/search/suggestions")
+    public Object getSearchSuggestions(@RequestParam String keyword) {
+        try {
+            Page<UserDocumentDTO> suggestions = documentService.getSearchSuggestions(keyword);
+            return new SuccessResponse("Gợi ý tìm kiếm thành công!", 200, suggestions, LocalDateTime.now());
+        } catch (RuntimeException e) {
+            return new InternalServerError("Lỗi khi tìm kiếm gợi ý: " + e.getMessage());
+        }
+    }
+
     @GetMapping("/filter")
     public Object filterDocuments(@RequestParam(required = false) UUID courseId,
                                   @RequestParam(required = false) UUID universityId,

@@ -32,6 +32,8 @@ public interface iDocumentService {
 
     Object searchDocuments(String keyword, String role);
 
+    Page<UserDocumentDTO> getSearchSuggestions(String keyword);
+
     Object filterDocuments(UUID courseId, UUID universityId, LocalDateTime uploadDate, boolean sortByViews, boolean sortByLikes, boolean sortByDisLike, String status, boolean isAdmin);
 
     void updateStatus(UUID documentId, String status);
