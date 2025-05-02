@@ -14,4 +14,5 @@ public class UniversityDTO implements Serializable{
     private UUID univId;
     private String univName;
     private String address;
+
 }

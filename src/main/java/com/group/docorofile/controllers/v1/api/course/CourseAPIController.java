@@ -6,7 +6,8 @@ import com.group.docorofile.models.course.CourseDTO;
 import com.group.docorofile.models.course.CourseDetailResponseDTO;
 import com.group.docorofile.response.CreatedResponse;
 import com.group.docorofile.response.SuccessResponse;
-import com.group.docorofile.services.impl.CourseServiceImpl;
+import com.group.docorofile.services.iCourseService;
+
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,19 +21,21 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/v1/api/courses")
-public class CourseController {
+public class CourseAPIController {
     @Autowired
-    private CourseServiceImpl courseService;
+    private iCourseService courseService;
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<CreatedResponse> createCourse(@Valid @RequestBody CourseDTO dto) {
+        System.out.println("🔍 Received universityId = " + dto.getUniversityName());
         CourseEntity createdCourse = courseService.createCourse(dto);
 
         CourseCreatedResponseDTO responseData = new CourseCreatedResponseDTO(
                 createdCourse.getCourseId(),
                 createdCourse.getCourseName(),
-                createdCourse.getUniversity().getUnivName()
+                createdCourse.getUniversity().getUnivName(),
+                createdCourse.getDescription()
         );
 
         CreatedResponse response = new CreatedResponse(
@@ -81,7 +84,8 @@ public class CourseController {
                 .map(course -> new CourseCreatedResponseDTO(
                         course.getCourseId(),
                         course.getCourseName(),
-                        course.getUniversity().getUnivName()
+                        course.getUniversity().getUnivName(),
+                        course.getDescription()
                 ))
                 .toList();
 

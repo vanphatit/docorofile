@@ -5,9 +5,12 @@ import com.group.docorofile.entities.FollowCourseEntity;
 import com.group.docorofile.entities.MemberEntity;
 import com.group.docorofile.entities.UserEntity;
 import com.group.docorofile.enums.EMembershipLevel;
+import com.group.docorofile.enums.ENotificationType;
 import com.group.docorofile.exceptions.UserNotFoundException;
 import com.group.docorofile.models.course.CourseCreatedResponseDTO;
+import com.group.docorofile.observer.NotificationCenter;
 import com.group.docorofile.repositories.*;
+import com.group.docorofile.request.CreateNotificationRequest;
 import com.group.docorofile.response.ConflictError;
 import com.group.docorofile.services.iFollowCourseService;
 import jakarta.persistence.EntityNotFoundException;
@@ -38,6 +41,7 @@ public class FollowCourseServiceImpl implements iFollowCourseService {
     @Autowired
     private ChatRoomRepository chatRoomRepo;
 
+    @Override
     public void followCourse(UUID userId, UUID courseId) {
         MemberEntity member = memberRepo.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Không tìm thấy người dùng với ID: " + userId));
@@ -73,9 +77,15 @@ public class FollowCourseServiceImpl implements iFollowCourseService {
         chatRoomRepo.findByCourse_CourseId(courseId)
                 .ifPresent(chatRoom -> chatService.addMemberToChatRoom(chatRoom.getChatRoomId(), userId));
 
+        CreateNotificationRequest noti = new CreateNotificationRequest();
+        noti.setReceiverId(member.getUserId());
+        noti.setType(ENotificationType.SYSTEM);
+        noti.setTitle("Theo dõi khóa học thành công");
+        noti.setContent("Bạn đã theo dõi khóa học " + course.getCourseName() + " thuộc trường " + course.getUniversity().getUnivName());
+        NotificationCenter.notifyObservers(noti);
     }
 
-
+    @Override
     public List<CourseCreatedResponseDTO> getFollowedCourses(UUID userId) {
         UserEntity user = userRepo.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -86,12 +96,13 @@ public class FollowCourseServiceImpl implements iFollowCourseService {
                     return new CourseCreatedResponseDTO(
                             course.getCourseId(),
                             course.getCourseName(),
-                            course.getUniversity().getUnivName()
+                            course.getUniversity().getUnivName(),
+                            course.getDescription()
                     );
                 }).toList();
     }
 
-
+    @Override
     public void unfollowCourse(UUID userId, UUID courseId) {
         UserEntity user = userRepo.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found" + userId));
@@ -104,6 +115,15 @@ public class FollowCourseServiceImpl implements iFollowCourseService {
         followCourseRepo.delete(follow);
         chatRoomRepo.findByCourse_CourseId(courseId)
                 .ifPresent(chatRoom -> chatService.removeMemberFromChatRoom(chatRoom.getChatRoomId(), userId));
+
+        // Gửi noti khi bỏ theo dõi thành công
+        CreateNotificationRequest noti = new CreateNotificationRequest();
+        noti.setReceiverId(user.getUserId());
+        noti.setType(ENotificationType.SYSTEM);
+        noti.setTitle("Bỏ theo dõi khóa học");
+        noti.setContent("Bạn đã bỏ theo dõi khóa học " + course.getCourseName() + " thuộc trường " + course.getUniversity().getUnivName());
+        NotificationCenter.notifyObservers(noti);
+
     }
 
 }

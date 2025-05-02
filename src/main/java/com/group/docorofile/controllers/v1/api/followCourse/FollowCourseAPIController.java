@@ -4,8 +4,9 @@ import com.group.docorofile.models.course.CourseCreatedResponseDTO;
 import com.group.docorofile.response.SuccessResponse;
 import com.group.docorofile.response.UnauthorizedError;
 import com.group.docorofile.security.JwtTokenUtil;
-import com.group.docorofile.services.impl.FollowCourseServiceImpl;
-import com.group.docorofile.services.impl.UserServiceImpl;
+import com.group.docorofile.services.iFollowCourseService;
+import com.group.docorofile.services.iUserService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -16,13 +17,13 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/v1/api")
-public class FollowCourseController {
+public class FollowCourseAPIController {
 
     @Autowired
-    private FollowCourseServiceImpl followCourseService;
+    private iFollowCourseService followCourseService;
 
     @Autowired
-    private UserServiceImpl userService;
+    private iUserService userService;
 
     @Autowired
     private JwtTokenUtil jwtUtils;

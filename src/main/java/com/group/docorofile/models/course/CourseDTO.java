@@ -12,4 +12,5 @@ public class CourseDTO {
     private String courseName;
     private String description;
     private UUID universityId;
+    private String universityName;
 }

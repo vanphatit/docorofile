@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title layout:fragment="title">Cập nhật trường đại học</title>
+</head>
+<body>
+<div class="container mt-4" layout:fragment="content">
+    <h2 th:text="${university != null} ? 'Cập nhật trường đại học' : 'Thêm mới trường đại học'"></h2>
+
+    <!-- Form Cập nhật -->
+    <form th:if="${university != null}"
+          th:action="@{/v1/api/universities/update}" method="post"
+          th:object="${university}" class="mt-4">
+        <input type="hidden" name="_method" value="put"/>
+        <input type="hidden" th:field="*{univId}"/>
+
+        <div class="mb-3">
+            <label for="editUnivName" class="form-label">Tên trường</label>
+            <input type="text" class="form-control" id="editUnivName" th:field="*{univName}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="editAddress" class="form-label">Địa chỉ</label>
+            <input type="text" class="form-control" id="editAddress" th:field="*{address}" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Cập nhật</button>
+        <a th:href="@{/admin/universities}" class="btn btn-secondary">Huỷ</a>
+    </form>
+
+    <!-- Form Thêm mới -->
+    <form th:if="${university == null}"
+          th:action="@{/v1/api/universities/create}" method="post"
+          th:object="${university}" class="mt-4">
+
+        <div class="mb-3">
+            <label for="univName" class="form-label">Tên trường</label>
+            <input type="text" class="form-control" id="univName" th:field="*{univName}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="address" class="form-label">Địa chỉ</label>
+            <input type="text" class="form-control" id="address" th:field="*{address}" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Thêm mới</button>
+        <a th:href="@{/admin/universities}" class="btn btn-secondary">Huỷ</a>
+    </form>
+</div>
+</body>
+</html>
