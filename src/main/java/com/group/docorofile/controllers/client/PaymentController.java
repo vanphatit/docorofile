@@ -25,7 +25,12 @@ public class PaymentController {
 
     @PreAuthorize("hasAnyRole('ROLE_MEMBER')")
     @GetMapping("/pricing")
-    public String showPricingPage() {
+    public String showPricingPage(@CookieValue(value = "JWT", required = false) String token,
+                                  Model model) {
+
+        String membershipLevel = paymentService.getMembershipLevelFromToken(token);
+        model.addAttribute("membershipLevel", membershipLevel); // "FREE" or "PREMIUM"
+
         return "fragments/payment/pricing";
     }
 
@@ -58,15 +63,11 @@ public class PaymentController {
             model.addAttribute("status", "success");
         }
 
-        return "fragments/payment/payment_status"; // ❗ Trả thẳng view
+        return "fragments/payment/payment_status"; // Trả thẳng view
     }
 
 
-//    @GetMapping("/payment-status")
-//    public String paymentStatus(Model model, @RequestParam String status) {
-//        model.addAttribute("status", status);
-//        return "fragments/payment/payment_status";
-//    }
+
 }
 
 

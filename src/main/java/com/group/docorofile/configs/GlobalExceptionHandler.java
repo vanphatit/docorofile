@@ -1,5 +1,6 @@
 package com.group.docorofile.configs;
 
+import com.group.docorofile.exceptions.AlreadyPremiumException;
 import com.group.docorofile.exceptions.DocumentNotFoundException;
 import com.group.docorofile.exceptions.DuplicateReportException;
 import com.group.docorofile.exceptions.UserNotFoundException;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -72,5 +74,12 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
+
+    @ExceptionHandler(AlreadyPremiumException.class)
+    public String handleAlreadyPremiumException(AlreadyPremiumException ex, Model model) {
+        model.addAttribute("message", ex.getMessage());
+        return "fragments/payment/error";
+    }
+
 
 }
