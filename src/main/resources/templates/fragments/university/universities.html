@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title layout:fragment="title">Quản lý trường đại học</title>
+</head>
+<body>
+<div class="container-fluid mt-4" layout:fragment="content">
+    <h2 class="mb-4">Danh sách trường đại học</h2>
+
+    <div class="mb-3">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">+ Thêm mới</button>
+    </div>
+
+    <div class="card">
+        <div class="card-datatable">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Tên trường đại học</th>
+                    <th>Địa chỉ</th>
+                    <th>Hành động</th>
+                </tr>
+                </thead>
+                <tbody id="universityTableBody"></tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="row mt-3">
+                <div class="col-sm-12 col-md-6">
+                    <div id="univInfo" class="dataTables_info" role="status" aria-live="polite"></div>
+                </div>
+                <div class="col-sm-12 col-md-6 d-flex justify-content-end">
+                    <ul class="pagination" id="pagination"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Thêm -->
+    <div class="modal fade" id="createModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="createUniversityForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Thêm trường</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="createName" class="form-label">Tên trường</label>
+                            <input id="createName" class="form-control" placeholder="Tên trường" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="createAddress" class="form-label">Địa chỉ</label>
+                            <input id="createAddress" class="form-control" placeholder="Địa chỉ trường" required/>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success" id="createSubmitBtn">Tạo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Sửa -->
+    <div class="modal fade" id="editModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="editUniversityForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Cập nhật trường</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="editId" />
+
+                        <div class="mb-3">
+                            <label for="editName" class="form-label">Tên trường</label>
+                            <input id="editName" class="form-control" placeholder="Tên trường" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editAddress" class="form-label">Địa chỉ</label>
+                            <input id="editAddress" class="form-control" placeholder="Địa chỉ trường" required/>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-warning" id="editSubmitBtn">Cập nhật</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Toast thông báo -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+        <div id="univToast" class="toast text-white" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="2500">
+            <div class="toast-header text-white">
+                <strong class="me-auto">Thông báo</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toastBody">Thao tác thành công!</div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<!-- Scripts -->
+<div layout:fragment="scripts">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script th:src="@{/js/page_universities.js}"></script>
+<!--    <script>-->
+<!--        document.addEventListener("DOMContentLoaded", function () {-->
+<!--            showToast("Test Toast OK", "success");-->
+<!--        });-->
+<!--    </script>-->
+</div>
+
+</body>
+</html>

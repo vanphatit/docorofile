@@ -9,6 +9,8 @@ import com.group.docorofile.response.ConflictError;
 import com.group.docorofile.services.iUniversityService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -41,6 +43,8 @@ public class UniversityServiceImpl implements iUniversityService {
     public List<UniversityNameDTO> findAllUniversityNames() {
         return universityRepository.findAllUniversityNames();
     }
+
+
 
     @Override
     public List<UniversityNameDTO> findUniversityNamesByKeyword(String keyword) {
@@ -90,6 +94,12 @@ public class UniversityServiceImpl implements iUniversityService {
 
         universityRepository.delete(university);
     }
+
+    @Override
+    public Page<UniversityDTO> findAllUniversity(Pageable pageable) {
+        return universityRepository.findAllUniversityNamesPaged(pageable);
+    }
+
 
 }
 

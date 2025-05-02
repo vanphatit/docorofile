@@ -5,9 +5,13 @@ import com.group.docorofile.models.university.UniversityDTO;
 import com.group.docorofile.models.university.UniversityNameDTO;
 import com.group.docorofile.response.CreatedResponse;
 import com.group.docorofile.response.SuccessResponse;
-import com.group.docorofile.services.impl.UniversityServiceImpl;
+import com.group.docorofile.services.iUniversityService;
+
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,9 +24,9 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/v1/api/universities")
-public class UniversityController {
+public class UniversityAPIController {
     @Autowired
-    private UniversityServiceImpl universityService;
+    private iUniversityService universityService;
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @PostMapping("/create")
@@ -37,8 +41,16 @@ public class UniversityController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @GetMapping("/list")
+    public Page<UniversityDTO> getUniversities(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
 
-    //@PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR','ROLE_MEMBER')")
+        Pageable pageable = PageRequest.of(page, size);
+        return universityService.findAllUniversity(pageable);
+    }
+
     @GetMapping("/names")
     public ResponseEntity<SuccessResponse> getAllUniversityNames() {
         List<UniversityNameDTO> names = universityService.findAllUniversityNames();

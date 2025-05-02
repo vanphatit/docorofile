@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title layout:fragment="title">Chi tiết trường đại học</title>
+</head>
+<body>
+<div layout:fragment="content" class="container-fluid mt-4">
+    <h2 class="mb-4">Chi tiết trường đại học</h2>
+    <p><strong>Tên:</strong> <span th:text="${university.univName}"></span></p>
+    <p><strong>Địa chỉ:</strong> <span th:text="${university.address}"></span></p>
+
+
+    <h3 class="mb-3">Danh sách khóa học</h3>
+    <!-- Nút thêm khóa học -->
+    <button class="btn btn-primary mt-3 mb-5" onclick="openCourseModal()">+ Thêm mới khóa học</button>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+        <tr>
+            <th>STT</th>
+            <th>Tên khóa học</th>
+            <th>Tên trường</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="course, iterStat : ${courses}">
+            <td th:text="${iterStat.index + 1}">1</td>
+            <td th:text="${course.courseName}">Tên khóa học</td>
+            <td th:text="${course.universityName}">Tên trường</td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(courses)}">
+            <td colspan="3" class="text-center text-muted">Không có khóa học nào</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <a class="btn btn-secondary mt-3 mb-5" href="/admin/universities">← Quay lại danh sách</a>
+
+    <!-- Modal tạo khóa học -->
+    <div class="modal fade" id="addCourseModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="addCourseForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Thêm khóa học mới</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="courseName" class="form-label">Tên khóa học</label>
+                            <input id="courseName" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tên trường</label>
+                            <input id="courseUniv" class="form-control" readonly />
+                        </div>
+                        <div class="mb-3">
+                            <label for="courseDesc" class="form-label">Mô tả</label>
+                            <textarea id="courseDesc" class="form-control"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Tạo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function openCourseModal() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const univName = urlParams.get("name") || "";
+            $('#courseUniv').val(univName || '');
+            $('#addCourseModal').modal('show');
+        }
+
+        $('#addCourseForm').submit(function (e) {
+            e.preventDefault();
+            const courseName = $('#courseName').val().trim();
+            const description = $('#courseDesc').val().trim();
+            const universityName = $('#courseUniv').val().trim();
+
+            if (!courseName || !universityName) return alert("Vui lòng nhập đầy đủ thông tin");
+
+            $.ajax({
+                method: 'POST',
+                url: '/v1/api/courses/create',
+                contentType: 'application/json',
+                data: JSON.stringify({ courseName, universityName, description }),
+                success: () => {
+                    $('#addCourseModal').modal('hide');
+                    location.reload(); // hoặc cập nhật bảng nếu không muốn reload
+                },
+                error: () => {
+                    alert('Tạo khóa học thất bại');
+                }
+            });
+        });
+    </script>
+</div>
+</body>
+</html>
