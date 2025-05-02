@@ -95,7 +95,7 @@
 
                                     <form action="/member/payment/vn-pay" method="post">
                                         <input type="hidden" name="amount" value="80000" />
-                                        <button type="submit" class="btn btn-outline-success d-grid w-100">Your Current Plan</button>
+                                        <button id="freePlanBtn" type="submit" class="btn btn-outline-success d-grid w-100">Your Current Plan</button>
                                     </form>
                                 </div>
                             </div>
@@ -131,7 +131,7 @@
 
                                     <form action="/member/payment/vn-pay" method="post">
                                         <input type="hidden" name="amount" value="80000" />
-                                        <button type="submit" class="btn btn-outline-primary d-grid w-100">Upgrade</button>
+                                        <button id="premiumPlanBtn" type="submit" class="btn btn-outline-primary d-grid w-100">Upgrade</button>
                                     </form>
 
                                 </div>
@@ -141,27 +141,60 @@
                 </div>
             </div>
             <!--/ Pricing Plans -->
+            <script th:inline="javascript">
+                const membershipLevel = /*[[${membershipLevel}]]*/ 'FREE';
+            </script>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    if (membershipLevel === 'PREMIUM') {
+                        // 1. Ẩn nút trong card FREE
+                        const freeButton = document.getElementById("freePlanBtn");
+                        if (freeButton) {
+                            freeButton.disabled = true;
+                            freeButton.classList.add('disabled'); // nếu bạn muốn thêm hiệu ứng mờ
+                            freeButton.textContent = 'Not Available';
+                            freeButton.classList.remove('btn-outline-success');
+                            freeButton.classList.add('btn-secondary');
+
+                        }
+
+                        // 2. Cập nhật nút trong card PREMIUM
+                        const premiumButton = document.getElementById("premiumPlanBtn");
+                        if (premiumButton) {
+                            premiumButton.textContent = 'Your Current Plan Here';
+                            premiumButton.classList.remove('btn-outline-primary');
+                            premiumButton.classList.add('btn-outline-success');
+                        }
+                    }
+                });
+            </script>
         </div>
+
+
     </div>
     <!-- / Content -->
+
 
     <div class="content-backdrop fade"></div>
 </div>
 <!-- Content wrapper -->
 <!-- Core JS -->
-<!-- build:js assets/vendor/js/core.js -->
-<script th:src="@{/assets/vendor/libs/jquery/jquery.js}"></script>
-<script th:src="@{/assets/vendor/libs/popper/popper.js}"></script>
-<script th:src="@{/assets/vendor/js/bootstrap.js}"></script>
-<script th:src="@{/assets/vendor/libs/node-waves/node-waves.js}"></script>
-<script th:src="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js}"></script>
-<script th:src="@{/assets/vendor/libs/hammer/hammer.js}"></script>
-<script th:src="@{/assets/vendor/libs/i18n/i18n.js}"></script>
-<script th:src="@{/assets/vendor/libs/typeahead-js/typeahead.js}"></script>
-<script th:src="@{/assets/vendor/js/menu.js}"></script>
+<!--&lt;!&ndash; build:js assets/vendor/js/core.js &ndash;&gt;-->
+<!--<script th:src="@{/assets/vendor/libs/jquery/jquery.js}"></script>-->
+<!--<script th:src="@{/assets/vendor/libs/popper/popper.js}"></script>-->
+<!--<script th:src="@{/assets/vendor/js/bootstrap.js}"></script>-->
+<!--<script th:src="@{/assets/vendor/libs/node-waves/node-waves.js}"></script>-->
+<!--<script th:src="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js}"></script>-->
+<!--<script th:src="@{/assets/vendor/libs/hammer/hammer.js}"></script>-->
+<!--<script th:src="@{/assets/vendor/libs/i18n/i18n.js}"></script>-->
+<!--<script th:src="@{/assets/vendor/libs/typeahead-js/typeahead.js}"></script>-->
+<!--<script th:src="@{/assets/vendor/js/menu.js}"></script>-->
 
 <!-- Main JS -->
 <script th:src="@{/assets/js/main.js}"></script>
+
+
 
 
 </body>
