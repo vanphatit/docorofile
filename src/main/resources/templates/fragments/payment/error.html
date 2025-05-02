@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.w3.org/1999/xhtml"
+      layout:decorate="~{layout}">
+<head>
+    <title>Tài khoản đã Premium</title>
+</head>
+<body>
+<div layout:fragment="content" class="container py-5">
+    <div class="alert alert-warning text-center">
+        <h3>🚫 Bạn đã là thành viên Premium</h3>
+        <p>Bạn không thể nâng cấp thêm nữa.</p>
+        <a href="/auth/login" class="btn btn-primary mt-3">Đăng nhập lại </a>
+    </div>
+</div>
+</body>
+</html>

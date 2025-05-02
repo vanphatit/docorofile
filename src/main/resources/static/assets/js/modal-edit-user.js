@@ -4,8 +4,6 @@
 
 'use strict';
 
-'use strict';
-
 document.addEventListener('DOMContentLoaded', async function () {
   const editUserModal = document.getElementById('editUser');
   const formEditUser = document.getElementById('editUserForm');
@@ -19,6 +17,26 @@ document.addEventListener('DOMContentLoaded', async function () {
   editUserModal.addEventListener('show.bs.modal', async () => {
     const parts = window.location.pathname.split('/').filter(p => p);
     currentUserId = parts[parts.length - 1];
+
+    const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if(!regex.test(userId) && parts[0] !== "admin") {
+      const response = await fetch('/v1/api/auth/current-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include' // ⚠️ QUAN TRỌNG: gửi cookie (JWT) kèm request
+      });
+
+      if (!response.ok) {
+        throw new Error('Không thể lấy thông tin người dùng');
+      }
+
+      const result = await response.json();
+      const data = result.data;
+      if (!data) return;
+      currentUserId = data.id;
+    }
 
     try {
       const response = await fetch(`/v1/api/users/user-detail/${currentUserId}`, {

@@ -12,4 +12,5 @@ public class CourseCreatedResponseDTO {
     private UUID courseId;
     private String courseName;
     private String universityName;
+    private String description;
 }

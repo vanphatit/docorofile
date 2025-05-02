@@ -3,9 +3,12 @@ import com.group.docorofile.configs.VNPAYConfig;
 import com.group.docorofile.entities.MemberEntity;
 import com.group.docorofile.entities.MembershipEntity;
 import com.group.docorofile.entities.PaymentEntity;
+import com.group.docorofile.entities.UserEntity;
 import com.group.docorofile.enums.EMembershipLevel;
 import com.group.docorofile.enums.ENotificationType;
 import com.group.docorofile.enums.EPaymentStatus;
+import com.group.docorofile.exceptions.AlreadyPremiumException;
+import com.group.docorofile.exceptions.UserNotFoundException;
 import com.group.docorofile.models.dto.PaymentDTO;
 import com.group.docorofile.models.dto.PaymentTableDTO;
 import com.group.docorofile.observer.NotificationCenter;
@@ -13,6 +16,7 @@ import com.group.docorofile.repositories.MemberRepository;
 import com.group.docorofile.repositories.PaymentRepository;
 import com.group.docorofile.repositories.UserRepository;
 import com.group.docorofile.request.CreateNotificationRequest;
+import com.group.docorofile.security.JwtTokenUtil;
 import com.group.docorofile.services.impl.NotificationServiceImpl;
 import com.group.docorofile.utils.VNPayUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,7 +34,8 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final MemberRepository memberRepository;
     private final VNPAYConfig vnPayConfig;
-    private final NotificationServiceImpl notificationService;
+    private final JwtTokenUtil jwtUtils;
+    private final iUserService userService;
 
     public PaymentDTO.VNPayResponse createVnPayPayment(UUID payerId, HttpServletRequest request) {
         // Lấy user từ DB
@@ -38,9 +43,13 @@ public class PaymentService {
                 .orElseThrow(() -> new RuntimeException("Payer not found"));
 
         //  Check nếu đã Premium
+//        if (payer.getMembership() != null && payer.getMembership().getLevel() == EMembershipLevel.PREMIUM) {
+//            throw new IllegalStateException("Bạn đã có tài khoản Premium. Không thể nâng cấp thêm.");
+//        }
         if (payer.getMembership() != null && payer.getMembership().getLevel() == EMembershipLevel.PREMIUM) {
-            throw new IllegalStateException("Bạn đã có tài khoản Premium. Không thể nâng cấp thêm.");
+            throw new AlreadyPremiumException("Bạn đã có tài khoản Premium. Không thể nâng cấp thêm.");
         }
+
 
         // Lấy amount từ query param và nhân 100
         long amountRaw = Long.parseLong(request.getParameter("amount"));
@@ -127,17 +136,6 @@ public class PaymentService {
         memberRepository.save(member);
         paymentRepository.save(payment);
 
-//        // Tạo notification
-//        CreateNotificationRequest noti = new CreateNotificationRequest();
-//        noti.setReceiverId(member.getUserId());
-//        //System.out.println("Sending notification to userId = " + member.getUserId());
-//        noti.setType(ENotificationType.SYSTEM);
-//        noti.setTitle("Giao dịch thành công");
-//        noti.setContent("Bạn đã nâng cấp lên tài khoản Premium thành công!");
-//
-//        notificationService.notifyFromSystem(noti);
-
-
         // Tạo notification
         CreateNotificationRequest notiRequest = new CreateNotificationRequest();
         notiRequest.setReceiverId(member.getUserId());
@@ -158,4 +156,24 @@ public class PaymentService {
     public Page<PaymentEntity> getPaymentsByUser(UUID userId, Pageable pageable) {
         return paymentRepository.findByPayer_UserId(userId, pageable);
     }
+
+
+    public String getMembershipLevelFromToken(String token) {
+        if (token == null || token.isEmpty()) {
+            return "FREE";
+        }
+
+        String email = jwtUtils.getUsernameFromToken(token);
+        UserEntity user = userService.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("Token không hợp lệ hoặc người dùng không tồn tại."));
+
+        // Chỉ Member mới có membership
+        if (user instanceof MemberEntity member) {
+            MembershipEntity membership = member.getMembership();
+            return (membership != null) ? membership.getLevel().name() : "FREE";
+        }
+
+        return "FREE"; // Nếu là AdminEntity, ModeratorEntity thì cũng return FREE
+    }
+
 }

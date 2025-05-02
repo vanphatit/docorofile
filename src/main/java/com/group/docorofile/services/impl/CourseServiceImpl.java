@@ -5,10 +5,13 @@ import com.group.docorofile.entities.DocumentEntity;
 import com.group.docorofile.entities.UniversityEntity;
 import com.group.docorofile.models.course.CourseCreatedResponseDTO;
 import com.group.docorofile.models.course.CourseDTO;
+import com.group.docorofile.models.dto.ChatRoomRequest;
+import com.group.docorofile.repositories.ChatRoomRepository;
 import com.group.docorofile.repositories.CourseRepository;
 import com.group.docorofile.repositories.DocumentRepository;
 import com.group.docorofile.repositories.UniversityRepository;
 import com.group.docorofile.response.ConflictError;
+import com.group.docorofile.services.iChatService;
 import com.group.docorofile.services.iCourseService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,13 +32,16 @@ public class CourseServiceImpl implements iCourseService {
     @Autowired
     DocumentRepository documentRepository;
 
+    @Autowired
+    private iChatService chatService;
+
     @Override
     public CourseEntity createCourse(CourseDTO dto) {
         if (courseRepository.existsByCourseName(dto.getCourseName())) {
             throw new ConflictError("Course already exists: " + dto.getCourseName());
         }
 
-        UniversityEntity university = universityRepository.findByUnivId(dto.getUniversityId())
+        UniversityEntity university = universityRepository.findByUnivName(dto.getUniversityName())
                 .orElseThrow(() -> new EntityNotFoundException("University not found"));
 
         CourseEntity course = CourseEntity.builder()
@@ -44,7 +50,17 @@ public class CourseServiceImpl implements iCourseService {
                 .university(university)
                 .build();
 
-        return courseRepository.save(course);
+//        return courseRepository.save(course);
+        CourseEntity savedCourse = courseRepository.save(course);
+
+        // Tạo ChatRoom mặc định cho khóa học
+        ChatRoomRequest chatRequest = new ChatRoomRequest();
+        chatRequest.setCourseId(savedCourse.getCourseId());
+        chatRequest.setTitle("Discussion for " + savedCourse.getCourseName());
+
+        chatService.createChatRoom(chatRequest);
+
+        return savedCourse;
     }
 
     @Override
@@ -53,7 +69,8 @@ public class CourseServiceImpl implements iCourseService {
                 .map(course -> new CourseCreatedResponseDTO(
                         course.getCourseId(),
                         course.getCourseName(),
-                        course.getUniversity().getUnivName()
+                        course.getUniversity().getUnivName(),
+                        course.getDescription()
                 ))
                 .toList();
     }
@@ -75,7 +92,8 @@ public class CourseServiceImpl implements iCourseService {
                 .map(course -> new CourseCreatedResponseDTO(
                         course.getCourseId(),
                         course.getCourseName(),
-                        course.getUniversity().getUnivName()
+                        course.getUniversity().getUnivName(),
+                        course.getDescription()
                 ))
                 .toList();
     }
@@ -86,8 +104,8 @@ public class CourseServiceImpl implements iCourseService {
                 .orElseThrow(() -> new RuntimeException("Course not found with ID: " + dto.getCourseId()));
 
         // Kiểm tra xem trường đại học có tồn tại không
-        UniversityEntity university = universityRepository.findById(dto.getUniversityId())
-                .orElseThrow(() -> new RuntimeException("University not found with ID: " + dto.getUniversityId()));
+        UniversityEntity university = universityRepository.findByUnivName(dto.getUniversityName())
+                .orElseThrow(() -> new EntityNotFoundException("University not found"));
 
         // Cập nhật thông tin khóa học
         course.setCourseName(dto.getCourseName());

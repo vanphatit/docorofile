@@ -1,5 +1,6 @@
 package com.group.docorofile.controllers.v1.api.payment;
 
+import com.group.docorofile.entities.AdminEntity;
 import com.group.docorofile.entities.PaymentEntity;
 import com.group.docorofile.exceptions.UserNotFoundException;
 import com.group.docorofile.models.dto.DataTableResponse;
@@ -7,6 +8,7 @@ import com.group.docorofile.models.dto.PaymentDTO;
 import com.group.docorofile.models.dto.PaymentTableDTO;
 import com.group.docorofile.response.SuccessResponse;
 import com.group.docorofile.response.UnauthorizedError;
+import com.group.docorofile.security.CustomUserDetails;
 import com.group.docorofile.security.JwtTokenUtil;
 import com.group.docorofile.services.PaymentService;
 import com.group.docorofile.services.impl.UserServiceImpl;
@@ -17,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -89,10 +92,20 @@ public class PaymentAPIController {
             @PathVariable UUID userId,
             @RequestParam int draw,
             @RequestParam int start,
-            @RequestParam int length) {
+            @RequestParam int length,
+            Authentication authentication) {
+        CustomUserDetails currentUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        var user = currentUserDetails.getUser();
 
+        UUID trueUserID;
+
+        if(userId == null || !(user instanceof AdminEntity)) {
+            trueUserID = user.getUserId();
+        } else {
+            trueUserID = userId;
+        }
         PageRequest pageable = PageRequest.of(start / length, length, Sort.by(Sort.Direction.DESC, "paymentDate"));
-        Page<PaymentEntity> page = paymentService.getPaymentsByUser(userId, pageable);
+        Page<PaymentEntity> page = paymentService.getPaymentsByUser(trueUserID, pageable);
 
         List<PaymentTableDTO> data = page.getContent().stream()
                 .map(PaymentTableDTO::fromEntity)
