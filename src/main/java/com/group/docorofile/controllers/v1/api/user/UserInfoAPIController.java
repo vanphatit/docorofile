@@ -80,10 +80,13 @@ public class UserInfoAPIController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MEMBER')")
     @GetMapping("/user-detail/{userId}")
-    public ResponseEntity<SuccessResponse> getUserDetail(@PathVariable UUID userId) {
-        UserDetailDTO userInfo = userService.getUserDetailById(userId);
+    public ResponseEntity<SuccessResponse> getUserDetail(@PathVariable UUID userId,
+                                                         Authentication authentication) {
+        UUID trueUserId = getTrueUserId(userId, authentication);
+
+        UserDetailDTO userInfo = userService.getUserDetailById(trueUserId);
         if( userInfo == null) {
             throw new NotFoundError("User not found");
         }
@@ -131,10 +134,19 @@ public class UserInfoAPIController {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new DataTableResponse<>(draw, 0, 0, Collections.emptyList()));
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MEMBER')")
     @PutMapping("/{id}")
     public ResponseEntity<SuccessResponse> updateUser(@PathVariable UUID id,
-                                                      @ModelAttribute UpdateUserRequest request) {
+                                                      @ModelAttribute UpdateUserRequest request,
+                                                      Authentication authentication) {
+        CustomUserDetails currentUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        var user = currentUserDetails.getUser();
+
+        if(id == null) {
+            id = user.getUserId();
+        } else if(!user.getUserId().equals(id) ) {
+            throw new BadCredentialsException("Chưa xác thực người dùng!");
+        }
         userService.updateUserByID(id, request);
         return ResponseEntity.ok(new SuccessResponse("User updated successfully", 200, null, LocalDateTime.now()));
     }
@@ -149,20 +161,24 @@ public class UserInfoAPIController {
     }
 
     // Huỷ kích hoạt user
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MEMBER')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<SuccessResponse> deactivateUser(@PathVariable String id) {
-        UUID userId = UUID.fromString(id);
+    public ResponseEntity<SuccessResponse> deactivateUser(@PathVariable String id,
+                                                          Authentication authentication) {
+        UUID userId = getTrueUserId(UUID.fromString(id), authentication);
+
         userService.deactivateUser(userId);
         SuccessResponse response = new SuccessResponse("User deactivated successfully", HttpStatus.OK.value(), null, LocalDateTime.now());
         return ResponseEntity.ok(response);
     }
 
     // Kích hoạt user
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MEMBER')")
     @PostMapping("/activate/{id}")
-    public ResponseEntity<SuccessResponse> activateUser(@PathVariable String id) {
-        UUID userId = UUID.fromString(id);
+    public ResponseEntity<SuccessResponse> activateUser(@PathVariable String id,
+                                                        Authentication authentication) {
+        UUID userId = getTrueUserId(UUID.fromString(id), authentication);
+
         userService.activateUser(userId);
         SuccessResponse response = new SuccessResponse("User deactivated successfully", HttpStatus.OK.value(), null, LocalDateTime.now());
         return ResponseEntity.ok(response);
@@ -205,34 +221,54 @@ public class UserInfoAPIController {
 
     @PreAuthorize("hasAnyRole('ROLE_MEMBER', 'ROLE_ADMIN')")
     @PostMapping("/checkMembership/{userId}")
-    public ResponseEntity<SuccessResponse> checkAndCreateMembership(@PathVariable UUID userId) {
+    public ResponseEntity<SuccessResponse> checkAndCreateMembership(@PathVariable UUID userId,
+                                                                    Authentication authentication) {
+        CustomUserDetails currentUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        var user = currentUserDetails.getUser();
+
+        if(userId == null) {
+            userId = user.getUserId();
+        } else if(!user.getUserId().equals(userId ) ) {
+            throw new BadCredentialsException("Chưa xác thực người dùng!");
+        }
         boolean result = userService.checkMembership(userId);
         SuccessResponse response = new SuccessResponse("Checked membership successfully", HttpStatus.OK.value(), result, LocalDateTime.now());
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MEMBER')")
     @PostMapping("/upgrade-plan/{userId}")
     public ResponseEntity<SuccessResponse> upgradeMembership(
             @PathVariable UUID userId,
-            @RequestParam("plan") String plan) {
+            @RequestParam("plan") String plan, Authentication authentication) {
+        UUID trueUserId = getTrueUserId(userId, authentication);
 
-        boolean result = userService.upgradeMembership(userId, plan.toUpperCase());
+        boolean result = userService.upgradeMembership(trueUserId, plan.toUpperCase());
         SuccessResponse response = new SuccessResponse("Membership upgraded successfully", HttpStatus.OK.value(), result, LocalDateTime.now());
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MEMBER')")
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(@RequestParam("userId") String id,
-                                            @RequestParam("newPassword") String newPassword) {
-        UUID userId = UUID.fromString(id);
-        System.out.println("User ID: " + userId);
-        System.out.println("New Password: " + newPassword);
+                                            @RequestParam("newPassword") String newPassword,
+                                            Authentication authentication) {
+        UUID userId = getTrueUserId(UUID.fromString(id), authentication);
+
         SuccessResponse successResponse = new SuccessResponse(
                 "Đổi mật khẩu thành công!", HttpStatus.OK.value(),
                 userService.changePasswordById(userId, newPassword), LocalDateTime.now());
         return ResponseEntity.ok(successResponse);
     }
 
+    public UUID getTrueUserId(UUID id, Authentication authentication) {
+        CustomUserDetails currentUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        var user = currentUserDetails.getUser();
+
+        if(id == null || !(user instanceof AdminEntity)) {
+            return user.getUserId();
+        } else {
+            return id;
+        }
+    }
 }
