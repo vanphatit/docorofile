@@ -19,7 +19,7 @@ public interface CourseRepository extends JpaRepository<CourseEntity, UUID> {
     @Query("SELECT c FROM CourseEntity c WHERE c.courseName = :courseName AND c.university.univName = :universityName")
     Optional<CourseEntity> findByCourseNameAndUniversityName(String courseName, String universityName);
 
-    @Query("SELECT f.course.courseId FROM FollowCourseEntity f WHERE f.follower.userId = :memberId")
+    @Query("SELECT f.course.courseId FROM FollowCourseEntity f WHERE f.follower.userId = ?1")
     List<UUID> findFollowedCoursesByMemberId(UUID memberId);
 
     List<CourseEntity> findByCourseNameContaining(String courseName);

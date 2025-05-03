@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en"
+      class="light-style layout-navbar-fixed layout-menu-fixed layout-compact"
+      data-theme="theme-default" data-assets-path="../../assets/"
+      data-template="vertical-menu-template" data-style="light"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Thư viện của tôi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <link rel="stylesheet" th:href="@{/assets/vendor/fonts/remixicon/remixicon.css}" />
+    <style>
+        .library-container {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: auto;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .library-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-header h3 {
+            font-size: 1.25rem;
+        }
+
+        .document-list {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .document-card {
+            background: #fff;
+            border: 1px solid #eaeaea;
+            border-radius: 6px;
+            padding: 1rem;
+            width: 200px;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .document-card:hover {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .doc-thumbnail {
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .doc-info h4 {
+            font-size: 1rem;
+            margin: 0;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .doc-info p {
+            font-size: 0.875rem;
+            color: #777;
+        }
+
+        .section-footer {
+            margin-top: 1rem;
+            text-align: right;
+        }
+
+        .section-footer button {
+            background-color: transparent;
+            border: none;
+            color: #007bff;
+            cursor: pointer;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-header button {
+            background-color: transparent;
+            border: none;
+            color: #007bff;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        /* Ẩn thanh trượt ngang */
+        .document-list {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            scrollbar-width: none; /* Firefox */
+        }
+
+        .document-list::-webkit-scrollbar {
+            display: none; /* Chrome, Safari */
+        }
+    </style>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="library-container">
+        <h2>Thư viện của tôi</h2>
+
+        <!-- Đã xem gần đây -->
+        <section class="library-section">
+            <div class="section-header">
+                <h3>Đã xem gần đây</h3>
+                <button onclick="window.location.href='/library/view-more?type=history'">Xem thêm</button>
+            </div>
+            <div class="document-list" id="recentDocsContainer"></div>
+        </section>
+
+        <!-- Đề xuất cho bạn -->
+        <section class="library-section">
+            <div class="section-header">
+                <h3>Đề xuất cho bạn</h3>
+                <button onclick="window.location.href='/library/view-more?type=recommend'">Xem thêm</button>
+            </div>
+            <div class="document-list" id="recommendedDocsContainer"></div>
+        </section>
+
+        <!-- Đã tải lên -->
+        <section class="library-section">
+            <div class="section-header">
+                <h3>Đã tải lên</h3>
+                <button onclick="window.location.href='/library/view-more?type=getDocumentsUpload'">Xem thêm</button>
+            </div>
+            <div class="document-list" id="uploadedDocsContainer"></div>
+        </section>
+
+        <!-- Tài liệu yêu thích -->
+        <section class="library-section">
+            <div class="section-header">
+                <h3>Tài liệu yêu thích</h3>
+                <button onclick="window.location.href='/library/view-more?type=fav_list'">Xem thêm</button>
+            </div>
+            <div class="document-list" id="fav_list"></div>
+        </section>
+
+        <!-- Từ khóa học đã theo dõi -->
+        <section class="library-section">
+            <div class="section-header">
+                <h3>Từ khóa học bạn theo dõi</h3>
+                <button onclick="window.location.href='/library/view-more?type=documentsByCourseFollowed'">Xem thêm</button>
+            </div>
+            <div class="document-list" id="followedCourseDocsContainer"></div>
+        </section>
+    </div>
+
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function () {
+            fetchSection("history", "recentDocsContainer");
+            fetchSection("recommend", "recommendedDocsContainer");
+            fetchSection("getDocumentsUpload", "uploadedDocsContainer");
+            fetchSection("documentsByCourseFollowed", "followedCourseDocsContainer");
+            fetchSection('fav_list', 'fav_list');
+        });
+
+        let pageMap = {
+            history: 0,
+            recommend: 0,
+            getDocumentsUpload: 0,
+            documentsByCourseFollowed: 0,
+            fav_list: 0
+        };
+
+        function fetchSection(apiKey, containerId) {
+            loadMore(apiKey, containerId);
+        }
+
+        function loadMore(apiKey, containerId) {
+            const page = pageMap[apiKey]++;
+            fetch(`/v1/api/documents/${apiKey}?page=${page}&size=6`, {
+                method: "GET",
+                credentials: "include"
+            })
+                .then(res => res.json())
+                .then(res => {
+                    const container = document.getElementById(containerId);
+
+                    if (res.statusCode !== 200 || !res.data?.content) {
+                        container.innerHTML = `<p style="color: #999;">Không có tài liệu nào.</p>`;
+                        return;
+                    }
+
+                    const docs = res.data.content;
+
+                    docs.forEach(doc => {
+                        const div = document.createElement("div");
+                        div.className = "document-card";
+                        div.onclick = () => window.location.href = `/documents/${doc.documentId}`;
+                        div.innerHTML = `
+                    <div class="doc-thumbnail">
+                        <img src="${doc.coverImageUrl || '/assets/svg/icons/laptop.svg'}" alt="cover" style="width:100%; height:120px; object-fit:cover; border-radius:4px;" />
+                    </div>
+                    <div class="doc-info">
+                        <h4>${doc.title}</h4>
+                        <p>${doc.courseName} • ${new Date(doc.uploadedDate).toLocaleDateString()}</p>
+                    </div>
+                `;
+                        container.appendChild(div);
+                    });
+                })
+                .catch(err => console.error(`Lỗi khi load ${apiKey}`, err));
+        }
+    </script>
+</div>
+</body>
+</html>

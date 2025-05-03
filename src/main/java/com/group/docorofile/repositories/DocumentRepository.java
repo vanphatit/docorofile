@@ -1,6 +1,8 @@
 package com.group.docorofile.repositories;
 
 import com.group.docorofile.entities.DocumentEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -34,5 +36,7 @@ public interface DocumentRepository extends JpaRepository<DocumentEntity, UUID>,
     List<DocumentEntity> findByStatus(String status);
 
     List<DocumentEntity> findByAuthor_UserId(UUID userId);
+
+    Page<DocumentEntity> findByTitleContainingIgnoreCase(String keyword, Pageable pageable);
 }
 

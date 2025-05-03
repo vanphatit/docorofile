@@ -96,6 +96,10 @@ public class UniversityServiceImpl implements iUniversityService {
     }
 
     @Override
+    public List<UniversityEntity> findAllUniversities() {
+        return universityRepository.findAll();
+    }
+    @Override
     public Page<UniversityDTO> findAllUniversity(Pageable pageable) {
         return universityRepository.findAllUniversityNamesPaged(pageable);
     }

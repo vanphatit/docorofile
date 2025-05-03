@@ -24,5 +24,7 @@ public interface iUniversityService {
 
     void deleteUniversity(UUID univId);
 
+    List<UniversityEntity> findAllUniversities();
+
     Page<UniversityDTO> findAllUniversity(Pageable pageable);
 }

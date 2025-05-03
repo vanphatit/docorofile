@@ -24,15 +24,22 @@ public interface iDocumentService {
 
     List<DocumentEntity> getAllDocuments();
 
-    List<UserDocumentDTO> getAllUserDocuments();
+    Page<UserDocumentDTO> getAllUserDocuments(int page, int size);
 
-    List<AdminDocumentDTO> getAllAdminDocuments();
+    Page<AdminDocumentDTO> getAllAdminDocuments(int page, int size);
 
     Object viewDocumentByIdForUI(UUID documentId, String role, String userName);
 
-    Object searchDocuments(String keyword, String role);
+    Page<UserDocumentDTO> searchDocumentsForGuest(String keyword, int page, int size);
 
-    Object filterDocuments(UUID courseId, UUID universityId, LocalDateTime uploadDate, boolean sortByViews, boolean sortByLikes, boolean sortByDisLike, String status, boolean isAdmin);
+    Object searchDocumentsForAuthUser(String keyword, int page, int size, String role);
+
+    Page<UserDocumentDTO> getSearchSuggestions(String keyword);
+
+    Object filterDocuments(String keyword, UUID courseId, UUID universityId, String uploadDate,
+                           boolean sortByViews, boolean sortByLikes, boolean sortByDisLike,
+                           boolean sortByNewest, boolean sortByOldest, boolean sortByReportCount,
+                           String status, boolean isAdmin, int page, int size);
 
     void updateStatus(UUID documentId, String status);
 
@@ -54,11 +61,13 @@ public interface iDocumentService {
 
     Page<UserDocumentDTO> getRelatedDocumentsForUI(UUID documentId, int page, int size);
 
-    List<DocumentEntity> getRecommendedDocuments(UUID memberId);
+    Page<DocumentEntity> getRecommendedDocuments(UUID memberId, int page, int size);
 
-    List<DocumentEntity> getHistoryDocuments(UUID memberId);
+    Page<UserDocumentDTO> getRecommendedDocumentsForUI(UUID memberId, int page, int size);
 
-    List<UserDocumentDTO> getHistoryDocumentsForUI(UUID memberId);
+    Page<DocumentEntity> getHistoryDocuments(UUID memberId, int page, int size);
+
+    Page<UserDocumentDTO> getHistoryDocumentsForUI(UUID memberId, int page, int size);
 
     List<DocumentEntity> getDocumentByCourseId(UUID courseId);
 
@@ -66,11 +75,11 @@ public interface iDocumentService {
 
     List<DocumentEntity> getDocumentByUniversityAndCourse(String univName, String courseName);
 
-    List<DocumentEntity> getDocumentByCourseAndFollowedByMember(UUID memberId);
+    Page<DocumentEntity> getDocumentByCourseAndFollowedByMember(UUID memberId, int page, int size);
 
-    List<UserDocumentDTO> getDocumentByCourseAndFollowedByMemberForUI(UUID memberId);
+    Page<UserDocumentDTO> getDocumentByCourseAndFollowedByMemberForUI(UUID memberId, int page, int size);
 
-    List<UserDocumentDTO> getDocumentByAuthor(UUID authorId);
+    Page<UserDocumentDTO> getDocumentByAuthor(UUID authorId, int page, int size);
 
     List<CourseEntity> findAllWithUniversity();
 }

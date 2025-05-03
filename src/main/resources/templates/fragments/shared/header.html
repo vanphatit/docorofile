@@ -2,6 +2,8 @@
      th:fragment="header" style="padding-left: 20px; padding-right: 20px;"
      id="layout-navbar">
 
+    <link rel="stylesheet" th:href="@{/assets/css/search-suggestion.css}" />
+
     <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
         <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
             <i class="ri-menu-fill ri-22px"></i>
@@ -11,15 +13,24 @@
     <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
 
         <!-- Search -->
-        <div class="navbar-nav align-items-center">
-            <div class="nav-item navbar-search-wrapper mb-0">
-                <a class="nav-item nav-link search-toggler fw-normal px-0" href="javascript:void(0);">
-                    <i class="ri-search-line ri-22px scaleX-n1-rtl me-3"></i>
-                    <span class="d-none d-md-inline-block text-muted">Search</span>
-                </a>
+        <div class="navbar-nav align-items-center w-100">
+            <div class="nav-item navbar-search-wrapper mb-0 w-100">
+                <div class="position-relative w-100">
+                    <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="ri-search-line ri-20px text-muted"></i>
+                </span>
+                        <input id="globalSearchInput"
+                               aria-label="Search..." placeholder="Tìm kiếm tài liệu..."
+                               class="form-control border-start-0"
+                               type="text"
+                               autocomplete="off" />
+                    </div>
+                    <div id="globalSearchSuggestions" class="dropdown-menu w-100 mt-1"></div>
+                </div>
             </div>
         </div>
-        <!-- /Search -->
+        <!--/ Search -->
 
         <ul class="navbar-nav flex-row align-items-center ms-auto">
 
@@ -31,6 +42,7 @@
                     <i class="ri-admin-line ri-22px"></i>
                 </span>
             </li>
+            <!-- Quick links -->
 
             <!-- Notification -->
             <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-4 me-xl-1 d-none">
@@ -120,6 +132,66 @@
             <!--/ User -->
         </ul>
     </div>
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", () => {
+            const input = document.getElementById("globalSearchInput");
+            const suggestionsBox = document.getElementById("globalSearchSuggestions");
+
+            input.addEventListener("input", function () {
+                const keyword = input.value.trim();
+
+                if (keyword.length === 0) {
+                    suggestionsBox.classList.remove("show");
+                    return;
+                }
+
+                fetch(`/v1/api/documents/search/suggestions?keyword=${encodeURIComponent(keyword)}`)
+                    .then(res => res.json())
+                    .then(res => {
+                        suggestionsBox.innerHTML = "";
+                        if (res.data?.content?.length > 0) {
+                            res.data.content.forEach(item => {
+                                const div = document.createElement("a");
+                                div.className = "dropdown-item";
+                                div.href = `/documents/${item.documentId}`;
+                                div.innerHTML = `
+                                <img src="${item.coverImageUrl || '/assets/svg/icons/laptop.svg'}" alt="cover" />
+                                <span>${item.title}</span>
+                            `;
+                                suggestionsBox.appendChild(div);
+                            });
+                            suggestionsBox.classList.add("show");
+                        } else {
+                            suggestionsBox.innerHTML = `<span class="dropdown-item text-muted">Không tìm thấy kết quả</span>`;
+                            suggestionsBox.classList.add("show");
+                        }
+                    });
+            });
+
+            input.addEventListener("keydown", async function (e) {
+                const response = await fetch('/v1/api/auth/current-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include' // ⚠️ QUAN TRỌNG: gửi cookie (JWT) kèm request
+                });
+                if (response.status === 200) {
+                    const data = await response.json();
+                    window.currentUserRole = data.data.role;
+                }
+                if (e.key === "Enter") {
+                    const keyword = input.value.trim();
+                    if (keyword.length > 0) {
+                        const targetUrl = (window.currentUserRole === 'ROLE_ADMIN' || window.currentUserRole === 'ROLE_MODERATOR')
+                            ? `/documents/manage?keyword=${encodeURIComponent(keyword)}`
+                            : `/documents/search?keyword=${encodeURIComponent(keyword)}`;
+                        window.location.href = targetUrl;
+                    }
+                }
+            });
+        });
+    </script>
 
     <!-- Search Small Screens -->
     <div class="navbar-search-wrapper search-input-wrapper d-none">
@@ -129,5 +201,6 @@
                 placeholder="Search..."
                 aria-label="Search..." />
         <i class="ri-close-fill search-toggler cursor-pointer"></i>
+        </div>
     </div>
-</div>
+    <!--/ Search Small Screens -->

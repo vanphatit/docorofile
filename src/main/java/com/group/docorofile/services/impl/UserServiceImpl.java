@@ -285,7 +285,7 @@ public class UserServiceImpl implements iUserService {
 
     @Override
     public boolean courseFollowedByMember(UUID memberId) {
-        return followCourseRepository.existsByFollower(memberId);
+        return followCourseRepository.existsByFollower_UserId(memberId);
     }
 
     @Override

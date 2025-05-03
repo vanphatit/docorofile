@@ -2,6 +2,7 @@ package com.group.docorofile.services;
 
 import com.group.docorofile.entities.DocumentEntity;
 import com.group.docorofile.models.dto.UserDocumentDTO;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,6 +16,8 @@ public interface iFavoriteListService {
 
     // Lấy danh sách tài liệu yêu thích của user
     List<UserDocumentDTO> getFavorites(UUID memberId);
+
+    Page<UserDocumentDTO> getFavoritesUI(UUID memberId, int page, int size);
 
     // Kiểm tra tài liệu có trong danh sách yêu thích không
     boolean isFavorited(UUID memberId, UUID documentId);

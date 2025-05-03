@@ -47,5 +47,18 @@ public class DocumentController {
     public String success() {
         return "document/success_form";
     }
+
+    @GetMapping("/search")
+    public String searchDocument(@RequestParam(name = "keyword") String keyword, Model model) {
+        model.addAttribute("keyword", keyword);
+        return "document/search";
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @GetMapping("/manage")
+    public String adminDocument(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        model.addAttribute("user", userDetails);
+        return "document/manage_document";
+    }
 }
 
