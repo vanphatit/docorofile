@@ -457,6 +457,7 @@
                 uploadedIds = [];
 
                 const formData = new FormData();
+                const progressControllers = [];
 
                 // Process each file
                 Array.from(files).forEach((file, index) => {
@@ -497,10 +498,9 @@
 
                     fileList.appendChild(fileItem);
 
-
-
-                    // Simulate upload progress
-                    simulateProgress(fileItem.querySelector('.file-progress-bar'), index);
+                    const progressBar = fileItem.querySelector('.file-progress-bar');
+                    const controller = simulateProgressUntilComplete(progressBar);
+                    progressControllers.push(controller);
                 });
 
                 // Gọi fetch duy nhất 1 lần
@@ -515,6 +515,9 @@
                     if (data.data && Array.isArray(data.data)) {
                         uploadedIds = data.data;
 
+                        // Dừng tất cả progress → set = 100%
+                        progressControllers.forEach(ctrl => ctrl.finish());
+
                         // Ẩn spinner và loading
                         document.querySelector('.spinner').style.display = 'none';
                         document.querySelector('.loading-text').style.display = 'none';
@@ -525,9 +528,9 @@
                         lottie.loadAnimation({
                             container: document.getElementById('successLottie'),
                             renderer: 'svg',
-                            loop: false,
+                            loop: true,
                             autoplay: true,
-                            path: 'https://assets10.lottiefiles.com/packages/lf20_jbrw3hcz.json'
+                            path: '/assets/json/success.json'
                         });
 
                         nextButton.style.display = 'inline-block';
@@ -562,31 +565,26 @@
                 return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
             }
 
-            // Simulate progress for an element
-            function simulateProgress(progressBar, delayFactor = 0) {
+            function simulateProgressUntilComplete(progressBar) {
                 let progress = 0;
                 const interval = 20;
-                const incrementAmount = Math.random() * 3 + 1; // Random between 1-4
+                const incrementAmount = Math.random() * 2 + 1;
 
-                // Delay start based on file index
-                setTimeout(() => {
-                    const progressInterval = setInterval(() => {
+                const progressInterval = setInterval(() => {
+                    if (progress < 95) {
                         progress += incrementAmount;
-
-                        // Slow down as we approach 100%
-                        if (progress > 80) {
-                            progress += (incrementAmount / 3);
-                        }
-
-                        if (progress >= 100) {
-                            progress = 100;
-                            clearInterval(progressInterval);
-                        }
-
                         progressBar.style.width = progress + '%';
-                    }, interval);
-                }, delayFactor * 300); // Stagger start times
+                    }
+                }, interval);
+
+                return {
+                    finish: () => {
+                        clearInterval(progressInterval);
+                        progressBar.style.width = '100%';
+                    }
+                };
             }
+
             nextButton.addEventListener('click', function() {
                 if (uploadedIds.length > 0) {
                     const query = uploadedIds.map(id => `ids=${encodeURIComponent(id)}`).join("&");
