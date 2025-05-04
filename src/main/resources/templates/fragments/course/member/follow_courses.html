@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết khóa học</title>
+</head>
+<body>
+<div class="container-fluid mt-4" layout:fragment="content">
+    <button onclick="history.back()" class="btn btn-secondary mb-3">
+        ← Quay lại
+    </button>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Danh sách tài liệu thuộc khóa học</h3>
+        <div id="followBtnWrapper"></div>
+    </div>
+
+    <div id="documentList" class="row g-3">
+        <!-- Tài liệu sẽ được render ở đây -->
+    </div>
+</div>
+
+<div layout:fragment="scripts">
+    <script>
+        const courseId = new URLSearchParams(window.location.search).get("courseId");
+        let courseName = "";
+
+        const followApi = "/v1/api/follow";
+
+        function followCourse(courseId, courseName) {
+            $.post(`${followApi}?courseId=${courseId}`)
+                .done(() => {
+                    showToast(`Đã theo dõi khóa học <b>${courseName}</b>`, "success");
+                    renderFollowBtn(courseId, courseName, true);
+                })
+                .fail(err => {
+                    showToast(err.responseJSON?.message || "Lỗi theo dõi khóa học", "error");
+                });
+        }
+
+        function unfollowCourse(courseId, courseName) {
+            $.ajax({
+                url: `${followApi.replace("/follow", "/unfollow")}?courseId=${courseId}`,
+                type: 'DELETE'
+            })
+                .done(() => {
+                    showToast(`Đã bỏ theo dõi khóa học <b>${courseName}</b>`, "warning");
+                    renderFollowBtn(courseId, courseName, false);
+                })
+                .fail(err => {
+                    showToast(err.responseJSON?.message || "Lỗi bỏ theo dõi khóa học", "error");
+                });
+        }
+
+        function renderFollowBtn(courseId, courseName, isFollowed) {
+            const wrapper = document.getElementById("followBtnWrapper");
+            const btnHtml = isFollowed
+                ? `<button class="btn btn-outline-danger btn-sm" onclick="unfollowCourse('${courseId}', '${courseName}')">Unfollow</button>`
+                : `<button class="btn btn-outline-primary btn-sm" onclick="followCourse('${courseId}', '${courseName}')">Follow</button>`;
+            wrapper.innerHTML = btnHtml;
+        }
+
+        function loadFollowStatusAndDocuments() {
+            const container = document.getElementById("documentList");
+            container.innerHTML = `<p class="text-muted">Đang tải tài liệu...</p>`;
+
+            fetch(`/v1/api/followed`)
+                .then(res => res.json())
+                .then(res => {
+                    const followedCourses = res.data || [];
+                    const followedIds = new Set(followedCourses.map(c => c.courseId));
+
+                    console.log("Fetching documents for:", courseId);
+
+                    fetch(`/v1/api/course/documents?courseId=${courseId}`)
+                        .then(res => res.json())
+                        .then(res => {
+                            console.log("Document API response:", res);
+
+                            container.innerHTML = ""; // clear loading text
+
+                            const documents = res.data || [];
+                            if (res.statusCode === 200 && documents.length > 0) {
+                                courseName = documents[0].courseName || "Khóa học";
+                                const isFollowed = followedIds.has(courseId);
+                                renderFollowBtn(courseId, courseName, isFollowed);
+
+                                documents.forEach(doc => {
+                                    const div = document.createElement("div");
+                                    div.className = "col-md-4";
+                                    div.innerHTML = `
+            <div class="card">
+                <div class="card-body">
+                    <h5>${doc.title}</h5>
+                    <p>${doc.description || "Không có mô tả"}</p>
+                    <a href="/documents/${doc.documentId}" class="btn btn-primary btn-sm">Xem tài liệu</a>
+                </div>
+            </div>
+        `;
+                                    container.appendChild(div);
+                                });
+                            } else {
+                                container.innerHTML = `<p class="text-muted">Không có tài liệu nào.</p>`;
+                            }
+
+                        })
+                        .catch(err => {
+                            console.error("Lỗi khi fetch documents:", err);
+                            container.innerHTML = `<p class="text-danger">Lỗi khi tải dữ liệu tài liệu.</p>`;
+                        });
+                })
+                .catch(err => {
+                    console.error("Lỗi khi fetch followed:", err);
+                });
+        }
+
+
+
+        loadFollowStatusAndDocuments();
+    </script>
+</div>
+</body>
+</html>

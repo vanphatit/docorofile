@@ -63,7 +63,10 @@ function renderTable(courses) {
                     <td>${index + 1 + currentPage * pageSize}</td>
                     <td>${item.courseName}</td>
                     <td>${item.universityName}</td>
-                    <td>${btn}</td>
+                    <td>
+                        ${btn}
+                    </td>
+                     <td><button class="btn btn-info btn-sm ms-2" onclick="viewCourseDetail('${item.courseId}')">Xem chi tiết</button></td>
                 </tr>`;
             tbody.append(row);
         });
@@ -134,6 +137,11 @@ function unfollowCourse(courseId, courseName) {
             showToast(err.responseJSON?.message || "Lỗi bỏ theo dõi khóa học", "error");
         });
 }
+
+function viewCourseDetail(courseId) {
+    window.location.href = `/member/course/detail?courseId=${courseId}`;
+}
+
 
 // Custom notification (SweetAlert2)
 function showToast(message, type = "info") {
