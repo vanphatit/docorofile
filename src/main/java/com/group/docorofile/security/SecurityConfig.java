@@ -38,6 +38,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/v1/api/auth/**",
                                 "/auth/**",
+                                "/oauth2/authorization/google",
                                 "/error",
                                 "/documents/**",
                                 "/uploads/documents/**",
@@ -59,12 +60,11 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler))
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
-                        .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID")
-                );
+                .oauth2Login(login -> login
+                        .loginPage("/au/login")
+                        .successHandler((request, response, authentication)
+                                -> request.getRequestDispatcher("/auth/login/oauth2Google-submit").forward(request, response))
+                        .permitAll());
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

@@ -4,6 +4,7 @@ import com.group.docorofile.entities.*;
 import com.group.docorofile.enums.EMembershipLevel;
 import com.group.docorofile.models.dto.UserDetailDTO;
 import com.group.docorofile.models.dto.UserInfoDTO;
+import com.group.docorofile.models.university.UniversityNameDTO;
 import com.group.docorofile.models.users.CreateUserRequest;
 import com.group.docorofile.models.users.UpdateProfileRequest;
 import com.group.docorofile.models.users.UpdateUserRequest;
@@ -39,6 +40,8 @@ public class UserServiceImpl implements iUserService {
     private final MembershipRepository membershipRepository;
 
     private final FollowCourseRepository followCourseRepository;
+
+    private final UniversityServiceImpl universityService;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -82,6 +85,37 @@ public class UserServiceImpl implements iUserService {
         }
 
         return userRepository.save(user);
+    }
+
+    public UserEntity createOAuthMember(String email, String fullName) {
+        if (userRepository.existsByEmail(email)) {
+            throw new ConflictError("User already exists with email: " + email);
+        }
+
+        // Tạo request giả lập
+        CreateUserRequest request = new CreateUserRequest();
+        request.setEmail(email);
+        request.setFullName(fullName);
+        request.setPassword("12312345"); // dummy password
+        request.setDownloadLimit(0);
+        request.setIsChat(true);
+        request.setIsComment(true);
+
+        // Lấy trường đại học nếu có
+        UniversityNameDTO university = universityService.findAllUniversityNames().get(0);
+        if (university != null) {
+            request.setUniversityName(university.getUnivName());
+        }
+        request.setUserType("MEMBER");
+
+        // Lấy factory tương ứng
+        iUserFactory factory = getFactory("MEMBER");
+        MemberEntity member = (MemberEntity) factory.createUser(request);
+
+        // Ghi đè isActive = true (vì Google đã xác thực)
+        member.setActive(true);
+
+        return userRepository.save(member);
     }
 
     @Override
