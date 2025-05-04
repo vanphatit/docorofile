@@ -6,19 +6,62 @@
 <head>
     <meta charset="UTF-8">
     <title>Chi tiết khóa học</title>
+    <style>
+        .document-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .document-card {
+            background: #fff;
+            border: 1px solid #eaeaea;
+            border-radius: 6px;
+            padding: 1rem;
+            width: 200px;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .document-card:hover {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .doc-thumbnail img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .doc-info h4 {
+            font-size: 1rem;
+            margin: 0;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .doc-info p {
+            font-size: 0.875rem;
+            color: #777;
+        }
+    </style>
 </head>
+
 <body>
 <div class="container-fluid mt-4" layout:fragment="content">
-    <button onclick="history.back()" class="btn btn-secondary mb-3">
-        ← Quay lại
-    </button>
+    <button onclick="history.back()" class="btn btn-secondary mb-3">← Quay lại</button>
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3>Danh sách tài liệu thuộc khóa học</h3>
         <div id="followBtnWrapper"></div>
     </div>
 
-    <div id="documentList" class="row g-3">
+    <div id="documentList" class="document-list">
         <!-- Tài liệu sẽ được render ở đây -->
     </div>
 </div>
@@ -33,7 +76,7 @@
             $.post(`${followApi}?courseId=${courseId}`)
                 .done(() => {
                     showToast(`Đã theo dõi khóa học <b>${courseName}</b>`, "success");
-                    setTimeout(() => location.reload(), 1000); // reload nhẹ sau khi toast
+                    setTimeout(() => location.reload(), 1000);
                 })
                 .fail(err => {
                     showToast(err.responseJSON?.message || "Lỗi theo dõi khóa học", "error");
@@ -47,13 +90,12 @@
             })
                 .done(() => {
                     showToast(`Đã bỏ theo dõi khóa học <b>${courseName}</b>`, "warning");
-                    setTimeout(() => location.reload(), 1000); // reload nhẹ sau khi toast
+                    setTimeout(() => location.reload(), 1000);
                 })
                 .fail(err => {
                     showToast(err.responseJSON?.message || "Lỗi bỏ theo dõi khóa học", "error");
                 });
         }
-
 
         function renderFollowBtn(courseId, courseName, isFollowed) {
             const wrapper = document.getElementById("followBtnWrapper");
@@ -85,7 +127,6 @@
             });
         }
 
-
         function loadFollowStatusAndDocuments() {
             const container = document.getElementById("documentList");
             container.innerHTML = `<p class="text-muted">Đang tải tài liệu...</p>`;
@@ -102,16 +143,17 @@
 
                         documents.forEach(doc => {
                             const div = document.createElement("div");
-                            div.className = "col-md-4";
+                            div.className = "document-card";
+                            div.onclick = () => window.location.href = `/documents/${doc.documentId}`;
                             div.innerHTML = `
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5>${doc.title}</h5>
-                                    <p>${doc.description || "Không có mô tả"}</p>
-                                    <a href="/documents/${doc.documentId}" class="btn btn-primary btn-sm">Xem tài liệu</a>
+                                <div class="doc-thumbnail">
+                                    <img src="${doc.coverImageUrl || '/assets/svg/icons/laptop.svg'}" alt="cover" />
                                 </div>
-                            </div>
-                        `;
+                                <div class="doc-info">
+                                    <h4>${doc.title}</h4>
+                                    <p>${doc.courseName} • ${new Date(doc.uploadedDate).toLocaleDateString()}</p>
+                                </div>
+                            `;
                             container.appendChild(div);
                         });
                     } else {
@@ -123,9 +165,10 @@
                 });
         }
 
-        loadFollowStatusAndDocuments();
+        document.addEventListener("DOMContentLoaded", () => {
+            loadFollowStatusAndDocuments();
+        });
     </script>
-
 </div>
 </body>
 </html>
