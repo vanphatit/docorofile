@@ -385,8 +385,14 @@
 
                 <!-- Loader content (hidden by default) -->
                 <div id="loaderContainer" class="loader-container">
+                    <div id="uploadSuccess" style="display: none; flex-direction: column; align-items: center;">
+                        <div id="successLottie" style="width: 120px; height: 120px;"></div>
+                        <p class="success-text">Upload completed!</p>
+                    </div>
+
                     <div class="spinner"></div>
                     <p class="loading-text">Uploading files...</p>
+
 
                     <!-- Files list with progress -->
                     <div id="fileList" class="file-list">
@@ -397,7 +403,7 @@
             </div>
         </div>
     </div>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.0/lottie.min.js"></script>
     <script th:inline="javascript">
         document.addEventListener('DOMContentLoaded', function() {
             const uploadArea = document.getElementById('uploadArea');
@@ -441,16 +447,21 @@
             });
 
             // Handle files function
-            function handleFiles(files) {
+            async function handleFiles(files) {
                 // Show loader, hide initial content
                 uploadInitialContent.style.display = 'none';
                 loaderContainer.classList.add('active');
 
                 // Clear previous file list
                 fileList.innerHTML = '';
+                uploadedIds = [];
+
+                const formData = new FormData();
 
                 // Process each file
                 Array.from(files).forEach((file, index) => {
+                    formData.append('files', file);
+
                     // Create file item element
                     const fileItem = document.createElement('div');
                     fileItem.className = 'file-item';
@@ -462,7 +473,7 @@
                     let fileIconHtml = '';
                     if (extension === 'pdf') {
                         fileIconHtml = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 15v-4"></path><path d="M12 15v-6"></path><path d="M15 15v-2"></path></svg>';
-                    } else if (extension === 'doc' || extension === 'docx') {
+                    } else if (extension === 'docx') {
                         fileIconHtml = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>';
                     } else {
                         fileIconHtml = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>';
@@ -486,53 +497,56 @@
 
                     fileList.appendChild(fileItem);
 
-                    const formData = new FormData();
-                    Array.from(files).forEach(file => {
-                        formData.append('files', file);
-                    });
 
-                    fetch('/v1/api/documents/upload-files', {
-                        method: 'POST',
-                        body: formData,
-                        credentials: 'include'
-                    })
-                        .then(res => res.json())
-                        .then(res => {
-                            if (res.data && Array.isArray(res.data)) {
-                                uploadedIds = res.data;
-                                document.getElementById('nextButton').style.display = 'inline-block';
-                            } else {
-                                console.warn('Unexpected response format:', res);
-                            }
-                        })
-                        .catch(err => {
-                            console.error('Error uploading file:', err);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: 'An error occurred while uploading the file.',
-                            });
-                        });
 
                     // Simulate upload progress
                     simulateProgress(fileItem.querySelector('.file-progress-bar'), index);
                 });
 
-                // After all uploads complete (simulation)
-                setTimeout(() => {
-                    // Here you would typically redirect to the next step
-                    console.log('All uploads complete');
-                    // For demo purposes, we'll reset after 3 seconds
-                    // In a real app, you'd navigate to the next step
+                // Gọi fetch duy nhất 1 lần
+                try {
+                    const res = await fetch('/v1/api/documents/upload-files', {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'include'
+                    });
+                    const data = await res.json();
 
-                    // Uncomment to reset the uploader after completion:
-                    // setTimeout(() => {
-                    //     loaderContainer.classList.remove('active');
-                    //     uploadInitialContent.style.display = 'flex';
-                    //     fileList.innerHTML = '';
-                    // }, 3000);
-                    document.getElementById('nextButton').style.display = 'inline-block';
-                }, (files.length * 1000) + 1000);
+                    if (data.data && Array.isArray(data.data)) {
+                        uploadedIds = data.data;
+
+                        // Ẩn spinner và loading
+                        document.querySelector('.spinner').style.display = 'none';
+                        document.querySelector('.loading-text').style.display = 'none';
+
+                        // Hiện animation thành công
+                        document.getElementById('uploadSuccess').style.display = 'flex';
+
+                        lottie.loadAnimation({
+                            container: document.getElementById('successLottie'),
+                            renderer: 'svg',
+                            loop: false,
+                            autoplay: true,
+                            path: 'https://assets10.lottiefiles.com/packages/lf20_jbrw3hcz.json'
+                        });
+
+                        nextButton.style.display = 'inline-block';
+                    } else {
+                        console.warn('Unexpected response format:', data);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Upload failed',
+                            text: 'Server returned an unexpected response.'
+                        });
+                    }
+                } catch (err) {
+                    console.error('Error uploading files:', err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Upload error',
+                        text: 'An error occurred while uploading files.'
+                    });
+                }
             }
 
             // Format bytes to human readable format
