@@ -41,6 +41,13 @@ public class AuthController {
         return "fragments/auth/login";
     }
 
+    @GetMapping("/auth/forgot-password")
+    public String forgotPassword(Model m) {
+        m.addAttribute("page","forgot-password");
+        m.addAttribute("pageTitle","Forgot Password – DoCoroFile");
+        return "fragments/auth/forgot-password";
+    }
+
     @GetMapping("/auth/logout")
     public String logout(HttpServletResponse response, Model m) {
         try {
@@ -115,6 +122,31 @@ public class AuthController {
         } else {
             model.addAttribute("error", "Email verification failed.");
             return "fragments/auth/register";
+        }
+    }
+
+    @GetMapping("/auth/reset-password")
+    public String resetPassword(@RequestParam("code") String code,
+                                @RequestParam("email") String email,
+                                @RequestParam("newPassword") String newPassword,
+                                Model model) {
+        // Call REST API endpoint (API nội bộ)
+        RestTemplate restTemplate = new RestTemplate();
+        String url = "http://localhost:9091/v1/api/auth/reset-password?code=" + code + "&email=" + email + "&newPassword=" + newPassword;
+        HttpHeaders headers = new HttpHeaders();
+
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+        ResponseEntity<?> response = restTemplate.postForEntity(url, entity, Object.class);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            model.addAttribute("success", "Password reset successfully.");
+            model.addAttribute("page","login");
+            model.addAttribute("pageTitle","Login – DoCoroFile");
+            model.addAttribute("loginRequest", new LoginRequest());
+            return "fragments/auth/login";
+        } else {
+            model.addAttribute("error", "Password reset failed.");
+            return "fragments/auth/forgot-password";
         }
     }
 

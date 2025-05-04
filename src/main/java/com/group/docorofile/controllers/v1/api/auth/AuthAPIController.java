@@ -149,7 +149,7 @@ public class AuthAPIController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestParam("email") String email) {
+    public ResponseEntity<?> forgotPassword(@RequestParam("email") String email, @RequestParam("newPassword") String newPassword) {
         var optUser = userServiceImpl.findByEmail(email);
         if(optUser.isEmpty()) {
             BadRequestError error = new BadRequestError("Không tìm thấy user với email: " + email);
@@ -160,7 +160,7 @@ public class AuthAPIController {
             int code = (int)((Math.random() * 900000) + 100000);
             String verifyCode = String.valueOf(code);
 
-            emailVerificationService.sendVerificationEmail(email, verifyCode);
+            emailVerificationService.sendResetPasswordEmail(email, verifyCode, newPassword);
         } catch (MessagingException e) {
             throw new InternalServerError("Không thể gửi email xác thực.");
         }
@@ -171,7 +171,7 @@ public class AuthAPIController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestParam("email") String email, @RequestParam("code") String code,
+    public ResponseEntity<?> resetPassword(@RequestParam("code") String code, @RequestParam("email") String email,
             @RequestParam("newPassword") String newPassword) {
         // 1. Lấy code đã lưu
         String storedCode = emailVerificationService.getVerificationCode(email);
