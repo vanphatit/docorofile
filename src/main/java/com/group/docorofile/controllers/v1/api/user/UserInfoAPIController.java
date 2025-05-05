@@ -139,15 +139,8 @@ public class UserInfoAPIController {
     public ResponseEntity<SuccessResponse> updateUser(@PathVariable UUID id,
                                                       @ModelAttribute UpdateUserRequest request,
                                                       Authentication authentication) {
-        CustomUserDetails currentUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        var user = currentUserDetails.getUser();
-
-        if(id == null) {
-            id = user.getUserId();
-        } else if(!user.getUserId().equals(id) ) {
-            throw new BadCredentialsException("Chưa xác thực người dùng!");
-        }
-        userService.updateUserByID(id, request);
+        UUID trueUserId = getTrueUserId(id, authentication);
+        userService.updateUserByID(trueUserId, request);
         return ResponseEntity.ok(new SuccessResponse("User updated successfully", 200, null, LocalDateTime.now()));
     }
 
@@ -223,15 +216,8 @@ public class UserInfoAPIController {
     @PostMapping("/checkMembership/{userId}")
     public ResponseEntity<SuccessResponse> checkAndCreateMembership(@PathVariable UUID userId,
                                                                     Authentication authentication) {
-        CustomUserDetails currentUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        var user = currentUserDetails.getUser();
-
-        if(userId == null) {
-            userId = user.getUserId();
-        } else if(!user.getUserId().equals(userId ) ) {
-            throw new BadCredentialsException("Chưa xác thực người dùng!");
-        }
-        boolean result = userService.checkMembership(userId);
+        UUID trueUserId = getTrueUserId(userId, authentication);
+        boolean result = userService.checkMembership(trueUserId);
         SuccessResponse response = new SuccessResponse("Checked membership successfully", HttpStatus.OK.value(), result, LocalDateTime.now());
         return ResponseEntity.ok(response);
     }
