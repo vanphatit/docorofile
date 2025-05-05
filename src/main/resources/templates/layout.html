@@ -372,8 +372,13 @@
             fetch(`/v1/api/documents/view/${documentId}`)
                 .then(res => res.json())
                 .then(res => {
+                    if (res.statusCode >= 400) {
+                        // Ném về trang lỗi, kèm theo status nếu muốn
+                        window.location.href = `/error?status=${res.statusCode}`;
+                        return; // dừng luôn
+                    }
+
                     const doc = res.data;
-                    console.log("Loaded document", doc);
                     document.getElementById("documentTitle").innerText = doc.title;
                     document.getElementById("documentAuthor").innerText = doc.authorName;
                     document.getElementById("documentCourse").innerText = doc.courseName;
@@ -386,8 +391,8 @@
                     renderComments(doc.comments || []);
                 })
                 .catch(err => {
-                    console.error("Lỗi khi fetch document", err);
-                    Swal.fire('Lỗi', 'Không thể gửi bình luận!', 'error');
+                    console.error("Lỗi không xác định", err);
+                    window.location.href = "/error?status=500";
                 });
         }
 

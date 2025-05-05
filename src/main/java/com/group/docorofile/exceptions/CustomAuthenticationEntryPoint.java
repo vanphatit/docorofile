@@ -23,12 +23,13 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,
                          AuthenticationException authException) throws IOException, ServletException {
-        // Đặt header kiểu JSON
-        response.setContentType("application/json");
-        // Đặt status code 401
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-
-        UnauthorizedError errorResponse = new UnauthorizedError("Forbidden access");
-        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+//        // Đặt header kiểu JSON
+//        response.setContentType("application/json");
+//        // Đặt status code 401
+//        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//
+//        UnauthorizedError errorResponse = new UnauthorizedError("Forbidden access");
+//        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+        response.sendRedirect("/error");
     }
 }

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Trang lỗi</title>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0 !important;
+            padding: 0;
+            background-color: #fff8f2;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        lottie-player {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .error-box {
+            background-color: #ffffff;
+            border: 1px solid #fcd7c3;
+            border-radius: 1rem;
+            padding: 3rem 2rem;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
+            animation: pop 0.4s ease;
+        }
+
+        .status-code {
+            font-size: 2.75rem;
+            font-weight: 600;
+            color: #f97316;
+            margin-top: 1.5rem;
+        }
+
+        .message {
+            font-size: 1.25rem;
+            margin-top: 0.5rem;
+            color: #7c2d12;
+        }
+
+        .btn-home {
+            margin-top: 2rem;
+            display: inline-block;
+            background-color: #fb923c;
+            color: white;
+            text-decoration: none;
+            padding: 0.8rem 1.6rem;
+            border-radius: 0.5rem;
+            font-size: 1.05rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-home:hover {
+            background-color: #f97316;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+<div class="error-box">
+    <lottie-player
+            th:src="@{${lottieSrc}}"
+            background="transparent"
+            speed="1"
+            style="width: 420px; height: 420px;"
+            loop
+            autoplay>
+    </lottie-player>
+
+    <div class="status-code" th:text="'Lỗi ' + ${statusCode}">Lỗi</div>
+    <div class="message" th:text="${message}">Đã xảy ra lỗi</div>
+    <a href="/" class="btn-home">Quay về trang chủ</a>
+</div>
+</body>
+</html>
