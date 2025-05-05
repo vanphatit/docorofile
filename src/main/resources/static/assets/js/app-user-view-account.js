@@ -83,7 +83,7 @@ $(async function () {
               $balance = full['balance'];
             var roleBadgeObj = {
               Sent: '<span class="avatar avatar-sm"> <span class="avatar-initial rounded-circle bg-label-secondary"><i class="ri-mail-line ri-16px"></i></span></span>',
-              Draft:
+              'PENDING':
                 '<span class="avatar avatar-sm"> <span class="avatar-initial rounded-circle bg-label-primary"><i class="ri-folder-line ri-16px"></i></span></span>',
               'FAILED':
                 '<span class="avatar avatar-sm"> <span class="avatar-initial rounded-circle bg-label-danger"><i class="ri-alert-line ri-16px"></i></span></span>',

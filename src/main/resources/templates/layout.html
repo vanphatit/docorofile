@@ -126,6 +126,12 @@
                         <div data-i18n="Membership">Membership</div>
                     </a>
                 </li>
+                <li id="li-follow-course" class="menu-item">
+                    <a href="/member/courses" class="menu-link">
+                        <i class="menu-icon tf-icons ri-box-2-line"></i>
+                        <div data-i18n="Course followed">Course followed</div>
+                    </a>
+                </li>
                 <li id="li-manage-users" class="menu-item d-none">
                     <a href="/admin/users" class="menu-link">
                         <i class="menu-icon tf-icons ri-folder-user-line"></i>
@@ -133,25 +139,25 @@
                     </a>
                 </li>
                 <li id="li-manage-documents" class="menu-item d-none">
-                    <a href="/" class="menu-link">
+                    <a href="/documents/manage" class="menu-link">
                         <i class="menu-icon tf-icons ri-file-pdf-2-line"></i>
                         <div data-i18n="Manage documents">Manage documents</div>
                     </a>
                 </li>
                 <li id="li-manage-reports" class="menu-item d-none">
-                    <a href="/moderator/reports" class="menu-link">
+                    <a href="/moderator/reports" class="menu-link" id="a-manage-reports">
                         <i class="menu-icon tf-icons ri-flag-line"></i>
                         <div data-i18n="Manage reports">Manage reports</div>
                     </a>
                 </li>
                 <li id="li-manage-university" class="menu-item d-none">
-                    <a href="/" class="menu-link">
+                    <a href="/admin/universities" class="menu-link">
                         <i class="menu-icon tf-icons ri-school-line"></i>
                         <div data-i18n="Manage university">Manage university</div>
                     </a>
                 </li>
                 <li id="li-manage-course" class="menu-item d-none">
-                    <a href="/" class="menu-link">
+                    <a href="/admin/courses" class="menu-link">
                         <i class="menu-icon tf-icons ri-box-1-line"></i>
                         <div data-i18n="Manage course">Manage course</div>
                     </a>
@@ -245,9 +251,11 @@
                 document.getElementById('li-chat').classList.add('d-none');
                 document.getElementById('li-library').classList.add('d-none');
                 document.getElementById('li-pricing').classList.add('d-none');
-                document.getElementById('li-manage-reports').classList.remove('d-none');
+                document.getElementById('a-manage-reports').classList.remove('d-none');
+                document.getElementById('li-manage-university').href = '/moderators/manage-reports';
                 document.getElementById('li-notification').classList.add('d-none');
                 document.getElementById('profile-dropdown-menu').classList.add('d-none');
+                document.getElementById('li-follow-course').classList.add('d-none');
             } else if (result.data.role === 'ROLE_ADMIN') {
                 document.getElementById('membershipName').innerText = 'Admin';
                 document.getElementById('membershipName').classList.add('text-danger');
@@ -259,10 +267,12 @@
                 document.getElementById('li-manage-users').classList.remove('d-none');
                 document.getElementById('li-manage-documents').classList.remove('d-none');
                 document.getElementById('li-manage-reports').classList.remove('d-none');
+                document.getElementById('a-manage-reports').href = '/admin/manage-reports';
                 document.getElementById('li-manage-university').classList.remove('d-none');
                 document.getElementById('li-manage-course').classList.remove('d-none');
                 document.getElementById('li-notification').classList.add('d-none');
                 document.getElementById('profile-dropdown-menu').classList.add('d-none');
+                document.getElementById('li-follow-course').classList.add('d-none');
             }
 
             fetch("/v1/api/users/stats", {
