@@ -203,10 +203,11 @@ public class DocumentAPIController {
                                   @CookieValue(value = "JWT", required = false) String token) {
         try {
             boolean isAdmin = false;
-            if (token == null || token.isEmpty()) {
-                return new UnauthorizedError("Bạn chưa đăng nhập!");
-            } else if (jwtTokenUtil.getRoleFromToken(token).contains("ROLE_ADMIN")) {
-                isAdmin = true;
+            if (token != null && !token.isEmpty()) {
+                String role = jwtTokenUtil.getRoleFromToken(token);
+                if (role.contains("ROLE_ADMIN")) {
+                    isAdmin = true;
+                }
             }
             return new SuccessResponse(
                     "Lọc tài liệu thành công!", 200,

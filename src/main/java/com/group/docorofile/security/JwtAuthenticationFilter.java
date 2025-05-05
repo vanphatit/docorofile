@@ -81,7 +81,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/v1/api/auth/verify-email",
             "/v1/api/auth/request-reset-password",
             "/v1/api/auth/reset-password",
-            "/v1/api/comments",
+            "/v1/api/comments/",
+            "/v1/api/documents/view",
+            "/v1/api/documents/view/",
+            "/v1/api/documents/related",
+            "/v1/api/documents/related/",
+            "/v1/api/documents/filter",
+            "/v1/api/documents/search",
+            "/v1/api/documents/search/suggestions",
+            "/v1/api/documents/metadata",
+            "/v1/api/reactions/count/",
+            "/v1/api/reactions/status",
             "/member/payment/vn-pay-callback"
     );
 }

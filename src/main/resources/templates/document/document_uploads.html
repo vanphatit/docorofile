@@ -588,7 +588,11 @@
             nextButton.addEventListener('click', function() {
                 if (uploadedIds.length > 0) {
                     const query = uploadedIds.map(id => `ids=${encodeURIComponent(id)}`).join("&");
-                    window.location.href = `/documents/metadata-form?${query}`;
+                    const returnTo = new URLSearchParams(window.location.search).get("returnTo");
+                    const nextUrl = returnTo
+                        ? `/documents/metadata-form?${query}&returnTo=${encodeURIComponent(returnTo)}`
+                        : `/documents/metadata-form?${query}`;
+                    window.location.href = nextUrl;
                 } else {
                     Swal.fire({
                         icon: 'warning',
