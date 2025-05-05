@@ -1,9 +1,13 @@
 package com.group.docorofile.controllers.v1.api.followCourse;
+import com.group.docorofile.entities.DocumentEntity;
 import com.group.docorofile.exceptions.UserNotFoundException;
 import com.group.docorofile.models.course.CourseCreatedResponseDTO;
+import com.group.docorofile.models.dto.UserDocumentDTO;
+import com.group.docorofile.models.mappers.DocumentMapper;
 import com.group.docorofile.response.SuccessResponse;
 import com.group.docorofile.response.UnauthorizedError;
 import com.group.docorofile.security.JwtTokenUtil;
+import com.group.docorofile.services.iDocumentService;
 import com.group.docorofile.services.iFollowCourseService;
 import com.group.docorofile.services.iUserService;
 
@@ -24,6 +28,9 @@ public class FollowCourseAPIController {
 
     @Autowired
     private iUserService userService;
+
+    @Autowired
+    private iDocumentService documentService;
 
     @Autowired
     private JwtTokenUtil jwtUtils;
@@ -98,4 +105,14 @@ public class FollowCourseAPIController {
                 LocalDateTime.now()
         );
     }
+
+    @PreAuthorize("hasRole('ROLE_MEMBER')")
+    @GetMapping("/course/documents")
+    @ResponseBody
+    public Object getDocumentsByCourseId(@RequestParam UUID courseId) {
+        List<DocumentEntity> documents = documentService.getDocumentByCourseId(courseId);
+        List<UserDocumentDTO> dtos = documents.stream().map(DocumentMapper::toUserDTO).toList();
+        return new SuccessResponse("Lấy tài liệu theo khóa học thành công", 200, dtos, LocalDateTime.now());
+    }
+
 }
