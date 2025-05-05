@@ -103,7 +103,7 @@
                     </a>
                 </li>
                 <li id="li-library" class="menu-item">
-                    <a href="/" class="menu-link">
+                    <a href="/library" class="menu-link">
                         <i class="menu-icon tf-icons ri-box-3-line"></i>
                         <div data-i18n="Library">Library</div>
                     </a>
@@ -231,7 +231,7 @@
 
             const result = await response.json();
 
-            // ✅ In ra kết quả
+            // In ra kết quả
             console.log('✅ Current User Info:', result.data);
 
             // Cập nhật thông tin người dùng vào UI
@@ -246,6 +246,8 @@
                 document.getElementById('li-library').classList.add('d-none');
                 document.getElementById('li-pricing').classList.add('d-none');
                 document.getElementById('li-manage-reports').classList.remove('d-none');
+                document.getElementById('li-notification').classList.add('d-none');
+                document.getElementById('profile-dropdown-menu').classList.add('d-none');
             } else if (result.data.role === 'ROLE_ADMIN') {
                 document.getElementById('membershipName').innerText = 'Admin';
                 document.getElementById('membershipName').classList.add('text-danger');
@@ -259,6 +261,8 @@
                 document.getElementById('li-manage-reports').classList.remove('d-none');
                 document.getElementById('li-manage-university').classList.remove('d-none');
                 document.getElementById('li-manage-course').classList.remove('d-none');
+                document.getElementById('li-notification').classList.add('d-none');
+                document.getElementById('profile-dropdown-menu').classList.add('d-none');
             }
 
             fetch("/v1/api/users/stats", {
