@@ -1,5 +1,6 @@
 package com.group.docorofile.controllers.client;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -13,10 +14,14 @@ import java.nio.file.Paths;
 @RequestMapping("/uploads/documents")
 public class FileController {
 
+
+    @Value("${document.upload.dir}")
+    private String uploadDir;
+
     @GetMapping("/{filename:.+}")
     public ResponseEntity<Resource> getFile(@PathVariable String filename) {
         try {
-            Path filePath = Paths.get("D:/OOSE/DoCoroFile/uploads/documents/").resolve(filename).normalize();
+            Path filePath = Paths.get(uploadDir).resolve(filename).normalize();
             Resource resource = new UrlResource(filePath.toUri());
 
             if (!resource.exists()) {
