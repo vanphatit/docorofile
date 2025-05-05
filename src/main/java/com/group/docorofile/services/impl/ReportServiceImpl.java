@@ -3,14 +3,17 @@ package com.group.docorofile.services.impl;
 import com.group.docorofile.entities.DocumentEntity;
 import com.group.docorofile.entities.MemberEntity;
 import com.group.docorofile.entities.ReportEntity;
+import com.group.docorofile.enums.ENotificationType;
 import com.group.docorofile.enums.EReportStatus;
 import com.group.docorofile.exceptions.DocumentNotFoundException;
 import com.group.docorofile.exceptions.UserNotFoundException;
 import com.group.docorofile.models.dto.ReportSummaryDTO;
 import com.group.docorofile.models.dto.ResultPaginationDTO;
+import com.group.docorofile.observer.NotificationCenter;
 import com.group.docorofile.repositories.DocumentRepository;
 import com.group.docorofile.repositories.ReportRepository;
 import com.group.docorofile.repositories.UserRepository;
+import com.group.docorofile.request.CreateNotificationRequest;
 import com.group.docorofile.request.CreateReportRequest;
 import com.group.docorofile.services.iReportService;
 import jakarta.transaction.Transactional;
@@ -55,6 +58,16 @@ public class ReportServiceImpl implements iReportService {
                 .build();
 
         ReportEntity savedReport = reportRepository.save(report);
+
+        // Tạo notification
+        CreateNotificationRequest notiRequest = new CreateNotificationRequest();
+        notiRequest.setReceiverId(reporter.getUserId());
+        notiRequest.setType(ENotificationType.SYSTEM);
+        notiRequest.setTitle("Send report success!");
+        notiRequest.setContent("You have just sent a report to " + reportRequest.getReportedDocId() + " successfully.");
+
+        // Gọi Observer
+        NotificationCenter.notifyObservers(notiRequest);
 
         document.setReportCount(document.getReportCount() + 1);
         documentRepository.save(document);

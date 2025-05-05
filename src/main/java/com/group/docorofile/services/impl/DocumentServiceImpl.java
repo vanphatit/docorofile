@@ -5,10 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group.docorofile.entities.*;
 import com.group.docorofile.enums.EDocumentStatus;
 import com.group.docorofile.enums.EMembershipLevel;
+import com.group.docorofile.enums.ENotificationType;
 import com.group.docorofile.models.dto.AdminDocumentDTO;
 import com.group.docorofile.models.dto.UserDocumentDTO;
 import com.group.docorofile.models.mappers.DocumentMapper;
+import com.group.docorofile.observer.NotificationCenter;
 import com.group.docorofile.repositories.*;
+import com.group.docorofile.request.CreateNotificationRequest;
 import com.group.docorofile.response.InternalServerError;
 import com.group.docorofile.response.NotFoundError;
 import com.group.docorofile.response.UnauthorizedError;
@@ -37,11 +40,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -106,16 +106,32 @@ public class DocumentServiceImpl implements iDocumentService {
 
     @Override
     public Page<UserDocumentDTO> getAllUserDocuments(int page, int size) {
-        List <UserDocumentDTO> documents = documentRepository.findAll().stream().map(DocumentMapper::toUserDTO).toList();
+        List <DocumentEntity> documents = documentRepository.findAll();
+        documents.removeIf(doc -> doc.getStatus().equals(EDocumentStatus.DELETED) || doc.getStatus().equals(EDocumentStatus.DRAFT));
+        List<UserDocumentDTO> userDocuments = documents.stream().map(DocumentMapper::toUserDTO).toList();
         int start = Math.min(page * size, documents.size());
         int end = Math.min(start + size, documents.size());
-        List<UserDocumentDTO> pagedList = documents.subList(start, end);
+        List<UserDocumentDTO> pagedList = userDocuments.subList(start, end);
         return new PageImpl<>(pagedList, PageRequest.of(page, size), documents.size());
     }
 
     @Override
     public Page<AdminDocumentDTO> getAllAdminDocuments( int page, int size) {
-        List<AdminDocumentDTO> documents = documentRepository.findAll().stream().map(DocumentMapper::toAdminDTO).toList();
+        List<AdminDocumentDTO> documents = documentRepository.findAll().stream().map(DocumentMapper::toAdminDTO)
+                .sorted(Comparator
+                        .comparing(AdminDocumentDTO::getUploadedDate, Comparator.nullsLast(Comparator.reverseOrder())) // uploadedDate DESC
+                        .thenComparing(AdminDocumentDTO::getReportCount, Comparator.nullsLast(Comparator.reverseOrder())) // reportCount DESC
+                        .thenComparing(dto -> {
+                            return switch (dto.getStatus()) {
+                                case PUBLIC -> 1;
+                                case FLAGGED -> 2;
+                                case DRAFT -> 3;
+                                case DELETED  -> 4;
+                                default -> 5;
+                            };
+                        })
+                )
+                .toList();
         int start = Math.min(page * size, documents.size());
         int end = Math.min(start + size, documents.size());
         List<AdminDocumentDTO> pagedList = documents.subList(start, end);
@@ -230,7 +246,7 @@ public class DocumentServiceImpl implements iDocumentService {
     }
 
     @Override
-    public Object filterDocuments(String keyword, UUID courseId, UUID universityId, String uploadDate,
+    public Object filterDocuments(String keyword, UUID courseId, UUID universityId, LocalDateTime uploadDate,
                                   boolean sortByViews, boolean sortByLikes, boolean sortByDisLike,
                                   boolean sortByNewest, boolean sortByOldest, boolean sortByReportCount,
                                   String status, boolean isAdmin, int page, int size) {
@@ -238,12 +254,8 @@ public class DocumentServiceImpl implements iDocumentService {
             List<DocumentEntity> searchDocuments = documentRepository.findAll(
                     DocumentSpecification.searchByKeyword(keyword)
             );
-            // covert String uploadDate to LocalDateTime
-            LocalDateTime uploadDateTime = null;
-            if (uploadDate != null && !uploadDate.isEmpty()) {
-                uploadDateTime = LocalDateTime.parse(uploadDate);
-            }
-            List<DocumentEntity> documents = documentRepository.findAll(DocumentSpecification.filterDocuments(searchDocuments, courseId, universityId, uploadDateTime, sortByViews, sortByLikes, sortByDisLike, sortByNewest, sortByOldest, sortByReportCount, status, isAdmin));
+
+            List<DocumentEntity> documents = documentRepository.findAll(DocumentSpecification.filterDocuments(searchDocuments, courseId, universityId, uploadDate, sortByViews, sortByLikes, sortByDisLike, sortByNewest, sortByOldest, sortByReportCount, status, isAdmin));
             if (isAdmin) {
                 List<AdminDocumentDTO> adDocDTO = documents.stream().map(DocumentMapper::toAdminDTO).toList();
                 int start = Math.min(page * size, adDocDTO.size());
@@ -353,11 +365,31 @@ public class DocumentServiceImpl implements iDocumentService {
 
         documentRepository.save(document);
 
+        // Tạo notification
+        CreateNotificationRequest notiRequest = new CreateNotificationRequest();
+        notiRequest.setReceiverId(document.getAuthor().getUserId());
+        notiRequest.setType(ENotificationType.SYSTEM);
+        notiRequest.setTitle(" Upload document success");
+        notiRequest.setContent(" Your document has been uploaded successfully.");
+
+        // Gọi Observer
+        NotificationCenter.notifyObservers(notiRequest);
+
         // Kiểm tra số lượt tải lên để cấp lượt tải miễn phí
         int uploadCount = documentRepository.countDocumentUploadInDay(LocalDate.now(), memberId);
         if (uploadCount == 1 || uploadCount == 3 || uploadCount % 5 == 0) {
             member.setDownloadLimit(member.getDownloadLimit() + 1);
             userRepository.save(member);
+
+            // Tạo notification
+            CreateNotificationRequest notiRequestDown = new CreateNotificationRequest();
+            notiRequestDown.setReceiverId(member.getUserId());
+            notiRequestDown.setType(ENotificationType.SYSTEM);
+            notiRequestDown.setTitle(" Receive free download");
+            notiRequestDown.setContent(" You have received 1 free download.");
+            // Gọi Observer
+            NotificationCenter.notifyObservers(notiRequest);
+
             return "Bạn đã tải lên đủ " + uploadCount + " tài liệu! Hệ thống đã cộng thêm 1 lượt tải miễn phí.";
         }
 
@@ -418,6 +450,16 @@ public class DocumentServiceImpl implements iDocumentService {
 
         documentRepository.save(document);
 
+        // Tạo notification
+        CreateNotificationRequest notiRequest = new CreateNotificationRequest();
+        notiRequest.setReceiverId(document.getAuthor().getUserId());
+        notiRequest.setType(ENotificationType.SYSTEM);
+        notiRequest.setTitle("Upload document success");
+        notiRequest.setContent("Your document has been uploaded successfully.");
+
+        // Gọi Observer
+        NotificationCenter.notifyObservers(notiRequest);
+
         // Tính lượt upload và tăng downloadLimit nếu cần
         UUID memberId = document.getAuthor().getUserId();
         int uploadCount = documentRepository.countDocumentUploadInDay(LocalDate.now(), memberId);
@@ -425,6 +467,16 @@ public class DocumentServiceImpl implements iDocumentService {
             MemberEntity member = document.getAuthor();
             member.setDownloadLimit(member.getDownloadLimit() + 1);
             userRepository.save(member);
+
+            // Tạo notification
+            CreateNotificationRequest notiRequestDown = new CreateNotificationRequest();
+            notiRequestDown.setReceiverId(member.getUserId());
+            notiRequestDown.setType(ENotificationType.SYSTEM);
+            notiRequestDown.setTitle("Receive free download");
+            notiRequest.setContent("You have received 1 free download.");
+
+            // Gọi Observer
+            NotificationCenter.notifyObservers(notiRequest);
         }
 
         return DocumentMapper.toUserDTO(document);
@@ -566,6 +618,9 @@ public class DocumentServiceImpl implements iDocumentService {
                     .map(DocumentViewEntity::getDocument)
                     .collect(Collectors.toList());
 
+            // delete document has status draft or deleted
+            allDocuments.removeIf(document -> document.getStatus() == EDocumentStatus.DRAFT || document.getStatus() == EDocumentStatus.DELETED);
+
             int start = Math.min(page * size, allDocuments.size());
             int end = Math.min(start + size, allDocuments.size());
             List<DocumentEntity> pagedList = allDocuments.subList(start, end);
@@ -625,6 +680,7 @@ public class DocumentServiceImpl implements iDocumentService {
     public Page<UserDocumentDTO> getDocumentByAuthor(UUID authorId, int page, int size) {
         try {
             List<DocumentEntity> documents = documentRepository.findByAuthor_UserId(authorId);
+            documents.removeIf(document -> document.getStatus() == EDocumentStatus.DELETED || document.getStatus() == EDocumentStatus.DRAFT);
             List<UserDocumentDTO> dtos = documents.stream()
                     .map(DocumentMapper::toUserDTO)
                     .collect(Collectors.toList());

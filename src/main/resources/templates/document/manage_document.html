@@ -5,6 +5,7 @@
       data-template="vertical-menu-template" data-style="light"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout}">
+
 <head>
     <meta charset="UTF-8">
     <title>Quản lý tài liệu</title>
@@ -25,15 +26,10 @@
         .highlight-likes { background-color: #fff3cd; }
         .highlight-dislikes { background-color: #f8d7da; }
         .highlight-views { background-color: #d1ecf1; }
-
-        .card-doc {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
+        .highlight-report { background-color: #f8d7da; border-left: 4px solid #dc3545; }
     </style>
 </head>
+
 <body>
 <div layout:fragment="content">
     <div class="container py-4">
@@ -65,11 +61,44 @@
             </div>
         </div>
 
-        <div id="adminDocumentList"></div>
+        <div class="card">
+            <div class="card-datatable">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Tiêu đề</th>
+                        <th>Khóa học</th>
+                        <th>Trường</th>
+                        <th>Trạng thái</th>
+                        <th>Lượt xem</th>
+                        <th>Thích</th>
+                        <th>Không thích</th>
+                        <th>Report</th>
+                        <th>Ngày upload</th>
+                        <th>Hành động</th>
+                    </tr>
+                    </thead>
+                    <tbody id="adminDocumentTableBody"></tbody>
+                </table>
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div id="adminInfo" class="dataTables_info" role="status" aria-live="polite"></div>
+                    </div>
+                    <div class="col-md-6 d-flex justify-content-end">
+                        <ul class="pagination" id="adminPagination"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script th:inline="javascript" src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script th:inline="javascript">
+        let currentPage = 0;
+        let totalPages = 1;
+
         async function fetchFilterData() {
             const [courses, universities] = await Promise.all([
                 fetch("/v1/api/courses/all").then(res => res.json()),
@@ -87,24 +116,6 @@
             (universities.data || []).forEach(u => {
                 universitySelect.innerHTML += `<option value="${u.univId}">${u.univName}</option>`;
             });
-        }
-
-        function renderDocument(doc, highlightClass = "") {
-            const statusBadge = `<span class="badge-status status-${doc.status}">${doc.status}</span>`;
-            return `
-                <div class="card-doc ${highlightClass}">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h5 class="mb-0">${doc.title}</h5>
-                        ${statusBadge}
-                    </div>
-                    <p class="mb-1"><strong>Khóa học:</strong> ${doc.courseName} | <strong>Trường:</strong> ${doc.universityName}</p>
-                    <p class="mb-1"><strong>Lượt xem:</strong> ${doc.views} | <strong>Likes:</strong> ${doc.likes} | <strong>Dislikes:</strong> ${doc.dislikes} | <strong>Report Count:</strong> ${doc.reportCount}</p>
-                    <p class="mb-2"><strong>Ngày upload:</strong> ${new Date(doc.uploadedDate).toLocaleDateString()}</p>
-                    <div class="d-flex gap-2">
-                        <a href="/documents/${doc.documentId}" class="btn btn-sm btn-info">Xem</a>
-                        <button class="btn btn-sm btn-danger" onclick="confirmDelete('${doc.documentId}')">Xóa</button>
-                    </div>
-                </div>`;
         }
 
         function confirmDelete(id) {
@@ -127,16 +138,15 @@
         }
 
         function deleteDocument(id, hard) {
-            fetch(`/v1/api/documents/${id}?hard=${hard}`, {
-                method: "DELETE"
-            }).then(res => res.json())
+            fetch(`/v1/api/documents/delete/${id}?isHard=${hard}`, { method: "DELETE" })
+                .then(res => res.json())
                 .then(res => {
                     Swal.fire("Thành công", res.message || "Đã xóa tài liệu", "success");
-                    loadDocuments(); // refresh
+                    loadDocuments(currentPage); // refresh
                 });
         }
 
-        function loadDocuments() {
+        function buildFilterUrl(page = 0) {
             const keyword = new URLSearchParams(window.location.search).get("keyword")?.trim() || "";
             const universityId = document.getElementById("filterUniversity").value;
             const courseId = document.getElementById("filterCourse").value;
@@ -144,55 +154,102 @@
             const uploadDate = document.getElementById("filterUploadDate").value;
             const sort = document.getElementById("sortBy").value;
 
-            const isInitialLoad = !keyword && !universityId && !courseId && !status && !uploadDate && !sort;
-            const url = isInitialLoad
-                ? "/v1/api/documents/list?page=0&size=100"
-                : `/v1/api/documents/filter?page=0&size=100`
-                + (keyword ? `&keyword=${encodeURIComponent(keyword)}` : "")
-                + (universityId ? `&universityId=${universityId}` : "")
-                + (courseId ? `&courseId=${courseId}` : "")
-                + (status ? `&status=${status}` : "")
-                + (uploadDate ? `&uploadDate=${uploadDate}T00:00:00` : "")
-                + (sort === 'views' ? `&sortByViews=true` : "")
-                + (sort === 'likes' ? `&sortByLikes=true` : "")
-                + (sort === 'dislikes' ? `&sortByDisLike=true` : "")
-                + (sort === 'newest' ? `&sortByNewest=true` : "")
-                + (sort === 'oldest' ? `&sortByOldest=true` : "")
-                + (sort === 'report' ? `&sortByReportCount=true` : "");
+            const urlBase = keyword || universityId || courseId || status || uploadDate || sort
+                ? "/v1/api/documents/filter"
+                : "/v1/api/documents/list";
 
-            fetch(url, { credentials: 'include' })
+            let url = `${urlBase}?page=${page}&size=10`;
+            if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
+            if (universityId) url += `&universityId=${universityId}`;
+            if (courseId) url += `&courseId=${courseId}`;
+            if (status) url += `&status=${status}`;
+            if (uploadDate) url += `&uploadDate=${uploadDate}T00:00:00`;
+            if (sort === 'views') url += `&sortByViews=true`;
+            if (sort === 'likes') url += `&sortByLikes=true`;
+            if (sort === 'dislikes') url += `&sortByDisLike=true`;
+            if (sort === 'newest') url += `&sortByNewest=true`;
+            if (sort === 'oldest') url += `&sortByOldest=true`;
+            if (sort === 'report') url += `&sortByReportCount=true`;
+
+            return url;
+        }
+
+        function renderPagination() {
+            const pagination = document.getElementById("adminPagination");
+            pagination.innerHTML = "";
+            for (let i = 0; i < totalPages; i++) {
+                const li = document.createElement("li");
+                li.className = "page-item" + (i === currentPage ? " active" : "");
+                li.innerHTML = `<a class="page-link" href="#">${i + 1}</a>`;
+                li.onclick = () => {
+                    currentPage = i;
+                    loadDocuments(currentPage);
+                };
+                pagination.appendChild(li);
+            }
+        }
+
+        function loadDocuments(page = 0) {
+            fetch(buildFilterUrl(page), { credentials: 'include' })
                 .then(res => res.json())
                 .then(res => {
-                    const container = document.getElementById("adminDocumentList");
-                    container.innerHTML = "";
                     const docs = res.data?.content || res.data || [];
+                    currentPage = res.data?.number || 0;
+                    totalPages = res.data?.totalPages || 1;
+
+                    const tbody = document.getElementById("adminDocumentTableBody");
+                    tbody.innerHTML = "";
+
+                    const sort = document.getElementById("sortBy").value;
+
+                    if (docs.length === 0) {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `<td colspan="11" class="text-center text-muted">Không tìm thấy tài liệu nào phù hợp.</td>`;
+                        tbody.appendChild(row);
+                        document.getElementById("adminInfo").textContent = "";
+                        document.getElementById("adminPagination").innerHTML = "";
+                        return;
+                    }
 
                     docs.forEach((doc, i) => {
                         let highlight = "";
                         if (sort === "likes" && i < 10) highlight = "highlight-likes";
                         if (sort === "dislikes" && i < 10) highlight = "highlight-dislikes";
                         if (sort === "views" && i < 10) highlight = "highlight-views";
-                        if (sort === "newest" && i < 10) highlight = "bg-light border border-success";
-                        if (sort === "oldest" && i < 10) highlight = "bg-light border border-secondary";
-                        if (sort === "report" && i < 10) highlight = "bg-light border border-danger";
+                        if (sort === "report" && i < 10) highlight = "highlight-report";
 
-                        container.innerHTML += renderDocument(doc, highlight);
+                        const row = document.createElement("tr");
+                        row.className = highlight;
+                        row.innerHTML = `
+                            <td>${i + 1 + page * 10}</td>
+                            <td>${doc.title}</td>
+                            <td>${doc.courseName}</td>
+                            <td>${doc.universityName}</td>
+                            <td><span class="badge-status status-${doc.status}">${doc.status}</span></td>
+                            <td>${doc.views}</td>
+                            <td>${doc.likes}</td>
+                            <td>${doc.dislikes}</td>
+                            <td>${doc.reportCount}</td>
+                            <td>${new Date(doc.uploadedDate).toLocaleDateString()}</td>
+                            <td>
+                              <div class="d-flex gap-2 justify-content-center">
+                                <a href="/documents/${doc.documentId}" class="btn btn-sm btn-outline-primary">Xem</a>
+                                <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('${doc.documentId}')">Xóa</button>
+                              </div>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
                     });
+
+                    document.getElementById("adminInfo").textContent = `Hiển thị ${docs.length} tài liệu trong tổng ${res.data?.totalElements || docs.length}`;
+                    renderPagination();
                 });
         }
 
         document.addEventListener("DOMContentLoaded", () => {
             fetchFilterData().then(() => {
-                const filterIds = [
-                    "filterCourse", "filterUniversity", "filterStatus",
-                    "sortBy", "filterUploadDate"
-                ];
-
-                filterIds.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.addEventListener("change", loadDocuments);
-                });
-
+                ["filterCourse", "filterUniversity", "filterStatus", "sortBy", "filterUploadDate"]
+                    .forEach(id => document.getElementById(id).addEventListener("change", () => loadDocuments(0)));
                 // Nếu có truyền keyword qua URL
                 const keyword = new URLSearchParams(window.location.search).get("keyword")?.trim() || "";
                 if (keyword) {
@@ -200,8 +257,7 @@
                     const searchBox = document.querySelector('input[type="search"]');
                     if (searchBox) searchBox.value = keyword;
                 }
-
-                loadDocuments(); // luôn gọi ban đầu
+                loadDocuments(0);
             });
         });
     </script>

@@ -22,7 +22,7 @@
                 </span>
                         <input id="globalSearchInput"
                                aria-label="Search..." placeholder="Tìm kiếm tài liệu..."
-                               class="form-control border-start-0"
+                               class="form-control border-start-0 bg-white"
                                type="text"
                                autocomplete="off" />
                     </div>
@@ -136,6 +136,12 @@
         document.addEventListener("DOMContentLoaded", () => {
             const input = document.getElementById("globalSearchInput");
             const suggestionsBox = document.getElementById("globalSearchSuggestions");
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const keyword = urlParams.get("keyword");
+            if (keyword) {
+                input.value = decodeURIComponent(keyword);
+            }
 
             input.addEventListener("input", function () {
                 const keyword = input.value.trim();
