@@ -352,6 +352,21 @@
 
         loadDocumentInfo();
 
+        function showLoginAlert(message) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Chưa đăng nhập',
+                text: message || 'Bạn cần đăng nhập để tiếp tục.',
+                showCancelButton: true,
+                confirmButtonText: 'Đăng nhập',
+                cancelButtonText: 'Đóng'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    window.location.href = `/auth/login?returnTo=${encodeURIComponent(window.location.pathname)}`;
+                }
+            });
+        }
+
         function loadDocumentInfo() {
             // === Load Document Info ===
             fetch(`/v1/api/documents/view/${documentId}`)
@@ -462,11 +477,12 @@
             })
                 .then(res => res.json())
                 .then(res => {
-                    if (res.statusCode  === 200) {
+                    if (res.statusCode === 200) {
                         document.getElementById('commentInput').value = '';
                         document.getElementById('parentCommentId').value = '';
-                        loadDocumentInfo();
-                        location.reload();
+                        loadDocumentInfo(); // thay vì reload
+                    } else if (res.statusCode === 401 || res.statusCode === 403) {
+                        showLoginAlert('Bạn cần đăng nhập để gửi bình luận!');
                     } else {
                         Swal.fire('Lỗi', res.message, 'error');
                     }
@@ -486,11 +502,12 @@
             })
                 .then(res => {
                     if (!res.ok) {
-                        renderPdf(fileUrl, 3); // GUEST
+                        return renderPdf(fileUrl, 3); // GUEST
                     }
                     return res.json();
                 })
                 .then(userRes => {
+                    if (!userRes) return;
                     const user = userRes.data;
                     const role = user.role;
                     const userId = user.id;
@@ -501,7 +518,6 @@
                     if (role === 'ROLE_ADMIN' || role === 'ROLE_MODERATOR') {
                         return renderPdf(fileUrl, null); // null = không giới hạn
                     }
-
                     // Nếu là MEMBER thì kiểm tra membership
                     if (role === 'ROLE_MEMBER') {
                         return fetch(`/v1/api/user/checkMembership/${userId}`, {
@@ -515,14 +531,9 @@
                                 return renderPdf(fileUrl, hasPremium ? null : 3);
                             });
                     }
-
-                    // Các role khác như GUEST thì giới hạn 3 trang
                     return renderPdf(fileUrl, 3);
                 })
-                .catch(err => {
-                    console.warn("Defaulting to GUEST due to error:", err);
-                    return renderPdf(fileUrl, 3);
-                });
+                .catch(() => renderPdf(fileUrl, 3));
         }
 
         function renderPdf(fileUrl, pageLimit) {
@@ -566,7 +577,24 @@
                     if (!res.ok) {
                         const contentType = res.headers.get("Content-Type");
 
-                        // Nếu trả về JSON (hết lượt tải)
+                        // Xử lý nếu chưa đăng nhập
+                        if (res.status === 401) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Chưa đăng nhập',
+                                text: 'Bạn cần đăng nhập để tải tài liệu.',
+                                showCancelButton: true,
+                                confirmButtonText: 'Đăng nhập',
+                                cancelButtonText: 'Đóng'
+                            }).then(result => {
+                                if (result.isConfirmed) {
+                                    window.location.href = `/auth/login?returnTo=${encodeURIComponent(window.location.pathname)}`;
+                                }
+                            });
+                            return null;
+                        }
+
+                        // Nếu trả về JSON (ví dụ: hết lượt tải)
                         if (contentType && contentType.includes("application/json")) {
                             const data = await res.json();
                             if (data.redirectToUpload) {
@@ -579,7 +607,7 @@
                                     cancelButtonText: 'Đóng'
                                 }).then(result => {
                                     if (result.isConfirmed) {
-                                        window.location.href = "/documents/uploads";
+                                        window.location.href = `/documents/uploads?returnTo=${encodeURIComponent(window.location.pathname)}`;
                                     }
                                 });
                             } else {
@@ -590,9 +618,10 @@
                         // Nếu trả về plain text
                         const text = await res.text();
                         Swal.fire('Lỗi', "Lỗi tải xuống: " + text, 'error');
-                        return;
+                        return null;
                     }
 
+                    // Nếu thành công
                     return res.blob();
                 })
                 .then(blob => {
@@ -610,6 +639,7 @@
                     Swal.fire('Lỗi', 'Không thể tải tài liệu.', 'error');
                 });
         });
+
         fetch(`/v1/api/documents/related/${documentId}`, {
             credentials: 'include'
         })
@@ -684,11 +714,20 @@
                 })
             })
                 .then(res => res.json())
-                .then(() => {
+                .then(res => {
+                    if (res.statusCode !== 200) {
+                        showLoginAlert('Bạn chưa đăng nhập để bày tỏ cảm xúc với tài liệu này.');
+                        return;
+                    }
+
+                    // Nếu like thành công
                     userReact = isUnlike ? null : 'like';
                     updateIcons();
                     refreshReactionCounts();
-                    location.reload();
+                    location.reload(); // reload lại trang để cập nhật số lượng like/dislike
+                })
+                .catch(() => {
+                    Swal.fire("Lỗi", "Không thể gửi phản ứng.", "error");
                 });
         });
 
@@ -706,11 +745,20 @@
                 })
             })
                 .then(res => res.json())
-                .then(() => {
+                .then(res => {
+                    if (res.statusCode !== 200) {
+                        showLoginAlert('Bạn chưa đăng nhập để bày tỏ cảm xúc với tài liệu này.');
+                        return; // Dừng ở đây nếu chưa đăng nhập
+                    }
+
+                    // Nếu thành công → cập nhật icon
                     userReact = isUnDislike ? null : 'dislike';
                     updateIcons();
                     refreshReactionCounts();
-                    location.reload();
+                    location.reload(); // reload lại trang để cập nhật số lượng like/dislike
+                })
+                .catch(() => {
+                    Swal.fire("Lỗi", "Không thể gửi phản ứng.", "error");
                 });
         });
 
@@ -755,7 +803,6 @@
                 }
             });
 
-        // === 4. Toggle yêu thích (Save/Unsave) ===
         window.toggleFavorite = function () {
             const isSaved = favBtn.classList.contains('ri-heart-fill');
             const url = isSaved
@@ -775,10 +822,12 @@
                         favBtn.classList.toggle('text-danger');
                         Swal.fire("Thành công", res.message, "success");
                     } else {
-                        Swal.fire("Lỗi", res.message, "error");
+                        showLoginAlert('Bạn chưa đăng nhập để bày tỏ cảm xúc với tài liệu này.');
                     }
                 })
-                .catch(() => Swal.fire("Lỗi", "Không thể cập nhật yêu thích!", "error"));
+                .catch(() => {
+                    Swal.fire("Lỗi", "Không thể cập nhật yêu thích!", "error");
+                });
         };
 
         // === 5. Share (copy link) ===

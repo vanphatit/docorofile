@@ -349,6 +349,11 @@
         .premium-button {
             white-space: nowrap;
         }
+
+        .btn-primary {
+            text-decoration: none;
+            display: inline-block;
+        }
     </style>
 </head>
 
@@ -451,9 +456,9 @@
                         <a href="/documents/uploads" class="btn btn-primary">
                             Upload more documents
                         </a>
-                        <a href="/" class="btn btn-outline">
-                            Go to Home
-                        </a>
+                     
+                        <div id="backBtnWrapper"></div>
+
                     </div>
                 </div>
             </div>
@@ -473,6 +478,19 @@
 
     <script th:inline="javascript">
         document.addEventListener('DOMContentLoaded', function () {
+            const returnTo = new URLSearchParams(window.location.search).get("returnTo");
+            const btnWrapper = document.getElementById("backBtnWrapper");
+
+            if (returnTo) {
+                btnWrapper.innerHTML = `
+                <a href="${decodeURIComponent(returnTo)}" class="btn btn-primary">Quay về tài liệu</a>
+            `;
+            } else {
+                btnWrapper.innerHTML = `
+                <a href="/" class="btn btn-outline">Go to Home</a>
+            `;
+            }
+
             const uploadedFiles = JSON.parse(localStorage.getItem('uploadedDocuments') || '[]');
             const x = parseInt(localStorage.getItem('addedTurns') || '0');
             const y = parseInt(localStorage.getItem('downloadLimit') || '0');
@@ -529,7 +547,7 @@
             if (premiumButton) {
                 premiumButton.addEventListener('click', function (e) {
                     e.preventDefault();
-                    window.location.href = '/premium-subscription';
+                    window.location.href = '/member/payment/pricing';
                 });
             }
         });

@@ -148,6 +148,10 @@ public class DocumentServiceImpl implements iDocumentService {
             // Tăng viewCount
             document.setViewCount(document.getViewCount() + 1);
             documentRepository.save(document);
+            if (role == null) {
+                return DocumentMapper.toUserDTO(document);
+            }
+
             if (role.contains("ROLE_MEMBER")) {
                 // Kiểm tra xem user này đã xem tài liệu chưa
                 MemberEntity currentMem = (MemberEntity) userRepository.findByEmail(userName).get();

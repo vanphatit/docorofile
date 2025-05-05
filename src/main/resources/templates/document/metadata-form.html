@@ -673,7 +673,9 @@
                         localStorage.setItem('uploadedDocuments', JSON.stringify(result.documents));
                         localStorage.setItem('addedTurns', result.addedTurns?.toString() || '0');
                         localStorage.setItem('downloadLimit', result.totalDownloadLimit?.toString() || '0');
-                        window.location.href = '/documents/success';
+                        const returnTo = new URLSearchParams(window.location.search).get("returnTo");
+                        const nextUrl = returnTo ? `/documents/success?returnTo=${encodeURIComponent(returnTo)}` : '/documents/success';
+                        window.location.href = nextUrl;
                     })
                     .catch(err => {
                         console.error('Submit error:', err);

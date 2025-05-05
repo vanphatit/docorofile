@@ -140,10 +140,10 @@
                     </div>
                     <div class="col-sm-6 d-flex justify-content-end gap-2 mt-3 mt-sm-0">
                         <button class="btn btn-outline-danger" id="reportBtn">
-                            <i class="ri-flag-line"></i> Report
+                            <i class="ri-flag-line"></i> Báo cáo
                         </button>
                         <button class="btn btn-primary" id="downloadBtn">
-                            <i class="ri-download-line"></i> Download
+                            <i class="ri-download-line"></i> Tải xuống
                         </button>
                     </div>
                 </div>
@@ -197,8 +197,8 @@
                     <textarea id="reportContent" class="form-control" rows="4" placeholder="Nội dung" required></textarea>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Gửi</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
                 </div>
             </form>
         </div>
@@ -209,8 +209,32 @@
             const reportForm = document.getElementById("reportForm");
 
             reportBtn.addEventListener("click", () => {
-                const modal = new bootstrap.Modal(document.getElementById("reportModal"));
-                modal.show();
+                fetch('/v1/api/auth/current-user', {
+                    method: 'POST',
+                    credentials: 'include'
+                })
+                    .then(res => {
+                        if (!res.ok) throw new Error("Guest");
+                        return res.json();
+                    })
+                    .then(user => {
+                        const modal = new bootstrap.Modal(document.getElementById("reportModal"));
+                        modal.show();
+                    })
+                    .catch(() => {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Bạn chưa đăng nhập',
+                            text: 'Vui lòng đăng nhập để báo cáo tài liệu.',
+                            showCancelButton: true,
+                            confirmButtonText: 'Đăng nhập',
+                            cancelButtonText: 'Đóng'
+                        }).then(result => {
+                            if (result.isConfirmed) {
+                                window.location.href = `/auth/login?returnTo=${encodeURIComponent(window.location.pathname)}`;
+                            }
+                        });
+                    });
             });
 
             reportForm.addEventListener("submit", (e) => {
@@ -231,15 +255,16 @@
                 })
                     .then(res => res.json())
                     .then(res => {
-                        if (res.statusCode === 201) { // check đúng field code trong JSON response
+                        if (res.statusCode === 201) {
                             const modal = bootstrap.Modal.getInstance(document.getElementById("reportModal"));
                             modal.hide();
                             document.getElementById("reportContent").value = "";
+                            Swal.fire("Thành công", "Báo cáo của bạn đã được gửi.", "success");
                         } else {
                             Swal.fire("Lỗi", res.message || "Không gửi được báo cáo", "error");
                         }
                     })
-                        .catch(err => Swal.fire("Lỗi", "Có lỗi xảy ra khi gửi báo cáo", "error"));
+                    .catch(() => Swal.fire("Lỗi", "Có lỗi xảy ra khi gửi báo cáo", "error"));
             });
         });
     </script>
