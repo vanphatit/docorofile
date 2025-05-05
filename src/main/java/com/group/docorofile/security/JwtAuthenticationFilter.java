@@ -66,7 +66,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     }
                 }
             } catch (Exception e) {
-                throw new InternalServerError("Internal server error occurred");
+//                throw new InternalServerError("Internal server error occurred");
+                // Tùy chọn: log lại lỗi nếu muốn debug
+                e.printStackTrace();
+
+                // Redirect về trang lỗi (HTML)
+                response.sendRedirect("/error");
+                return;
             }
         }
 
