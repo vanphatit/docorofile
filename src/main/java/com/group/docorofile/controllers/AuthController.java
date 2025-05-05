@@ -8,6 +8,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -37,6 +39,13 @@ public class AuthController {
         m.addAttribute("pageTitle","Login – DoCoroFile");
         m.addAttribute("loginRequest", new LoginRequest());
         return "fragments/auth/login";
+    }
+
+    @GetMapping("/auth/forgot-password")
+    public String forgotPassword(Model m) {
+        m.addAttribute("page","forgot-password");
+        m.addAttribute("pageTitle","Forgot Password – DoCoroFile");
+        return "fragments/auth/forgot-password";
     }
 
     @GetMapping("/auth/logout")
@@ -116,6 +125,31 @@ public class AuthController {
         }
     }
 
+    @GetMapping("/auth/reset-password")
+    public String resetPassword(@RequestParam("code") String code,
+                                @RequestParam("email") String email,
+                                @RequestParam("newPassword") String newPassword,
+                                Model model) {
+        // Call REST API endpoint (API nội bộ)
+        RestTemplate restTemplate = new RestTemplate();
+        String url = "http://localhost:9091/v1/api/auth/reset-password?code=" + code + "&email=" + email + "&newPassword=" + newPassword;
+        HttpHeaders headers = new HttpHeaders();
+
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+        ResponseEntity<?> response = restTemplate.postForEntity(url, entity, Object.class);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            model.addAttribute("success", "Password reset successfully.");
+            model.addAttribute("page","login");
+            model.addAttribute("pageTitle","Login – DoCoroFile");
+            model.addAttribute("loginRequest", new LoginRequest());
+            return "fragments/auth/login";
+        } else {
+            model.addAttribute("error", "Password reset failed.");
+            return "fragments/auth/forgot-password";
+        }
+    }
+
     @PostMapping("/auth/register")
     public String processRegisterForm(@ModelAttribute CreateUserRequest request,
                                       @RequestParam String rePassword,
@@ -154,4 +188,41 @@ public class AuthController {
         }
     }
 
+    @GetMapping("/auth/login/oauth2Google-submit")
+    public String loginGoogle(OAuth2AuthenticationToken oauth2Token, Model m, HttpServletResponse response) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            String url = "http://localhost:9091/v1/api/auth/login/oauth2";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            // Truyền email và name thủ công thay vì truyền OAuth2AuthenticationToken
+            Map<String, String> oauthUser = new HashMap<>();
+            oauthUser.put("email", oauth2Token.getPrincipal().getAttribute("email"));
+            oauthUser.put("name", oauth2Token.getPrincipal().getAttribute("name"));
+
+            HttpEntity<Map<String, String>> entity = new HttpEntity<>(oauthUser, headers);
+            ResponseEntity<Map> res = restTemplate.postForEntity(url, entity, Map.class);
+
+            if (res.getStatusCode().is2xxSuccessful()) {
+                String token = res.getBody().get("data").toString();
+                Cookie cookie = new Cookie("JWT", token);
+                cookie.setHttpOnly(true);
+                cookie.setPath("/");
+                cookie.setMaxAge(3600);
+                response.addCookie(cookie);
+
+                return "redirect:/";
+            } else {
+                m.addAttribute("error", "Login failed: " + res.getBody().get("message"));
+                m.addAttribute("loginRequest", new LoginRequest()); // tránh lỗi Thymeleaf
+                return "fragments/auth/login";
+            }
+        } catch (Exception e) {
+            m.addAttribute("error", "Exception: " + e.getMessage());
+            m.addAttribute("loginRequest", new LoginRequest()); // tránh lỗi Thymeleaf
+            return "fragments/auth/login";
+        }
+    }
 }

@@ -1,7 +1,9 @@
 package com.group.docorofile.controllers.v1.api.auth;
 
 import com.group.docorofile.entities.MemberEntity;
+import com.group.docorofile.entities.UserEntity;
 import com.group.docorofile.models.dto.UserInfoDTO;
+import com.group.docorofile.models.users.CreateUserRequest;
 import com.group.docorofile.models.users.LoginRequest;
 import com.group.docorofile.repositories.UserRepository;
 import com.group.docorofile.response.BadRequestError;
@@ -24,11 +26,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/api/auth")
@@ -58,6 +63,32 @@ public class AuthAPIController {
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
         );
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        String token = jwtTokenUtil.generateToken(userDetails);
+
+        Cookie jwtCookie = new Cookie("JWT", token);
+        jwtCookie.setHttpOnly(true); // Không cho phép truy cập từ JavaScript để giảm rủi ro XSS
+        jwtCookie.setPath("/"); // Áp dụng cho toàn bộ ứng dụng
+
+        response.addCookie(jwtCookie);
+
+        SuccessResponse successResponse  = new SuccessResponse("Login successful", HttpStatus.OK.value(), token, LocalDateTime.now());
+        return ResponseEntity.ok(successResponse);
+    }
+
+    @PostMapping("/login/oauth2")
+    public ResponseEntity<?> loginOAuth2(@RequestBody Map<String, String> oauthUser,
+                                         HttpServletResponse response) {
+        // Xử lý đăng nhập với OAuth2
+        String email = oauthUser.get("email");
+        String name = oauthUser.get("name");
+
+        // Kiểm tra xem người dùng đã tồn tại trong hệ thống chưa
+        UserEntity user = userServiceImpl.findByEmail(email).orElse(null);
+        if (user == null) {
+            user = userServiceImpl.createOAuthMember(email, name);
+        }
+
+        CustomUserDetails userDetails = new CustomUserDetails(user);
         String token = jwtTokenUtil.generateToken(userDetails);
 
         Cookie jwtCookie = new Cookie("JWT", token);
@@ -118,7 +149,7 @@ public class AuthAPIController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestParam("email") String email) {
+    public ResponseEntity<?> forgotPassword(@RequestParam("email") String email, @RequestParam("newPassword") String newPassword) {
         var optUser = userServiceImpl.findByEmail(email);
         if(optUser.isEmpty()) {
             BadRequestError error = new BadRequestError("Không tìm thấy user với email: " + email);
@@ -129,7 +160,7 @@ public class AuthAPIController {
             int code = (int)((Math.random() * 900000) + 100000);
             String verifyCode = String.valueOf(code);
 
-            emailVerificationService.sendVerificationEmail(email, verifyCode);
+            emailVerificationService.sendResetPasswordEmail(email, verifyCode, newPassword);
         } catch (MessagingException e) {
             throw new InternalServerError("Không thể gửi email xác thực.");
         }
@@ -140,7 +171,7 @@ public class AuthAPIController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestParam("email") String email, @RequestParam("code") String code,
+    public ResponseEntity<?> resetPassword(@RequestParam("code") String code, @RequestParam("email") String email,
             @RequestParam("newPassword") String newPassword) {
         // 1. Lấy code đã lưu
         String storedCode = emailVerificationService.getVerificationCode(email);

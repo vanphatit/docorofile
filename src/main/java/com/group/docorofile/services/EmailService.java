@@ -40,6 +40,26 @@ public class EmailService {
 
     }
 
+    public void sendResetPasswordEmail(String to, String code, String password) throws MessagingException {
+        String url = "http://localhost:9091/auth/reset-password?code=" + code + "&email=" + to + "&newPassword=" + password;
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
+        helper.setTo(to);
+        helper.setSubject("Đặt lại mật khẩu - DoCoroFile");
+        helper.setText("<h3>Xin chào!</h3>" +
+                "<p>Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản của mình.</p>" +
+                "<p>Mật khẩu mới của bạn là: <strong>" + password + "</strong></p>" +
+                "<p>Vui lòng nhấn vào liên kết dưới đây để hoàn tất đặt lại mật khẩu của bạn:</p>" +
+                "<a href=\"" + url + "\">Đặt lại mật khẩu</a>", true);
+        mailSender.send(mimeMessage);
+
+        if(emailTokenMap.containsKey(to)) {
+            emailTokenMap.replace(to, code);
+        } else {
+            emailTokenMap.put(to, code);
+        }
+    }
+
     public String getVerificationCode(String email) {
         return emailTokenMap.get(email);
     }
