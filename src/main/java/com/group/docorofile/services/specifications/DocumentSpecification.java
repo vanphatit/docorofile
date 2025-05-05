@@ -6,6 +6,8 @@ import com.group.docorofile.entities.UniversityEntity;
 import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,82 +45,82 @@ public class DocumentSpecification {
         };
     }
 
-    public static Specification<DocumentEntity> filterDocuments(List<DocumentEntity> searchDocuments, UUID courseId, UUID universityId, LocalDateTime uploadDate,
-                                                                boolean sortByViews, boolean sortByLikes, boolean sortByDisLike,
-                                                                boolean sortByNewest, boolean sortByOldest, boolean sortByReportCount,
-                                                                String status, boolean isAdmin
-    ) {
-        return (Root<DocumentEntity> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
+        public static Specification<DocumentEntity> filterDocuments(List<DocumentEntity> searchDocuments, UUID courseId, UUID universityId, LocalDateTime uploadDate,
+                                                                    boolean sortByViews, boolean sortByLikes, boolean sortByDisLike,
+                                                                    boolean sortByNewest, boolean sortByOldest, boolean sortByReportCount,
+                                                                    String status, boolean isAdmin
+        ) {
+            return (Root<DocumentEntity> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
+                List<Predicate> predicates = new ArrayList<>();
 
-            // Nếu có tài liệu tìm kiếm, thêm điều kiện vào
-            if (searchDocuments != null && !searchDocuments.isEmpty()) {
-                List<Predicate> searchPredicates = new ArrayList<>();
-                for (DocumentEntity document : searchDocuments) {
-                    Predicate idPredicate = cb.equal(root.get("documentId"), document.getDocumentId());
-                    searchPredicates.add(idPredicate);
+                // Nếu có tài liệu tìm kiếm, thêm điều kiện vào
+                if (searchDocuments != null && !searchDocuments.isEmpty()) {
+                    List<Predicate> searchPredicates = new ArrayList<>();
+                    for (DocumentEntity document : searchDocuments) {
+                        Predicate idPredicate = cb.equal(root.get("documentId"), document.getDocumentId());
+                        searchPredicates.add(idPredicate);
+                    }
+                    predicates.add(cb.or(searchPredicates.toArray(new Predicate[0])));
                 }
-                predicates.add(cb.or(searchPredicates.toArray(new Predicate[0])));
-            }
 
-            // JOIN với CourseEntity
-            Join<DocumentEntity, Object> courseJoin = root.join("course", JoinType.INNER);
+                // JOIN với CourseEntity
+                Join<DocumentEntity, Object> courseJoin = root.join("course", JoinType.INNER);
 
-            // JOIN với UniversityEntity
-            Join<Object, Object> universityJoin = courseJoin.join("university", JoinType.INNER);
+                // JOIN với UniversityEntity
+                Join<Object, Object> universityJoin = courseJoin.join("university", JoinType.INNER);
 
-            // LEFT JOIN với ReactionEntity để đếm số like
-            Join<DocumentEntity, Object> reactionJoin = root.join("reactions", JoinType.LEFT);
+                // LEFT JOIN với ReactionEntity để đếm số like
+                Join<DocumentEntity, Object> reactionJoin = root.join("reactions", JoinType.LEFT);
 
-            // Lọc theo khóa học
-            if (courseId != null) {
-                predicates.add(cb.equal(courseJoin.get("courseId"), courseId));
-            }
+                // Lọc theo khóa học
+                if (courseId != null) {
+                    predicates.add(cb.equal(courseJoin.get("courseId"), courseId));
+                }
 
-            // Lọc theo trường đại học
-            if (universityId != null) {
-                predicates.add(cb.equal(universityJoin.get("univId"), universityId));
-            }
+                // Lọc theo trường đại học
+                if (universityId != null) {
+                    predicates.add(cb.equal(universityJoin.get("univId"), universityId));
+                }
 
-            // Lọc theo ngày upload
-            if (uploadDate != null) {
-                LocalDateTime startOfDay = uploadDate.toLocalDate().atStartOfDay();
-                LocalDateTime endOfDay = startOfDay.plusDays(1);
-                predicates.add(cb.between(root.get("uploadedDate"), startOfDay, endOfDay));
-            }
+                if (uploadDate != null) {
+                    Timestamp start = Timestamp.valueOf(uploadDate);
+                    Timestamp end = Timestamp.valueOf(uploadDate.plusDays(1));
 
-            // Nếu là admin, lọc theo status
-            if (isAdmin && status != null) {
-                predicates.add(cb.equal(root.get("status"), status));
-            }
+                    predicates.add(cb.between(root.get("uploadedDate"), start, end));
+                }
 
-            // Sắp xếp theo lượt xem hoặc lượt like
-            if (sortByViews) {
-                query.orderBy(cb.desc(root.get("viewCount"))); // Sắp xếp giảm dần theo lượt xem
-            } else if (sortByLikes) {
-                query.groupBy(root.get("documentId")); // Gom nhóm theo tài liệu
-                query.orderBy(cb.desc(cb.count(reactionJoin.get("isLike")))); // Sắp xếp giảm dần theo số lượt like
-            } else if (sortByLikes && sortByViews) {
-                query.groupBy(root.get("documentId")); // Gom nhóm theo tài liệu
-                query.orderBy(cb.desc(cb.count(reactionJoin.get("isLike"))), cb.desc(root.get("viewCount"))); // Sắp xếp giảm dần theo số lượt like và lượt xem
-            } else if (isAdmin && sortByDisLike) {
-                query.groupBy(root.get("documentId")); // Gom nhóm theo tài liệu
-                query.orderBy(cb.desc(cb.count(reactionJoin.get("isDislike")))); // Sắp xếp giảm dần theo số lượt dislike
-            } else if (sortByReportCount) {
-                query.groupBy(root.get("documentId")); // Gom nhóm theo tài liệu
-                query.orderBy(cb.desc(cb.count(root.get("reportCount")))); // Sắp xếp giảm dần theo số lượt report
-            } else if (sortByNewest) {
-                query.orderBy(cb.desc(root.get("uploadedDate"))); // Sắp xếp giảm dần theo ngày upload
-            } else if (sortByOldest) {
-                query.orderBy(cb.asc(root.get("uploadedDate"))); // Sắp xếp tăng dần theo ngày upload
-            }
-            else {
-                query.orderBy(cb.desc(root.get("uploadedDate"))); // Sắp xếp giảm dần theo ngày upload
-            }
+                // Nếu là admin, lọc theo status
+                if (isAdmin && status != null) {
+                    predicates.add(cb.equal(root.get("status"), status));
+                }
 
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
-    }
+                // Sắp xếp theo lượt xem hoặc lượt like
+                if (sortByViews) {
+                    query.orderBy(cb.desc(root.get("viewCount"))); // Sắp xếp giảm dần theo lượt xem
+                } else if (sortByLikes) {
+                    query.groupBy(root.get("documentId")); // Gom nhóm theo tài liệu
+                    query.orderBy(cb.desc(cb.count(reactionJoin.get("isLike")))); // Sắp xếp giảm dần theo số lượt like
+                } else if (sortByLikes && sortByViews) {
+                    query.groupBy(root.get("documentId")); // Gom nhóm theo tài liệu
+                    query.orderBy(cb.desc(cb.count(reactionJoin.get("isLike"))), cb.desc(root.get("viewCount"))); // Sắp xếp giảm dần theo số lượt like và lượt xem
+                } else if (isAdmin && sortByDisLike) {
+                    query.groupBy(root.get("documentId")); // Gom nhóm theo tài liệu
+                    query.orderBy(cb.desc(cb.count(reactionJoin.get("isDislike")))); // Sắp xếp giảm dần theo số lượt dislike
+                } else if (sortByReportCount) {
+                    query.groupBy(root.get("documentId")); // Gom nhóm theo tài liệu
+                    query.orderBy(cb.desc(cb.count(root.get("reportCount")))); // Sắp xếp giảm dần theo số lượt report
+                } else if (sortByNewest) {
+                    query.orderBy(cb.desc(root.get("uploadedDate"))); // Sắp xếp giảm dần theo ngày upload
+                } else if (sortByOldest) {
+                    query.orderBy(cb.asc(root.get("uploadedDate"))); // Sắp xếp tăng dần theo ngày upload
+                }
+                else {
+                    query.orderBy(cb.desc(root.get("uploadedDate"))); // Sắp xếp giảm dần theo ngày upload
+                }
+
+                return cb.and(predicates.toArray(new Predicate[0]));
+            };
+        }
 
     public static Specification<DocumentEntity> relatedDocuments(DocumentEntity originalDoc) {
         return (root, query, cb) -> {
@@ -143,20 +145,40 @@ public class DocumentSpecification {
     }
 
     public static Specification<DocumentEntity> recommendDocuments(List<UUID> courseIds, List<UUID> viewedDocumentIds) {
-        return (root, query, criteriaBuilder) -> {
-            Predicate predicate = criteriaBuilder.conjunction();
+        return (root, query, cb) -> {
+            Predicate coursePredicate = null;
+            Predicate viewedPredicate = null;
 
-            // Nếu người dùng theo dõi khóa học, lấy tài liệu của các khóa học đó
+            // Tài liệu thuộc các khóa học đang theo dõi
             if (courseIds != null && !courseIds.isEmpty()) {
-                predicate = criteriaBuilder.or(predicate, root.get("course").get("courseId").in(courseIds));
+                coursePredicate = root.get("course").get("courseId").in(courseIds);
             }
 
-            // Nếu người dùng không theo dõi khóa học, lấy tài liệu từ những tài liệu họ đã xem trước đó
+            // Tài liệu đã từng xem
             if (viewedDocumentIds != null && !viewedDocumentIds.isEmpty()) {
-                predicate = criteriaBuilder.or(predicate, root.get("documentId").in(viewedDocumentIds));
+                viewedPredicate = root.get("documentId").in(viewedDocumentIds);
             }
 
-            return predicate;
+            // Gộp logic recommend
+            Predicate recommendPredicate;
+            if (coursePredicate != null && viewedPredicate != null) {
+                recommendPredicate = cb.or(coursePredicate, viewedPredicate);
+            } else if (coursePredicate != null) {
+                recommendPredicate = coursePredicate;
+            } else if (viewedPredicate != null) {
+                recommendPredicate = viewedPredicate;
+            } else {
+                // Không có dữ liệu recommend → không match gì cả
+                return cb.disjunction(); // trả về false
+            }
+
+            // Lọc trạng thái: khác DRAFT & DELETED
+            Predicate validStatus = cb.and(
+                    cb.notEqual(root.get("status"), "DRAFT"),
+                    cb.notEqual(root.get("status"), "DELETED")
+            );
+
+            return cb.and(recommendPredicate, validStatus);
         };
     }
 }

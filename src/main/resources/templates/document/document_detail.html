@@ -220,18 +220,18 @@
 
                 if (!content) return;
 
-                fetch(`/v1/api/reports`, {
+                fetch(`/v1/api/reports/create`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
+                    credentials: "include",
                     body: JSON.stringify({
-                        documentId: documentId,
-                        content: content
+                        reportedDocId: documentId,
+                        detail: content
                     })
                 })
                     .then(res => res.json())
                     .then(res => {
-                        if (res.status === 200) {
-                            Swal.fire("Thành công", "Đã gửi báo cáo!", "success");
+                        if (res.statusCode === 201) { // check đúng field code trong JSON response
                             const modal = bootstrap.Modal.getInstance(document.getElementById("reportModal"));
                             modal.hide();
                             document.getElementById("reportContent").value = "";
@@ -239,7 +239,7 @@
                             Swal.fire("Lỗi", res.message || "Không gửi được báo cáo", "error");
                         }
                     })
-                    .catch(err => Swal.fire("Lỗi", "Có lỗi xảy ra khi gửi báo cáo", "error"));
+                        .catch(err => Swal.fire("Lỗi", "Có lỗi xảy ra khi gửi báo cáo", "error"));
             });
         });
     </script>
