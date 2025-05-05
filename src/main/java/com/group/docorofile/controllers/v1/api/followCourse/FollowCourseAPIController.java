@@ -1,5 +1,6 @@
 package com.group.docorofile.controllers.v1.api.followCourse;
 import com.group.docorofile.entities.DocumentEntity;
+import com.group.docorofile.enums.EDocumentStatus;
 import com.group.docorofile.exceptions.UserNotFoundException;
 import com.group.docorofile.models.course.CourseCreatedResponseDTO;
 import com.group.docorofile.models.dto.UserDocumentDTO;
@@ -111,6 +112,7 @@ public class FollowCourseAPIController {
     @ResponseBody
     public Object getDocumentsByCourseId(@RequestParam UUID courseId) {
         List<DocumentEntity> documents = documentService.getDocumentByCourseId(courseId);
+        documents.removeIf(document->document.getStatus().equals(EDocumentStatus.DRAFT)||document.getStatus().equals(EDocumentStatus.DELETED));
         List<UserDocumentDTO> dtos = documents.stream().map(DocumentMapper::toUserDTO).toList();
         return new SuccessResponse("Lấy tài liệu theo khóa học thành công", 200, dtos, LocalDateTime.now());
     }
