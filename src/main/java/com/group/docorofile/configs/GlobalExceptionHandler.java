@@ -90,6 +90,12 @@ public class GlobalExceptionHandler {
                 .body(new BadRequestError("Tệp tải lên vượt quá dung lượng cho phép"));
     }
 
+    @ExceptionHandler(BadRequestError.class)
+    public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestError ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(ex.getMessage(), ex.getStatusCode()));
+    }
+
     @ExceptionHandler(IOException.class)
     public BadRequestError handleIO(IOException ex) {
         return new BadRequestError("Lỗi đọc file: " + ex.getMessage());

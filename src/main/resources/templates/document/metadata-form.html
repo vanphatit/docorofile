@@ -643,11 +643,9 @@
 
             // Submit all forms
             function submitAllForms() {
-                // Show loading state
                 nextButton.textContent = 'Submitting...';
                 nextButton.disabled = true;
 
-                // Prepare data
                 const payload = documentIds.map(id => ({
                     documentId: id,
                     title: formData[id].title,
@@ -656,41 +654,60 @@
                     nameUniversity: formData[id].university
                 }));
 
-                // Submit to backend
                 fetch('/v1/api/documents/upload-metadata', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
                     body: JSON.stringify(payload)
                 })
-                    .then(res => {
-                        if (res.status !== 200) throw new Error('Submit failed');
+                    .then(async res => {
+                        const contentType = res.headers.get("Content-Type");
+
+                        if (!res.ok) {
+                            // Nếu là lỗi 400 từ server trả JSON
+                            if (contentType && contentType.includes("application/json")) {
+                                const error = await res.json();
+                                await Swal.fire({
+                                    icon: 'error',
+                                    title: 'Upload failed',
+                                    text: error.message || `Lỗi ${res.status}`
+                                });
+                            } else {
+                                // Nếu là lỗi không phải JSON (ví dụ: HTML template lỗi)
+                                window.location.href = `/error?status=${res.status}`;
+                            }
+
+                            nextButton.disabled = false;
+                            nextButton.textContent = 'Submit All';
+                            throw new Error('Metadata upload failed');
+                        }
+
                         return res.json();
                     })
                     .then(res => {
-                        // Lưu kết quả vào localStorage
                         const result = res.data;
                         localStorage.setItem('uploadedDocuments', JSON.stringify(result.documents));
                         localStorage.setItem('addedTurns', result.addedTurns?.toString() || '0');
                         localStorage.setItem('downloadLimit', result.totalDownloadLimit?.toString() || '0');
+
                         const returnTo = new URLSearchParams(window.location.search).get("returnTo");
                         const nextUrl = returnTo ? `/documents/success?returnTo=${encodeURIComponent(returnTo)}` : '/documents/success';
                         window.location.href = nextUrl;
                     })
                     .catch(err => {
                         console.error('Submit error:', err);
-
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Failed to submit metadata. Please try again.',
-                            confirmButtonText: 'OK'
-                        });
-
+                        // Không cần Swal ở đây nữa nếu đã hiện ở trên
+                        if (!Swal.isVisible()) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Failed to submit metadata. Please try again.'
+                            });
+                        }
                         nextButton.disabled = false;
                         nextButton.textContent = 'Submit All';
                     });
-            }
+        }
         });
     </script>
 </div>
