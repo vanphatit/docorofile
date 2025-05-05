@@ -83,61 +83,54 @@ public class DocumentAPIController {
     @PostMapping("/upload-files")
     public Object uploadMultipleFiles(@RequestParam("files") MultipartFile[] files,
                                       @CookieValue(value = "JWT", required = false) String token) {
-        try {
-            String username = jwtTokenUtil.getUsernameFromToken(token);
-            UUID memberId = userService.findByEmail(username).get().getUserId();
+        String username = jwtTokenUtil.getUsernameFromToken(token);
+        UUID memberId = userService.findByEmail(username).get().getUserId();
 
-            List<UUID> documentIds = new ArrayList<>();
-            for (MultipartFile file : files) {
-                UUID docId = documentService.saveFileOnly(memberId, file);
-                documentIds.add(docId);
-            }
-
-            return new CreatedResponse("Tải lên thành công", documentIds);
-        } catch (RuntimeException e) {
-            return new BadRequestError(e.getMessage());
+        List<UUID> documentIds = new ArrayList<>();
+        for (MultipartFile file : files) {
+            UUID docId = documentService.saveFileOnly(memberId, file);
+            documentIds.add(docId);
         }
+
+        return new CreatedResponse("Tải lên thành công", documentIds);
     }
 
     @PreAuthorize("hasRole('ROLE_MEMBER')")
     @PostMapping("/upload-metadata")
     public Object updateDocumentMetadata(@RequestBody List<DocumentMetadataRequest> metadataList,
                                          @CookieValue(value = "JWT", required = false) String token) {
-        try {
-            String username = jwtTokenUtil.getUsernameFromToken(token);
-            UUID memberId = userService.findByEmail(username).get().getUserId();
-            if (memberId == null) {
-                return new UnauthorizedError("Bạn chưa đăng nhập!");
-            }
-            if (metadataList.isEmpty()) {
-                return new BadRequestError("Danh sách tài liệu rỗng!");
-            }
 
-            MemberEntity member = (MemberEntity) userService.findById(memberId).get();
-
-            int downloadLimit = member.getDownloadLimit();
-
-            List<UserDocumentDTO> documents = new ArrayList<>();
-
-            for (DocumentMetadataRequest req : metadataList) {
-                UUID documentId = UUID.fromString(req.getDocumentId());
-               documents.add(documentService.updateMetadata(documentId, req.getTitle(), req.getDescription(),
-                        req.getNameCourse(), req.getNameUniversity())
-               );
-            }
-
-            int finalDownloadLimit = member.getDownloadLimit();
-            int addedDownloadLimit = finalDownloadLimit - downloadLimit;
-
-            UploadResultDTO response = new UploadResultDTO();
-            response.setDocuments(documents);
-            response.setAddedTurns(addedDownloadLimit);
-            response.setTotalDownloadLimit(finalDownloadLimit);
-
-            return new SuccessResponse("Thay đổi thông tin tài liệu thành công!", 200, response, LocalDateTime.now());
-        } catch (RuntimeException e) {
-            return new BadRequestError(e.getMessage());
+        String username = jwtTokenUtil.getUsernameFromToken(token);
+        UUID memberId = userService.findByEmail(username).get().getUserId();
+        if (memberId == null) {
+            return new UnauthorizedError("Bạn chưa đăng nhập!");
         }
+        if (metadataList.isEmpty()) {
+            return new BadRequestError("Danh sách tài liệu rỗng!");
+        }
+
+        MemberEntity member = (MemberEntity) userService.findById(memberId).get();
+
+        int downloadLimit = member.getDownloadLimit();
+
+        List<UserDocumentDTO> documents = new ArrayList<>();
+
+        for (DocumentMetadataRequest req : metadataList) {
+            UUID documentId = UUID.fromString(req.getDocumentId());
+            documents.add(documentService.updateMetadata(documentId, req.getTitle(), req.getDescription(),
+                    req.getNameCourse(), req.getNameUniversity())
+            );
+        }
+
+        int finalDownloadLimit = member.getDownloadLimit();
+        int addedDownloadLimit = finalDownloadLimit - downloadLimit;
+
+        UploadResultDTO response = new UploadResultDTO();
+        response.setDocuments(documents);
+        response.setAddedTurns(addedDownloadLimit);
+        response.setTotalDownloadLimit(finalDownloadLimit);
+
+        return new SuccessResponse("Thay đổi thông tin tài liệu thành công!", 200, response, LocalDateTime.now());
     }
 
     @GetMapping("/metadata")

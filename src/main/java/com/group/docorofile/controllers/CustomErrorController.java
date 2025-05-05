@@ -26,7 +26,7 @@ public class CustomErrorController implements ErrorController {
             case 404 -> "Trang không tồn tại";
             case 403 -> "Bạn không có quyền truy cập";
             case 401 -> "Vui lòng đăng nhập để tiếp tục";
-            default -> "Đã xảy ra lỗi không xác định";
+            default -> "Đã xảy ra lỗi không xác định: " + message.toString();
         };
         model.addAttribute("message", msg);
 

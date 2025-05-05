@@ -503,26 +503,42 @@
                     progressControllers.push(controller);
                 });
 
-                // Gọi fetch duy nhất 1 lần
                 try {
                     const res = await fetch('/v1/api/documents/upload-files', {
                         method: 'POST',
                         body: formData,
                         credentials: 'include'
                     });
+
+                    const contentType = res.headers.get("Content-Type");
+
+                    if (!res.ok) {
+                        // Nếu là HTML (ví dụ lỗi 500 → template)
+                        if (contentType && contentType.includes("text/html")) {
+                            window.location.href = `/error?status=${res.status}`;
+                            return;
+                        }
+
+                        // Nếu là JSON lỗi custom (BadRequestError,...)
+                        const errorData = await res.json().catch(() => ({}));
+                        await Swal.fire({
+                            icon: 'error',
+                            title: 'Upload failed',
+                            text: errorData.message || `Lỗi ${res.status}`
+                        });
+                        location.reload();
+                        return;
+                    }
+
+                    // Nếu OK → parse JSON kết quả
                     const data = await res.json();
 
                     if (data.data && Array.isArray(data.data)) {
                         uploadedIds = data.data;
 
-                        // Dừng tất cả progress → set = 100%
                         progressControllers.forEach(ctrl => ctrl.finish());
-
-                        // Ẩn spinner và loading
                         document.querySelector('.spinner').style.display = 'none';
                         document.querySelector('.loading-text').style.display = 'none';
-
-                        // Hiện animation thành công
                         document.getElementById('uploadSuccess').style.display = 'flex';
 
                         lottie.loadAnimation({
@@ -535,20 +551,23 @@
 
                         nextButton.style.display = 'inline-block';
                     } else {
-                        console.warn('Unexpected response format:', data);
-                        Swal.fire({
+                        await Swal.fire({
                             icon: 'error',
                             title: 'Upload failed',
                             text: 'Server returned an unexpected response.'
                         });
+
+                        location.reload();
                     }
                 } catch (err) {
                     console.error('Error uploading files:', err);
-                    Swal.fire({
+                    await Swal.fire({
                         icon: 'error',
                         title: 'Upload error',
-                        text: 'An error occurred while uploading files.'
+                        text: err.message || 'Đã xảy ra lỗi không xác định.'
                     });
+
+                    location.reload();
                 }
             }
 

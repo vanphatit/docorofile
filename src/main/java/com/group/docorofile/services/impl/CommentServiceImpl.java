@@ -9,6 +9,7 @@ import com.group.docorofile.repositories.DocumentRepository;
 import com.group.docorofile.repositories.UserRepository;
 import com.group.docorofile.services.iCommentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -36,7 +37,7 @@ public class CommentServiceImpl implements iCommentService {
                 .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại!"));
 
         if (!member.isComment()) {
-            return "Bạn không có quyền bình luận!";
+            throw new AccessDeniedException("Bạn không có quyền bình luận!");
         }
 
         // Kiểm tra tài liệu có tồn tại không

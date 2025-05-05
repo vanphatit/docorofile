@@ -12,6 +12,7 @@ import com.group.docorofile.models.mappers.DocumentMapper;
 import com.group.docorofile.observer.NotificationCenter;
 import com.group.docorofile.repositories.*;
 import com.group.docorofile.request.CreateNotificationRequest;
+import com.group.docorofile.response.BadRequestError;
 import com.group.docorofile.response.InternalServerError;
 import com.group.docorofile.response.NotFoundError;
 import com.group.docorofile.response.UnauthorizedError;
@@ -410,7 +411,7 @@ public class DocumentServiceImpl implements iDocumentService {
         try {
             fileUrl = fileStorageService.saveFile(file);
         } catch (IOException e) {
-            throw new RuntimeException("Lỗi khi lưu file");
+            throw new BadRequestError("File vượt quá dung lượng hoặc định dạng không hợp lệ");
         }
 
         // Tạo DocumentEntity chưa có metadata
@@ -431,18 +432,18 @@ public class DocumentServiceImpl implements iDocumentService {
     public UserDocumentDTO updateMetadata(UUID documentId, String title, String description,
                                           String nameCourse, String nameUniversity) {
         DocumentEntity document = documentRepository.findById(documentId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài liệu"));
+                .orElseThrow(() -> new BadRequestError("Không tìm thấy tài liệu"));
 
         if (!courseRepository.existsByCourseName(nameCourse)) {
-            throw new RuntimeException("Không tìm thấy khóa học!");
+            throw new BadRequestError("Không tìm thấy khóa học!");
         }
 
         if (!universityRepository.existsByUnivName(nameUniversity)) {
-            throw new RuntimeException("Không tìm thấy trường học!");
+            throw new BadRequestError("Không tìm thấy trường học!");
         }
 
         if (documentRepository.existsByTitleAndAuthor_UserId(title, document.getAuthor().getUserId())) {
-            throw new RuntimeException("Bạn đã tải lên tài liệu này trước đó.");
+            throw new BadRequestError("Bạn đã tải lên tài liệu này trước đó.");
         }
 
         // Gán metadata
@@ -450,7 +451,7 @@ public class DocumentServiceImpl implements iDocumentService {
         document.setDescription(description);
         document.setStatus(EDocumentStatus.PUBLIC);
         document.setCourse(courseRepository.findByCourseNameAndUniversityName(nameCourse, nameUniversity)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy course")));
+                .orElseThrow(() -> new BadRequestError("Không tìm thấy course")));
 
         documentRepository.save(document);
 

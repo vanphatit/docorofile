@@ -15,7 +15,9 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 @ControllerAdvice
@@ -81,5 +83,22 @@ public class GlobalExceptionHandler {
         return "fragments/payment/error";
     }
 
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<?> handleMaxSizeException(MaxUploadSizeExceededException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new BadRequestError("Tệp tải lên vượt quá dung lượng cho phép"));
+    }
+
+    @ExceptionHandler(BadRequestError.class)
+    public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestError ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(ex.getMessage(), ex.getStatusCode()));
+    }
+
+    @ExceptionHandler(IOException.class)
+    public BadRequestError handleIO(IOException ex) {
+        return new BadRequestError("Lỗi đọc file: " + ex.getMessage());
+    }
 
 }

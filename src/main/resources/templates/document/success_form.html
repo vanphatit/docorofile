@@ -354,6 +354,25 @@
             text-decoration: none;
             display: inline-block;
         }
+
+        .progress-bar {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #9b87f5 25%, #b6a9fa 50%, #9b87f5 75%);
+            background-size: 200% 100%;
+            animation: loadingBar 1.5s linear infinite;
+            border-radius: 9999px;
+        }
+
+        @keyframes loadingBar {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
     </style>
 </head>
 
