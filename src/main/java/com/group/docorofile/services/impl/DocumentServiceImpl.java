@@ -12,6 +12,7 @@ import com.group.docorofile.models.mappers.DocumentMapper;
 import com.group.docorofile.observer.NotificationCenter;
 import com.group.docorofile.repositories.*;
 import com.group.docorofile.request.CreateNotificationRequest;
+import com.group.docorofile.response.BadRequestError;
 import com.group.docorofile.response.InternalServerError;
 import com.group.docorofile.response.NotFoundError;
 import com.group.docorofile.response.UnauthorizedError;
@@ -410,7 +411,7 @@ public class DocumentServiceImpl implements iDocumentService {
         try {
             fileUrl = fileStorageService.saveFile(file);
         } catch (IOException e) {
-            throw new RuntimeException("Lỗi khi lưu file");
+            throw new BadRequestError("File vượt quá dung lượng hoặc định dạng không hợp lệ");
         }
 
         // Tạo DocumentEntity chưa có metadata

@@ -83,20 +83,16 @@ public class DocumentAPIController {
     @PostMapping("/upload-files")
     public Object uploadMultipleFiles(@RequestParam("files") MultipartFile[] files,
                                       @CookieValue(value = "JWT", required = false) String token) {
-        try {
-            String username = jwtTokenUtil.getUsernameFromToken(token);
-            UUID memberId = userService.findByEmail(username).get().getUserId();
+        String username = jwtTokenUtil.getUsernameFromToken(token);
+        UUID memberId = userService.findByEmail(username).get().getUserId();
 
-            List<UUID> documentIds = new ArrayList<>();
-            for (MultipartFile file : files) {
-                UUID docId = documentService.saveFileOnly(memberId, file);
-                documentIds.add(docId);
-            }
-
-            return new CreatedResponse("Tải lên thành công", documentIds);
-        } catch (RuntimeException e) {
-            return new BadRequestError(e.getMessage());
+        List<UUID> documentIds = new ArrayList<>();
+        for (MultipartFile file : files) {
+            UUID docId = documentService.saveFileOnly(memberId, file);
+            documentIds.add(docId);
         }
+
+        return new CreatedResponse("Tải lên thành công", documentIds);
     }
 
     @PreAuthorize("hasRole('ROLE_MEMBER')")
