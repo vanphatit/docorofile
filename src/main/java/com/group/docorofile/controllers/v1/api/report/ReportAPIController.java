@@ -25,7 +25,7 @@ public class ReportAPIController {
         this.reportService = reportService;
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_MEMBER')")
+    @PreAuthorize("hasAnyRole('ROLE_MEMBER')")
     @PostMapping("/create")
     public ResponseEntity<SuccessResponse> createReport(@RequestBody CreateReportRequest reportRequest) {
         reportService.createReport(reportRequest);

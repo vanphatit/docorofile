@@ -106,6 +106,10 @@ function showReportModal(documentId) {
             });
             $("#modalImage").attr("src", doc.data.coverImageUrl);
 
+            document.getElementById("viewDocBtn").addEventListener("click", function () {
+                window.location.href = `${window.location.origin}/documents/${documentId}`;
+            });
+
             $("#updateStatusBtn").off('click').on('click', function () {
                 const newStatus = $("#statusSelect").val();
                 $.ajax({
