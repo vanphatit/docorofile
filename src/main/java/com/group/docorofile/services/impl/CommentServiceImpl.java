@@ -13,9 +13,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -84,27 +82,41 @@ public class CommentServiceImpl implements iCommentService {
         // Lấy tất cả bình luận của tài liệu
         List<CommentEntity> allComments = commentRepository.findCommentEntitiesByDocument_DocumentId(documentId);
 
-        // Tạo danh sách bình luận cha (Cấp 1)
-        List<CommentDTO> parentComments = allComments.stream()
-                .filter(comment -> comment.getParentComment() == null) // Chỉ lấy bình luận không có cha
-                .map(CommentDTO::fromEntity)
-                .collect(Collectors.toList());
+        // Tạo map entity theo ID để tiện lookup
+        Map<UUID, CommentEntity> entityMap = allComments.stream()
+                .collect(Collectors.toMap(CommentEntity::getCommentId, e -> e));
 
-        // Ánh xạ bình luận theo ID để xử lý nhanh hơn
-        Map<UUID, CommentDTO> commentMap = parentComments.stream()
-                .collect(Collectors.toMap(CommentDTO::getCommentId, comment -> comment));
+        // Map để build DTO kèm replies
+        Map<UUID, CommentDTO> dtoMap = new HashMap<>();
 
-        // Xử lý bình luận cấp 2 (bao gồm cả cấp 3 trở đi, gom vào cấp 2)
-        for (CommentEntity comment : allComments) {
-            if (comment.getParentComment() != null) {
-                UUID parentId = comment.getParentComment().getCommentId();
-                CommentDTO parentDTO = commentMap.get(parentId);
+        // Bước 1: Chuyển hết Entity → DTO, không xử lý replies vội
+        for (CommentEntity entity : allComments) {
+            dtoMap.put(entity.getCommentId(), CommentDTO.builder()
+                    .commentId(entity.getCommentId())
+                    .content(entity.getContent())
+                    .createdOn(entity.getCreatedOn())
+                    .authorId(entity.getAuthor().getUserId())
+                    .authorName(entity.getAuthor().getFullName())
+                    .replies(new ArrayList<>())
+                    .build());
+        }
+
+        // Bước 2: Gán reply vào cha (cấp 2 trở lên gom hết vào replies cấp 1)
+        for (CommentEntity entity : allComments) {
+            if (entity.getParentComment() != null) {
+                UUID parentId = entity.getParentComment().getCommentId();
+                CommentDTO parentDTO = dtoMap.get(parentId);
                 if (parentDTO != null) {
-                    parentDTO.getReplies().add(CommentDTO.fromEntity(comment));
+                    parentDTO.getReplies().add(dtoMap.get(entity.getCommentId()));
                 }
             }
         }
 
-        return parentComments;
+        // Bước 3: Trả về các comment không có cha
+        return allComments.stream()
+                .filter(c -> c.getParentComment() == null)
+                .map(c -> dtoMap.get(c.getCommentId()))
+                .collect(Collectors.toList());
     }
+
 }
