@@ -229,12 +229,15 @@ public class DocumentAPIController {
         }
     }
 
-    @GetMapping("/download/{documentId}")
     @PreAuthorize("hasRole('ROLE_MEMBER')")
+    @GetMapping("/download/{documentId}")
     public ResponseEntity<Resource> downloadDocument(@PathVariable UUID documentId,
                                                      @CookieValue(value = "JWT", required = false) String token) {
+        if (token == null || token.isEmpty()) {
+            throw new UnauthorizedError("Vui lòng đăng nhập!");
+        }
         UUID memberId = userService.findByEmail(jwtTokenUtil.getUsernameFromToken(token))
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"))
+                .orElseThrow(() -> new NotFoundError("Không tìm thấy người dùng"))
                 .getUserId();
         return documentService.downloadDocument(memberId, documentId);
     }
