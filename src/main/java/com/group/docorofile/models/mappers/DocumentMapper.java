@@ -35,7 +35,12 @@ public class DocumentMapper {
         userDocumentDTO.setDownloadCount(document.getAuthor().getDownloadLimit());
         userDocumentDTO.setCourseName(document.getCourse() != null ? document.getCourse().getCourseName() : null);
         userDocumentDTO.setUniversityName(document.getCourse() != null ? document.getCourse().getUniversity().getUnivName() : null);
-        userDocumentDTO.setComments(document.getComments().stream().map(CommentDTO::fromEntity).toList());
+        userDocumentDTO.setComments(
+                document.getComments().stream()
+                        .filter(c -> c.getParentComment() == null) // chỉ lấy comment gốc
+                        .map(CommentDTO::fromEntity)
+                        .toList()
+        );
 
         String filePathStr = document.getFileUrl();
         String relativePath = filePathStr.replaceFirst("^.*?/uploads/documents/", "");
@@ -72,7 +77,12 @@ public class DocumentMapper {
         adminDocumentDTO.setAuthorName(document.getAuthor().getFullName());
         adminDocumentDTO.setCourseName(document.getCourse() != null ? document.getCourse().getCourseName() : null);
         adminDocumentDTO.setUniversityName(document.getCourse() != null ? document.getCourse().getUniversity().getUnivName() : null);
-        adminDocumentDTO.setComments(document.getComments().stream().map(CommentDTO::fromEntity).toList());
+        adminDocumentDTO.setComments(
+                document.getComments().stream()
+                        .filter(c -> c.getParentComment() == null) // chỉ lấy comment gốc
+                        .map(CommentDTO::fromEntity)
+                        .toList()
+        );
 
         String filePathStr = document.getFileUrl();
         String relativePath = filePathStr.replaceFirst("^.*?/uploads/documents/", "");
