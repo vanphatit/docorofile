@@ -53,7 +53,7 @@ public class AuthController {
         try {
             // Call REST API endpoint (API nội bộ)
             RestTemplate restTemplate = new RestTemplate();
-            String url = "http://docorofile.phatit.id.vn/v1/api/auth/logout";
+            String url = "https://docorofile.phatit.id.vn/v1/api/auth/logout";
             ResponseEntity<Map> res = restTemplate.postForEntity(url, null, Map.class);
 
             Cookie cookie = new Cookie("JWT", null);
@@ -74,7 +74,7 @@ public class AuthController {
         try {
             // Call REST API endpoint (API nội bộ)
             RestTemplate restTemplate = new RestTemplate();
-            String url = "http://docorofile.phatit.id.vn/v1/api/auth/login";
+            String url = "https://docorofile.phatit.id.vn/v1/api/auth/login";
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -107,7 +107,7 @@ public class AuthController {
     public String verifyEmail(@RequestParam("code") String code, @RequestParam("email") String email, Model model) {
         // Call REST API endpoint (API nội bộ)
         RestTemplate restTemplate = new RestTemplate();
-        String url = "http://docorofile.phatit.id.vn/v1/api/auth/verify-email?code=" + code + "&email=" + email;
+        String url = "https://docorofile.phatit.id.vn/v1/api/auth/verify-email?code=" + code + "&email=" + email;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -132,7 +132,7 @@ public class AuthController {
                                 Model model) {
         // Call REST API endpoint (API nội bộ)
         RestTemplate restTemplate = new RestTemplate();
-        String url = "http://docorofile.phatit.id.vn/v1/api/auth/reset-password?code=" + code + "&email=" + email + "&newPassword=" + newPassword;
+        String url = "https://docorofile.phatit.id.vn/v1/api/auth/reset-password?code=" + code + "&email=" + email + "&newPassword=" + newPassword;
         HttpHeaders headers = new HttpHeaders();
 
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -165,7 +165,7 @@ public class AuthController {
         try {
             // Call REST API endpoint (API nội bộ)
             RestTemplate restTemplate = new RestTemplate();
-            String url = "http://docorofile.phatit.id.vn/v1/api/users/newMember";
+            String url = "https://docorofile.phatit.id.vn/v1/api/users/newMember";
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -192,7 +192,7 @@ public class AuthController {
     public String loginGoogle(OAuth2AuthenticationToken oauth2Token, Model m, HttpServletResponse response) {
         try {
             RestTemplate restTemplate = new RestTemplate();
-            String url = "http://docorofile.phatit.id.vn/v1/api/auth/login/oauth2";
+            String url = "https://docorofile.phatit.id.vn/v1/api/auth/login/oauth2";
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
