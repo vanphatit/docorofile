@@ -296,25 +296,24 @@ public class DocumentAPIController {
                                        @RequestParam(defaultValue = "6") int size,
                                        @CookieValue(value = "JWT", required = false) String token)
     {
-        try {
-            String email = jwtTokenUtil.getUsernameFromToken(token);
-            Optional<UserEntity> optionalUser = userService.findByEmail(email);
-
-            if (optionalUser.isEmpty()) {
-                return new NotFoundError("Không tìm thấy người dùng với email: " + email);
-            }
-
-            UUID memberId = optionalUser.get().getUserId();
-            Page<UserDocumentDTO> historyDocuments = documentService.getHistoryDocumentsForUI(memberId, page, size);
-
-            if (historyDocuments.isEmpty()) {
-                return new NotFoundError("Không có tài liệu nào trong lịch sử xem!");
-            }
-
-            return new SuccessResponse("Lấy lịch sử xem tài liệu thành công!", 200, historyDocuments, LocalDateTime.now());
-        } catch (Exception e) {
-            return new InternalServerError(e.getMessage());
+        if (token == null || token.isEmpty()) {
+            return new UnauthorizedError("Bạn chưa đăng nhập!");
         }
+        String email = jwtTokenUtil.getUsernameFromToken(token);
+        Optional<UserEntity> optionalUser = userService.findByEmail(email);
+
+        if (optionalUser.isEmpty()) {
+            return new NotFoundError("Không tìm thấy người dùng với email: " + email);
+        }
+
+        UUID memberId = optionalUser.get().getUserId();
+        Page<UserDocumentDTO> historyDocuments = documentService.getHistoryDocumentsForUI(memberId, page, size);
+
+        if (historyDocuments.isEmpty()) {
+            return new NotFoundError("Không có tài liệu nào trong lịch sử xem!");
+        }
+
+        return new SuccessResponse("Lấy lịch sử xem tài liệu thành công!", 200, historyDocuments, LocalDateTime.now());
     }
 
     @GetMapping("/related/{documentId}")
@@ -322,15 +321,11 @@ public class DocumentAPIController {
             @PathVariable UUID documentId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "6") int size) {
-        try {
             Page<UserDocumentDTO> relatedDocuments = documentService.getRelatedDocumentsForUI(documentId, page, size);
             if (relatedDocuments.isEmpty()) {
                 return new NotFoundError("Không có tài liệu nào liên quan!");
             }
             return new SuccessResponse("Lấy danh sách tài liệu liên quan thành công!", 200, relatedDocuments, LocalDateTime.now());
-        } catch (RuntimeException e) {
-            return new InternalServerError(e.getMessage());
-        }
     }
 
     @PreAuthorize("hasRole('ROLE_MEMBER')")
