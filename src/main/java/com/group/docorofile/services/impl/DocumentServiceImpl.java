@@ -509,11 +509,11 @@ public class DocumentServiceImpl implements iDocumentService {
     public ResponseEntity<Resource> downloadDocument(UUID memberId, UUID documentId) {
         // Kiểm tra xem tài liệu có tồn tại không
         DocumentEntity document = documentRepository.findById(documentId)
-                .orElseThrow(() -> new RuntimeException("Tài liệu không tồn tại"));
+                .orElseThrow(() -> new NotFoundError("Tài liệu không tồn tại"));
 
         // Kiểm tra xem người dùng có tồn tại không
         MemberEntity member = (MemberEntity) userRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+                .orElseThrow(() -> new NotFoundError("Người dùng không tồn tại"));
 
         // Nếu người dùng là Member thì kiểm tra số lượt tải
         if (member.getMembership().getLevel() == EMembershipLevel.FREE && member.getDownloadLimit() <= 0) {
