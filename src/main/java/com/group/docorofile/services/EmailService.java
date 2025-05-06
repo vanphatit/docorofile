@@ -22,7 +22,7 @@ public class EmailService {
     private Map<String, String> emailTokenMap = new ConcurrentHashMap<>();
 
     public void sendVerificationEmail(String to, String verificationCode) throws MessagingException {
-        String url = "http://docorofile.phatit.id.vn/auth/verify-email?code=" + verificationCode + "&email=" + to;
+        String url = "https://docorofile.phatit.id.vn/auth/verify-email?code=" + verificationCode + "&email=" + to;
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
         helper.setTo(to);
@@ -41,7 +41,7 @@ public class EmailService {
     }
 
     public void sendResetPasswordEmail(String to, String code, String password) throws MessagingException {
-        String url = "http://docorofile.phatit.id.vn/auth/reset-password?code=" + code + "&email=" + to + "&newPassword=" + password;
+        String url = "https://docorofile.phatit.id.vn/auth/reset-password?code=" + code + "&email=" + to + "&newPassword=" + password;
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
         helper.setTo(to);
