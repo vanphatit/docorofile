@@ -22,7 +22,7 @@ function subscribeToRoom(roomId) {
       content: msg.content,
       createdAt: msg.timestamp,
       sender: { fullName: msg.sender },
-      mine: msg.senderId === getCurrentUserId()
+      mine: msg.mine
     });
     $('.chat-history-body ul').append(html);
     $('.chat-history-body').scrollTop($('.chat-history-body')[0].scrollHeight);
@@ -30,13 +30,13 @@ function subscribeToRoom(roomId) {
 }
 
 function loadChatSidebar(page = 0) {
-    $.ajax({
-      url: `v1/api/chats/rooms?page=${page}`,
-      method: 'GET',
-      success: function (response) {
-        const rooms = response.result;
-        window.rooms = rooms;
-        let html = `
+  $.ajax({
+    url: `v1/api/chats/rooms?page=${page}`,
+    method: 'GET',
+    success: function (response) {
+      const rooms = response.result;
+      window.rooms = rooms;
+      let html = `
           <div class="sidebar-header h-px-75 px-5 border-bottom d-flex align-items-center">
             <div class="d-flex align-items-center me-6 me-lg-0">
               <div class="flex-shrink-0 avatar avatar-online me-4" data-bs-toggle="sidebar" data-overlay="app-overlay-ex" data-target="#app-chat-sidebar-left">
@@ -56,16 +56,18 @@ function loadChatSidebar(page = 0) {
                 <h5 class="text-primary mb-0">Chats</h5>
               </li>`;
 
-        if (!rooms.length) {
-          html += `<li class="chat-contact-list-item chat-list-item-0"><h6 class="text-muted mb-0">No Chats Found</h6></li>`;
-        } else {
-          rooms.forEach(room => {
-            html += `
+      if (!rooms.length) {
+        $('.chat-history-body').html('  <div class="d-flex justify-content-center align-items-center h-100">\n' +
+            '    <h6 class="text-muted mb-0">Không tìm thấy group chat</h6>\n' +
+            '  </div>');
+      } else {
+        rooms.forEach(room => {
+          html += `
               <li class="chat-contact-list-item mb-1" data-room-id="${room.id}">
                 <a href="#" class="d-flex align-items-center">
                   <div class="flex-shrink-0 avatar ${room.status === 'offline' ? 'avatar-offline' : 'avatar-online'}">
                     ${room.avatarUrl ? `<img src="${room.avatarUrl}" alt="Avatar" class="rounded-circle" />`
-                : `<span class="avatar-initial rounded-circle bg-label-success">${room.title?.charAt(0) || '?'}</span>`}
+              : `<span class="avatar-initial rounded-circle bg-label-success">${room.title?.charAt(0) || '?'}</span>`}
                   </div>
                   <div class="chat-contact-info flex-grow-1 ms-4">
                     <div class="d-flex justify-content-between align-items-center">
@@ -76,24 +78,23 @@ function loadChatSidebar(page = 0) {
                   </div>
                 </a>
               </li>`;
-          });
-        }
-
-        html += `</ul></div>`;
-        $('#chat-contacts-wrapper').html(html);
-
-        if (rooms.length > 0) {
-          setTimeout(() => {
-            $('.chat-contact-info').first().trigger('click');
-          }, 100);
-        }
-      },
-      error: function (err) {
-        $('#chat-contacts-wrapper').html('<div class="text-danger text-center p-4">Failed to load chat contacts</div>');
-        console.error('Chat room loading failed:', err);
+        });
       }
-    });
-  }
+      html += `</ul></div>`;
+      $('#chat-contacts-wrapper').html(html);
+
+      if (rooms.length > 0) {
+        setTimeout(() => {
+          $('.chat-contact-info').first().trigger('click');
+        }, 100);
+      }
+    },
+    error: function (err) {
+      $('#chat-contacts-wrapper').html('<div class="text-danger text-center p-4">Failed to load chat contacts</div>');
+      console.error('Chat room loading failed:', err);
+    }
+  });
+}
 
 function getCurrentUserId() {
   return window.currentUserId;
@@ -112,6 +113,9 @@ function buildMessageHTML(msg) {
           </div>
         </div>` : ''}
         <div class="chat-message-wrapper flex-grow-1 ${isMine ? 'text-end' : ''}">
+         <div class="senderName" style="display: block; color: #838383; font-size: 14px; margin-bottom: 4px;">
+            <small>${msg.sender.fullName}</small>
+         </div>
           <div class="chat-message-text">
             <p class="mb-0 text-break">${msg.content}</p>
           </div>

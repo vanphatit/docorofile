@@ -64,7 +64,7 @@ public class MessageServiceImpl implements iMessageService {
         MessageResponse response = MessageResponse.builder()
                 .id(message.getMessageId())
                 .content(message.getContent())
-                .sender(member.getEmail())
+                .sender(member.getFullName())
                 .senderId(member.getUserId())
                 .roomId(chatRoom.getChatRoomId())
                 .roomName(chatRoom.getTitle())
