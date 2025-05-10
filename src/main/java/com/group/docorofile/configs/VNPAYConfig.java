@@ -41,7 +41,6 @@ public class VNPAYConfig {
 
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
-//        formatter.setTimeZone(TimeZone.getTimeZone("Etc/GMT+7"));
 
         String vnpCreateDate = formatter.format(calendar.getTime());
         vnpParamsMap.put("vnp_CreateDate", vnpCreateDate);
