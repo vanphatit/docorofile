@@ -25,33 +25,88 @@
 
 
 <body>
-<!-- Content wrapper -->
-<div class="content-wrapper">
-    <!-- Content -->
+<section layout:fragment="content">
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh">
+        <div class="status-box text-center" th:classappend="${status eq 'fail'} ? 'fail'">
+            <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+            <div class="d-flex justify-content-center">
+                <div class="text-center">
+                    <div th:if="${status eq 'fail'}">
+                        <lottie-player
+                                src="/assets/json/error.json"
+                                background="transparent"
+                                speed="1"
+                                style="width: 200px; height: 200px; display: inline-block; margin-bottom: 1rem;"
+                                loop autoplay>
+                        </lottie-player>
+                    </div>
 
-    <div class="container-xxl flex-grow-1 container-p-y" layout:fragment="content">
+                    <div th:unless="${status eq 'fail'}">
+                        <lottie-player
+                                src="/assets/json/success.json"
+                                background="transparent"
+                                speed="1"
+                                style="width: 200px; height: 200px; display: inline-block; margin-bottom: 1rem;"
+                                loop autoplay>
+                        </lottie-player>
+                    </div>
+                </div>
+            </div>
 
 
-<div th:if="${status eq 'success'}" class="text-center">
-    <h2>Thanh toán thành công!</h2>
-    <p>Hãy đăng nhập lại và trải nghiệm tài khoản Premium ngay lúc này.</p>
 
-    <div class="mt-4 d-flex justify-content-center">
-        <a href="/auth/login" class="btn btn-outline-primary d-grid w-100" style="max-width: 300px;">Đăng nhập ngay tại đây</a>
+            <div class="status-code" th:text="${status eq 'success'} ? 'Thanh toán thành công' : 'Thanh toán thất bại'">Kết quả</div>
+
+
+            <div class="details mt-3" th:if="${status eq 'success'}">
+                <p><strong>Mã giao dịch:</strong> <span th:text="${paymentId}">--</span></p>
+                <p><strong>Người thanh toán:</strong> <span th:text="${payerName}">--</span></p>
+                <p><strong>Số tiền:</strong> <span th:text="${formattedAmount} + ' VNĐ'">--</span></p>
+                <p><strong>Thời gian:</strong> <span th:text="${#temporals.format(paymentDate, 'dd/MM/yyyy HH:mm')}">--</span></p>
+            </div>
+
+            <a href="/" class="btn btn-outline-primary d-grid w-100" style="margin-top:30px ">Về trang chủ</a>
+        </div>
     </div>
-</div>
 
-<div th:if="${status eq 'fail'}" class="text-center">
-    <h2>Giao dịch thất bại.</h2>
-    <p>Oops, không sao, đăng nhập và thử lại lần nữa bạn nhé.</p>
+    <style>
+        .status-box {
+            background-color: #fff;
+            border: 1px solid #e0f2fe;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 550px;
+            width: 100%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
 
-    <div class="mt-4 d-flex justify-content-center">
-        <a href="/auth/login" class="btn btn-outline-primary d-grid w-100" style="max-width: 300px;">Đăng nhập ngay tại đây</a>
-    </div>
-</div>
-    </div>
-</div>
+        .status-code {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #5c61e6;
+            margin-top: 0.5rem;
+        }
 
+        .message {
+            font-size: 1.1rem;
+            color: #444;
+        }
+
+        .fail .status-code {
+            color: #dc2626;
+        }
+
+        .fail .message {
+            color: #991b1b;
+        }
+
+        .fail {
+            border-color: #fecaca;
+            background-color: #fff1f2;
+        }
+    </style>
+</section>
 </body>
+
 
 </html>

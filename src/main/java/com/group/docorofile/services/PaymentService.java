@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -145,7 +146,6 @@ public class PaymentService {
 
         // Gọi Observer
         NotificationCenter.notifyObservers(notiRequest);
-
 
         return PaymentDTO.VNPayResponse.builder()
                 .code("00")

@@ -1,7 +1,10 @@
 package com.group.docorofile.controllers.client;
 
+import com.group.docorofile.entities.MemberEntity;
+import com.group.docorofile.entities.PaymentEntity;
 import com.group.docorofile.exceptions.UserNotFoundException;
 import com.group.docorofile.models.dto.PaymentDTO;
+import com.group.docorofile.repositories.PaymentRepository;
 import com.group.docorofile.security.JwtTokenUtil;
 import com.group.docorofile.services.PaymentService;
 import com.group.docorofile.services.impl.UserServiceImpl;
@@ -12,6 +15,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.UUID;
 
 @Controller
@@ -22,6 +27,7 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final JwtTokenUtil jwtUtils;
     private final UserServiceImpl userService;
+    private final PaymentRepository paymentRepository;
 
     @PreAuthorize("hasAnyRole('ROLE_MEMBER')")
     @GetMapping("/pricing")
@@ -59,9 +65,27 @@ public class PaymentController {
 
         if (!"00".equals(response.getCode())) {
             model.addAttribute("status", "fail");
+            model.addAttribute("message", response.getMessage());
         } else {
             model.addAttribute("status", "success");
+            model.addAttribute("message", response.getMessage());
+
+            String paymentIdStr = request.getParameter("vnp_TxnRef");
+            UUID paymentId = UUID.fromString(paymentIdStr);
+            PaymentEntity payment = paymentRepository.findById(paymentId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy giao dịch"));
+            MemberEntity member = payment.getPayer();
+
+            NumberFormat formatter = NumberFormat.getInstance(new Locale("vi", "VN"));
+            String formattedAmount = formatter.format(payment.getAmount()); // Long, BigDecimal...
+            model.addAttribute("formattedAmount", formattedAmount);
+
+
+            model.addAttribute("paymentDate", payment.getPaymentDate());
+            model.addAttribute("payerName", member.getFullName());
+            model.addAttribute("paymentId", payment.getPaymentId());
         }
+
 
         return "fragments/payment/payment_status"; // Trả thẳng view
     }
