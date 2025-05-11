@@ -126,4 +126,9 @@ public class FollowCourseServiceImpl implements iFollowCourseService {
 
     }
 
+    @Override
+    public int countFollowerByCourse(UUID courseId) {
+        return followCourseRepo.countByCourse_CourseId(courseId);
+    }
+
 }

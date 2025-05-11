@@ -19,7 +19,6 @@
                     <th>Tên khóa học</th>
                     <th>Trường</th>
                     <th>Hành động</th>
-                    <th>Xem tài liệu</th>
                 </tr>
                 </thead>
                 <tbody id="courseTableBody"></tbody>
@@ -37,6 +36,30 @@
 
         </div>
     </div>
+    <div class="modal fade" id="chooseCourseModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-md modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title fw-bold mb-1">Hãy chọn khóa học để bắt đầu</h5>
+                        <p class="mb-0 text-muted small">Bạn sẽ nhận đề xuất và thông báo khi tài liệu mới được đăng.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <table class="table table-borderless align-middle mb-0">
+                        <tbody id="chooseCourseBody"></tbody>
+                    </table>
+                    <div class="d-flex justify-content-center mt-3">
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0" id="modalPagination"></ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Scripts -->
     <div layout:fragment="scripts">

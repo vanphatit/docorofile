@@ -39,6 +39,7 @@ function loadCoursesWithPagination() {
     });
 }
 
+//
 function renderTable(courses) {
     const tbody = $('#courseTableBody');
     tbody.empty();
@@ -61,12 +62,13 @@ function renderTable(courses) {
             const row = `
                 <tr>
                     <td>${index + 1 + currentPage * pageSize}</td>
-                    <td>${item.courseName}</td>
-                    <td>${item.universityName}</td>
                     <td>
-                        ${btn}
+                        <a href="/member/course/detail?courseId=${item.courseId}" class="fw-semibold text-decoration-none">
+                            ${item.courseName}
+                        </a>
                     </td>
-                     <td><button class="btn btn-info btn-sm ms-2" onclick="viewCourseDetail('${item.courseId}')">Xem chi tiết</button></td>
+                    <td>${item.universityName}</td>
+                    <td>${btn}</td>
                 </tr>`;
             tbody.append(row);
         });
@@ -74,6 +76,7 @@ function renderTable(courses) {
         tbody.append(`<tr><td colspan="4" class="text-center text-danger">Không thể tải danh sách khóa học đã theo dõi.</td></tr>`);
     });
 }
+
 
 function renderPagination(totalPages) {
     const pagination = $('#pagination');
@@ -141,6 +144,187 @@ function unfollowCourse(courseId, courseName) {
 function viewCourseDetail(courseId) {
     window.location.href = `/member/course/detail?courseId=${courseId}`;
 }
+
+function checkFollowedCourses() {
+    fetch('/v1/api/followed')
+        .then(res => res.json())
+        .then(res => {
+            const followed = res.data || [];
+            if (followed.length === 0) {
+                $('#chooseCourseModal').modal('show');
+                loadAllCoursesToChoose();
+            }
+        });
+}
+
+let modalCourses = [];
+let modalCurrentPage = 0;
+const modalPageSize = 5;
+
+function loadAllCoursesToChoose() {
+    fetch('/v1/api/courses/all')
+        .then(res => res.json())
+        .then(res => {
+            modalCourses = res.data || [];
+            renderModalCoursePage();
+        });
+}
+
+// function renderModalCoursePage() {
+//     const tbody = document.getElementById("chooseCourseBody");
+//     tbody.innerHTML = "";
+//
+//     if (modalCourses.length === 0) {
+//         tbody.innerHTML = `<tr><td class="text-muted text-center" colspan="2">Không có khóa học nào</td></tr>`;
+//         return;
+//     }
+//
+//     const start = modalCurrentPage * modalPageSize;
+//     const end = Math.min(start + modalPageSize, modalCourses.length);
+//     const currentCourses = modalCourses.slice(start, end);
+//
+//     currentCourses.forEach(course => {
+//         const row = document.createElement("tr");
+//         row.innerHTML = `
+//             <td>
+//                 <a href="/member/course/detail?courseId=${course.courseId}" class="fw-semibold text-decoration-none">${course.courseName}</a>
+//                 <div class="text-muted small">
+//                     ${course.universityName}<br>
+//                     📄 ${course.totalDocuments || 0} tài liệu • 👤 ${course.totalFollowers || 0} người theo dõi
+//                 </div>
+//             </td>
+//             <td class="text-end align-middle">
+//                 <button class="btn btn-sm btn-primary" onclick="followAndGo('${course.courseId}', '${course.courseName}')">Follow</button>
+//             </td>`;
+//         tbody.appendChild(row);
+//     });
+//
+//     renderModalPagination();
+// }
+
+function renderModalCoursePage() {
+    const tbody = document.getElementById("chooseCourseBody");
+    tbody.innerHTML = "";
+
+    if (modalCourses.length === 0) {
+        tbody.innerHTML = `<tr><td class="text-muted text-center" colspan="2">Không có khóa học nào</td></tr>`;
+        return;
+    }
+
+    const start = modalCurrentPage * modalPageSize;
+    const end = Math.min(start + modalPageSize, modalCourses.length);
+    const currentCourses = modalCourses.slice(start, end);
+
+    currentCourses.forEach(course => {
+        const row = document.createElement("tr");
+
+        const statsId = `courseStats-${course.courseId}`;
+
+        row.innerHTML = `
+            <td>
+                <a href="/member/course/detail?courseId=${course.courseId}" class="fw-semibold text-decoration-none">
+                    ${course.courseName}
+                </a>
+                <div class="text-muted small" id="${statsId}">
+                    Đang tải...
+                </div>
+            </td>
+            <td class="text-end align-middle">
+                <button class="btn btn-sm btn-primary" onclick="followAndGo('${course.courseId}', '${course.courseName}')">Follow</button>
+            </td>`;
+
+        tbody.appendChild(row);
+
+        // 👇 Gọi API để cập nhật số liệu
+        fetch(`/v1/api/course/detail?courseId=${course.courseId}`)
+            .then(res => res.json())
+            .then(res => {
+                const data = res.data;
+                const statEl = document.getElementById(statsId);
+                if (data && statEl) {
+                    statEl.innerHTML = `📄 ${data.totalDocuments || 0} tài liệu • 👤 ${data.totalFollowers || 0} người theo dõi`;
+                }
+            })
+            .catch(() => {
+                const statEl = document.getElementById(statsId);
+                if (statEl) statEl.innerHTML = `<span class="text-danger">Lỗi tải số liệu</span>`;
+            });
+    });
+
+    renderModalPagination();
+}
+
+
+function renderModalPagination() {
+    const pagination = document.getElementById("modalPagination");
+    pagination.innerHTML = "";
+
+    const totalPages = Math.ceil(modalCourses.length / modalPageSize);
+
+    for (let i = 0; i < totalPages; i++) {
+        const li = document.createElement("li");
+        li.className = "page-item" + (i === modalCurrentPage ? " active" : "");
+        li.innerHTML = `<a class="page-link" href="#">${i + 1}</a>`;
+        li.addEventListener("click", (e) => {
+            e.preventDefault();
+            modalCurrentPage = i;
+            renderModalCoursePage();
+        });
+        pagination.appendChild(li);
+    }
+}
+
+
+function filterCourseList() {
+    const input = document.getElementById("courseSearchInput").value.toLowerCase();
+    const rows = document.querySelectorAll("#chooseCourseBody .course-row");
+    rows.forEach(row => {
+        const courseName = row.children[0].innerText.toLowerCase();
+        const university = row.children[1].innerText.toLowerCase();
+        if (courseName.includes(input) || university.includes(input)) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+}
+
+
+// function followAndGo(courseId, courseName) {
+//     $.post(`/v1/api/follow?courseId=${courseId}`)
+//         .done(() => {
+//             $('#chooseCourseModal').modal('hide');
+//             window.location.href = `/member/course/detail?courseId=${courseId}`;
+//         })
+//         .fail(() => showToast("Lỗi theo dõi khóa học", "error"));
+// }
+
+function followAndGo(courseId, courseName) {
+    $.post(`/v1/api/follow?courseId=${courseId}`)
+        .done(() => {
+            showToast(`Đã theo dõi khóa học <b>${courseName}</b>`, "success");
+
+            // Reload full course list before going
+            fetch('/v1/api/courses/all')
+                .then(res => res.json())
+                .then(res => {
+                    modalCourses = res.data || [];
+                    renderModalCoursePage();
+
+                    setTimeout(() => {
+                        $('#chooseCourseModal').modal('hide');
+                        window.location.href = `/member/course/detail?courseId=${courseId}`;
+                    }, 1000);
+                });
+        })
+        .fail(() => showToast("Lỗi theo dõi khóa học", "error"));
+}
+
+// Gọi khi load trang
+$(document).ready(() => {
+    checkFollowedCourses();
+});
+
 
 
 // Custom notification (SweetAlert2)

@@ -11,4 +11,6 @@ public interface iFollowCourseService {
     List<CourseCreatedResponseDTO> getFollowedCourses(UUID userId);
 
     void unfollowCourse(UUID userId, UUID courseId);
+
+    int countFollowerByCourse(UUID courseId);
 }

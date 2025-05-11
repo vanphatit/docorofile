@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -127,6 +128,11 @@ public class CourseServiceImpl implements iCourseService {
                 .orElseThrow(() -> new EntityNotFoundException("Course not found"));
 
         courseRepository.delete(course);
+    }
+
+    @Override
+    public Optional<CourseEntity> findById(UUID courseId) {
+        return courseRepository.findById(courseId);
     }
 
 }

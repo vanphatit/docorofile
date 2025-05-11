@@ -5,6 +5,7 @@ import com.group.docorofile.models.course.CourseCreatedResponseDTO;
 import com.group.docorofile.models.course.CourseDTO;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface iCourseService {
@@ -22,4 +23,9 @@ public interface iCourseService {
     CourseEntity updateCourse(CourseDTO dto);
 
     void deleteCourse(UUID courseId);
+
+    Optional<CourseEntity> findById(UUID courseId);
+
+
+
 }
