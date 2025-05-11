@@ -1,13 +1,17 @@
 package com.group.docorofile.controllers.v1.api.followCourse;
+import com.group.docorofile.entities.CourseEntity;
 import com.group.docorofile.entities.DocumentEntity;
 import com.group.docorofile.enums.EDocumentStatus;
 import com.group.docorofile.exceptions.UserNotFoundException;
 import com.group.docorofile.models.course.CourseCreatedResponseDTO;
+import com.group.docorofile.models.course.CourseDetailDTO;
 import com.group.docorofile.models.dto.UserDocumentDTO;
 import com.group.docorofile.models.mappers.DocumentMapper;
+import com.group.docorofile.response.NotFoundError;
 import com.group.docorofile.response.SuccessResponse;
 import com.group.docorofile.response.UnauthorizedError;
 import com.group.docorofile.security.JwtTokenUtil;
+import com.group.docorofile.services.iCourseService;
 import com.group.docorofile.services.iDocumentService;
 import com.group.docorofile.services.iFollowCourseService;
 import com.group.docorofile.services.iUserService;
@@ -35,6 +39,9 @@ public class FollowCourseAPIController {
 
     @Autowired
     private JwtTokenUtil jwtUtils;
+
+    @Autowired
+    private iCourseService courseService;
 
     @PreAuthorize("hasAnyRole('ROLE_MEMBER')")
     @PostMapping("/follow")
@@ -116,5 +123,22 @@ public class FollowCourseAPIController {
         List<UserDocumentDTO> dtos = documents.stream().map(DocumentMapper::toUserDTO).toList();
         return new SuccessResponse("Lấy tài liệu theo khóa học thành công", 200, dtos, LocalDateTime.now());
     }
+
+    @PreAuthorize("hasRole('ROLE_MEMBER')")
+    @GetMapping("/course/detail")
+    public Object getCourseDetail(@RequestParam UUID courseId) {
+        CourseEntity course = courseService.findById(courseId).orElse(null);
+        if (course == null) return new NotFoundError("Không tìm thấy khóa học");
+
+        CourseDetailDTO dto = new CourseDetailDTO();
+        dto.setCourseId(courseId);
+        dto.setCourseName(course.getCourseName());
+        dto.setUniversityName(course.getUniversity().getUnivName());
+        List<DocumentEntity> list = documentService.getDocumentByCourseId(courseId);
+        dto.setTotalDocuments(list.size());
+        dto.setTotalFollowers(followCourseService.countFollowerByCourse(courseId));
+        return new SuccessResponse("OK", 200, dto, LocalDateTime.now());
+    }
+
 
 }

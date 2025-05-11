@@ -23,5 +23,8 @@ public interface FollowCourseRepository extends JpaRepository<FollowCourseEntity
     List<FollowCourseEntity> findByFollower(UserEntity follower);
 
     Optional<FollowCourseEntity> findByFollowerAndCourse(UserEntity follower, CourseEntity course);
+
+    int countByCourse_CourseId(UUID courseId);
+
 }
 
