@@ -333,25 +333,21 @@ public class DocumentAPIController {
     public Object getDocumentsByCourseFollowed (@RequestParam(defaultValue = "0") int page,
                                                 @RequestParam(defaultValue = "6") int size,
                                                 @CookieValue(value = "JWT", required = false) String token) {
-        try {
-            UUID memberId = userService.findByEmail(jwtTokenUtil.getUsernameFromToken(token)).get().getUserId();
-            if (memberId == null) {
-                return new UnauthorizedError("Bạn chưa đăng nhập!");
-            }
-            System.out.println("===================== " + memberId);
-            boolean courseFollowed = userService.courseFollowedByMember(memberId);
-
-            if (!courseFollowed) {
-                return new NotFoundError("Bạn chưa theo dõi khóa học nào!");
-            }
-            Page<UserDocumentDTO> documents = documentService.getDocumentByCourseAndFollowedByMemberForUI(memberId, page, size);
-            if (documents.isEmpty()) {
-                return new NotFoundError("Không có tài liệu nào trong khóa học đã theo dõi!");
-            }
-            return new SuccessResponse("Lấy danh sách tài liệu theo khóa học đã theo dõi thành công!", 200, documents, LocalDateTime.now());
-        } catch (RuntimeException e) {
-            return new InternalServerError(e.getMessage());
+        UUID memberId = userService.findByEmail(jwtTokenUtil.getUsernameFromToken(token)).get().getUserId();
+        if (memberId == null) {
+            return new UnauthorizedError("Bạn chưa đăng nhập!");
         }
+        System.out.println("===================== " + memberId);
+        boolean courseFollowed = userService.courseFollowedByMember(memberId);
+
+        if (!courseFollowed) {
+            return new NotFoundError("Bạn chưa theo dõi khóa học nào!");
+        }
+        Page<UserDocumentDTO> documents = documentService.getDocumentByCourseAndFollowedByMemberForUI(memberId, page, size);
+        if (documents.isEmpty()) {
+            return new NotFoundError("Không có tài liệu nào trong khóa học đã theo dõi!");
+        }
+        return new SuccessResponse("Lấy danh sách tài liệu theo khóa học đã theo dõi thành công!", 200, documents, LocalDateTime.now());
     }
 
     @PreAuthorize("hasRole('ROLE_MEMBER')")

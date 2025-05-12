@@ -691,27 +691,17 @@ public class DocumentServiceImpl implements iDocumentService {
 
     @Override
     public Page<DocumentEntity> getDocumentByCourseAndFollowedByMember(UUID memberId, int page, int size) {
-        try {
-            List<UUID> courseIds = courseRepository.findFollowedCoursesByMemberId(memberId);
-            return documentRepository.findAll(DocumentSpecification.recommendDocuments(courseIds, null)
-                    .and((root, query, criteriaBuilder) -> criteriaBuilder.notEqual(root.get("status"), EDocumentStatus.DELETED)
-            ).and((root, query, criteriaBuilder) -> criteriaBuilder.notEqual(root.get("status"), EDocumentStatus.DRAFT)
-            ), PageRequest.of(page, size));
-        } catch (RuntimeException e) {
-            throw new InternalServerError(e.getMessage());
-        }
+        List<UUID> courseIds = courseRepository.findFollowedCoursesByMemberId(memberId);
+        return documentRepository.findAll(DocumentSpecification.recommendDocuments(courseIds, null)
+                .and((root, query, criteriaBuilder) -> criteriaBuilder.notEqual(root.get("status"), EDocumentStatus.DELETED)
+                ).and((root, query, criteriaBuilder) -> criteriaBuilder.notEqual(root.get("status"), EDocumentStatus.DRAFT)
+                ), PageRequest.of(page, size));
     }
 
     @Override
     public Page<UserDocumentDTO> getDocumentByCourseAndFollowedByMemberForUI(UUID memberId, int page, int size) {
-        try {
-            Page<DocumentEntity> documents = getDocumentByCourseAndFollowedByMember(memberId, page, size);
-            documents.getContent().removeIf(document -> document.getStatus() == EDocumentStatus.DELETED || document.getStatus() == EDocumentStatus.DRAFT);
-
-            return documents.map(DocumentMapper::toUserDTO);
-        } catch (RuntimeException e) {
-            throw new InternalServerError(e.getMessage());
-        }
+        Page<DocumentEntity> documents = getDocumentByCourseAndFollowedByMember(memberId, page, size);
+        return documents.map(DocumentMapper::toUserDTO);
     }
 
     @Override
