@@ -25,7 +25,7 @@ public class ModeratorFactory implements iUserFactory {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .isActive(true)
-                .isReportManage(Boolean.TRUE.equals(request.getIsReportManage()))
+                .isReportManage(request.getIsReportManage() == null ? Boolean.TRUE : request.getIsReportManage())
                 .build();
     }
 }

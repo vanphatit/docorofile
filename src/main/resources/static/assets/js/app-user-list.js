@@ -208,9 +208,8 @@ $(function () {
                             '<div class="d-flex align-items-center gap-50">' +
                             `<a href="javascript:;" class="btn btn-sm btn-icon btn-text-secondary rounded-pill waves-effect delete-record" data-bs-toggle="tooltip" data-user-id="${userId}" title="Deactivate"><i class="ri-delete-bin-7-line ri-20px"></i></a>` +
                             '<a href="' +
-                            userView +
+                            userView + '/' + userId +
                             '" class="btn btn-sm btn-icon btn-text-secondary rounded-pill waves-effect" data-bs-toggle="tooltip" title="Preview"><i class="ri-eye-line ri-20px"></i></a>' +
-                            '<button class="btn btn-sm btn-icon btn-text-secondary rounded-pill waves-effect dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-line ri-20px"></i></button>' +
                             '<div class="dropdown-menu dropdown-menu-end m-0">' +
                             '<a href="' +
                             userView +
