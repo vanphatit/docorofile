@@ -254,6 +254,7 @@
             });
 
             if (!response.ok) {
+                document.getElementById('li-notification').classList.add('d-none');
                 throw new Error('Không thể lấy thông tin người dùng');
             }
 

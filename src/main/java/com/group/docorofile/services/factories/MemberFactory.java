@@ -53,8 +53,8 @@ public class MemberFactory implements iUserFactory {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .isActive(false)
                 .downloadLimit(Optional.ofNullable(request.getDownloadLimit()).orElse(0))
-                .isChat(Boolean.TRUE.equals(request.getIsChat()))
-                .isComment(Boolean.TRUE.equals(request.getIsComment()))
+                .isChat(request.getIsChat() == null ? Boolean.TRUE : request.getIsChat())
+                .isComment(request.getIsComment() == null ? Boolean.FALSE : request.getIsComment())
                 .membership(membership)
                 .studyAt(university)
                 .build();
