@@ -267,7 +267,6 @@
             document.getElementById('fullName').innerText = result.data.name || 'Khách';
             document.getElementById('membershipName').innerText = result.data.current_plan || 'GUEST';
             if (result.data.role === 'ROLE_MODERATOR') {
-                document.getElementById('membershipName').innerText = 'Moderator';
                 document.getElementById('membershipName').classList.add('text-danger');
                 document.getElementById('badge-role').classList.remove('d-none');
                 document.getElementById('li-upload').classList.add('d-none');
@@ -275,8 +274,7 @@
                 document.getElementById('li-library').classList.add('d-none');
                 document.getElementById('li-pricing').classList.add('d-none');
                 document.getElementById('li-manage-reports').classList.remove('d-none');
-                document.getElementById('a-manage-reports').classList.remove('d-none');
-                document.getElementById('li-manage-university').href = '/moderators/manage-reports';
+                document.getElementById('a-manage-reports').href = '/moderator/manage-reports';
                 document.getElementById('li-notification').classList.add('d-none');
                 document.getElementById('profile-dropdown-menu').classList.add('d-none');
                 document.getElementById('li-follow-course').classList.add('d-none');

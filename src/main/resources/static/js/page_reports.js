@@ -26,10 +26,12 @@ function loadReports(page = 0, size = 1) {
                                 <td><span class="btn btn-sm btn-${statusColor}">${report.status}</span></td>
                                 <td>${report.reportCount}</td>
                                 <td>
-                                     <button class="btn btn-sm btn-outline-dark"
-                                        onclick=showReportModal('${report.documentId}')>
-                                        Chi tiết
-                                    </button>
+                                    ${report.status === 'RESOLVED'
+                                                        ? '<span class="text-muted">Đã xử lý</span>'
+                                                        : `<button class="btn btn-sm btn-outline-dark"
+                                                onclick="showReportModal('${report.documentId}')">
+                                                Chi tiết
+                                           </button>`}
                                 </td>
                             </tr>
                         `;
