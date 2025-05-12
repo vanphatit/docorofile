@@ -386,7 +386,7 @@
             } else if (type === 'related') {
                 pageRelated += direction;
                 if (pageRelated < 0) pageRelated = 0;
-                loadSectionDocuments("liên quan", "docsRelated", `/v1/api/documents/documentsByCourseFollowed`, pageRelated, "paginationRelated", "pageRelated");
+                loadSectionDocuments("liên quan", "docsRelated", `/v1/api/documents/recommend`, pageRelated, "paginationRelated", "pageRelated");
             }
         }
 
@@ -396,7 +396,7 @@
             reloadFollowStatus();
             loadSectionDocuments("thuộc khóa", "docsByCourse", `/v1/api/course/documents?courseId=${courseId}`, pageByCourse, "paginationByCourse", "pageByCourse");
             loadSectionDocuments("yêu thích", "docsLiked", `/v1/api/documents/fav_list`, pageLiked, "paginationLiked", "pageLiked");
-            loadSectionDocuments("liên quan", "docsRelated", `/v1/api/documents/documentsByCourseFollowed`, pageRelated, "paginationRelated", "pageRelated");
+            loadSectionDocuments("liên quan", "docsRelated", `/v1/api/documents/recommend`, pageRelated, "paginationRelated", "pageRelated");
             loadFollowStatusAndDocuments();
         });
 
