@@ -9,183 +9,244 @@
 <head>
     <meta charset="UTF-8">
     <title>Xem thêm</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
     <link rel="stylesheet" th:href="@{/assets/vendor/fonts/remixicon/remixicon.css}" />
+    <script src="https://unpkg.com/lottie-web@5.7.4/build/player/lottie.min.js"></script>
     <style>
-        .container {
+        body {
+            background: linear-gradient(135deg, #f0f4ff, #e6ecff);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .library-container {
+            padding: 2rem;
             max-width: 1200px;
             margin: auto;
-            padding: 2rem;
         }
 
-        .back-link {
-            font-size: 1rem;
-            margin-bottom: 1rem;
+        .library-section {
+            background: #ffffffcc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-            color: #333;
+            margin-bottom: 1rem;
         }
 
-        .document-grid {
+        .section-header h3 {
+            font-size: 1.25rem;
+            font-weight: bold;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .document-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1rem;
+            gap: 1.2rem;
+            padding: 0.5rem;
         }
 
         .document-card {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease-in-out;
             overflow: hidden;
-            transition: box-shadow 0.2s ease, transform 0.2s ease;
-            cursor: pointer;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
         }
 
         .document-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transform: translateY(-3px);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
         }
 
-        .document-grid {
-            padding-top: 1rem;
-            padding-bottom: 1rem;
+        .doc-thumbnail-wrapper {
+            padding: 1rem 1rem 0 1rem;
+            display: flex;
+            justify-content: center;
         }
 
-        .thumbnail {
-            height: 180px;
-            background-color: #f7f6fd;
+        .doc-thumbnail-box {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            background-color: #f2f2f2;
+            border-radius: 16px;
+            padding: 4px;
+            box-sizing: border-box;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
         }
 
-        .thumbnail img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 4px;
+        .doc-thumbnail-img {
+            width: 120%;
+            height: 120%;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+            border-radius: 12px;
         }
 
-        .card-content {
-            padding: 1rem;
+        .document-card:hover .doc-thumbnail-img {
+            transform: scale(1.03);
         }
 
-        .card-content h4 {
+        .doc-view-count {
+            position: absolute;
+            bottom: 6px;
+            right: 8px;
+            background-color: #e0e0e0;
+            color: #444;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        .doc-body {
+            padding: 0.75rem 1rem 1rem 1rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .doc-title {
             font-size: 1rem;
+            font-weight: 600;
+            color: #1a1a1a;
             margin-bottom: 0.25rem;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
             overflow: hidden;
         }
 
-        .card-meta {
-            font-size: 0.85rem;
-            color: #555;
+        .doc-subtitle {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 0.5rem;
         }
 
-        .pagination {
-            margin-top: 2rem;
+        .doc-rating {
+            font-size: 0.8rem;
+            color: #4CAF50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 0.75rem;
+        }
+
+        .doc-actions {
             display: flex;
             justify-content: center;
-            gap: 1rem;
         }
 
-        .pagination button {
-            background: transparent;
-            border: 1px solid #ccc;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
+        .share-btn {
+            background: #f0f4ff;
+            border: 1px solid #d6e4ff;
+            border-radius: 8px;
+            padding: 6px 0;
+            font-size: 0.8rem;
+            color: #357edd;
             cursor: pointer;
+            width: 100%;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
         }
 
-        .pagination button.active {
-            background: #007bff;
-            color: #fff;
-            border-color: #007bff;
+        .share-btn:hover {
+            background: #e1edff;
         }
     </style>
 </head>
 
 <body>
 <div layout:fragment="content">
-    <div class="container">
-        <div class="back-link" onclick="window.history.back()">
-            <i class="ri-arrow-left-line"></i> <strong>Quay lại</strong>
-        </div>
-        <h2 id="pageTitle"><strong>Xem thêm</strong></h2>
-
-        <div id="documentGrid" class="document-grid"></div>
-
-        <div class="pagination" id="pagination"></div>
+    <div class="library-container">
+        <section class="library-section">
+            <div class="section-header">
+                <h3 id="listTitle">Danh sách tài liệu</h3>
+            </div>
+            <div class="document-list" id="mainDocsContainer"></div>
+        </section>
     </div>
-    <script th:inline="javascript">
-        const queryParams = new URLSearchParams(window.location.search);
-        const type = queryParams.get("type") || "history";
-        let currentPage = 0;
 
+    <script th:inline="javascript">
+        const type = new URLSearchParams(window.location.search).get("type") || "history";
         const titleMap = {
             history: "Tài liệu đã xem gần đây",
             recommend: "Tài liệu đề xuất cho bạn",
             getDocumentsUpload: "Tài liệu bạn đã tải lên",
             documentsByCourseFollowed: "Tài liệu từ khóa học đã theo dõi",
-            fav_list: "Tài liệu yêu thích",
+            fav_list: "Tài liệu yêu thích"
         };
 
-        document.getElementById("pageTitle").innerText = titleMap[type] || "Xem thêm";
+        document.getElementById("listTitle").innerText = titleMap[type] || "Danh sách tài liệu";
 
-        function loadPage(page) {
-            fetch(`/v1/api/documents/${type}?page=${page}&size=12`, { credentials: "include" })
-                .then(res => res.json())
-                .then(res => {
-                    const container = document.getElementById("documentGrid");
-                    const pagination = document.getElementById("pagination");
-                    container.innerHTML = "";
-                    pagination.innerHTML = "";
-
-                    if (!res.data?.content?.length) {
-                        container.innerHTML = "<p>Không có tài liệu nào.</p>";
-                        return;
-                    }
-
-                    res.data.content.forEach(doc => {
-                        const div = document.createElement("div");
-                        div.className = "document-card";
-                        div.onclick = () => window.location.href = `/documents/${doc.documentId}`;
-                        div.innerHTML = `
-                            <div class="thumbnail">
-                              <img src="${doc.coverImageUrl || '/assets/svg/icons/laptop.svg'}" alt="cover" />
+        fetch(`/v1/api/documents/${type}?page=0&size=50`, { credentials: "include" })
+            .then(res => res.json())
+            .then(res => {
+                const container = document.getElementById("mainDocsContainer");
+                if (res.statusCode !== 200 || !res.data?.content?.length) {
+                    container.innerHTML = "<p style='color:#888;'>Không có tài liệu nào để hiển thị.</p>";
+                    return;
+                }
+                res.data.content.forEach(doc => {
+                    const div = document.createElement("div");
+                    div.className = "document-card";
+                    div.onclick = () => window.location.href = `/documents/${doc.documentId}`;
+                    div.innerHTML = `
+                        <div class="doc-thumbnail-wrapper">
+                            <div class="doc-thumbnail-box">
+                                <img class="doc-thumbnail-img" src="${doc.coverImageUrl || '/assets/svg/icons/laptop.svg'}" alt="cover" />
+                                <div class="doc-view-count">${doc.viewCount || 1}</div>
                             </div>
-                            <div class="card-content">
-                              <h4>${doc.title}</h4>
-                              <div class="card-meta">${doc.courseName}</div>
-                              <div class="card-meta">${doc.authorName || ''} • ${new Date(doc.uploadedDate).toLocaleDateString()}</div>
+                        </div>
+                        <div class="doc-body">
+                            <h4 class="doc-title" title="${doc.title}">${doc.title}</h4>
+                            <p class="doc-subtitle">${doc.courseName || 'Tài liệu học thuật'}</p>
+                            <div class="doc-rating">
+                                <i class="ri-thumb-up-line"></i>
+                                <span>${(doc.likes * 100) / ((doc.likes + doc.dislikes) || 1)}% (${doc.likes || 0})</span>
                             </div>
-                          `;
-                        container.appendChild(div);
-                    });
-
-                    const totalPages = res.data.totalPages;
-                    for (let i = 0; i < totalPages; i++) {
-                        const btn = document.createElement("button");
-                        btn.innerText = i + 1;
-                        if (i === page) btn.classList.add("active");
-                        btn.onclick = () => {
-                            currentPage = i;
-                            loadPage(i);
-                        };
-                        pagination.appendChild(btn);
-                    }
+                            <div class="doc-actions">
+                                <button class="share-btn" data-id="${doc.documentId}">
+                                    <i class="ri-share-line"></i> Share
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(div);
                 });
-        }
+                initShareButtons();
+            });
 
-        document.addEventListener("DOMContentLoaded", () => {
-            loadPage(currentPage);
-        });
+        function initShareButtons() {
+            document.querySelectorAll('.share-btn').forEach(btn => {
+                const docId = btn.getAttribute('data-id');
+                btn.onclick = function (e) {
+                    e.stopPropagation();
+                    const url = `${window.location.origin}/documents/${docId}`;
+                    navigator.clipboard.writeText(url)
+                        .then(() => Swal.fire("Đã sao chép!", "Link tài liệu đã được lưu vào clipboard.", "success"))
+                        .catch(() => Swal.fire("Lỗi", "Không thể sao chép đường dẫn!", "error"));
+                };
+            });
+        }
     </script>
 </div>
 </body>

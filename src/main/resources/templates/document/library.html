@@ -11,16 +11,26 @@
     <title>Thư viện của tôi</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
     <link rel="stylesheet" th:href="@{/assets/vendor/fonts/remixicon/remixicon.css}" />
+    <script src="https://unpkg.com/lottie-web@5.7.4/build/player/lottie.min.js"></script>
+
     <style>
+        body {
+            background: linear-gradient(135deg, #f0f4ff, #e6ecff);
+            font-family: 'Inter', sans-serif;
+        }
+
         .library-container {
             padding: 2rem;
             max-width: 1200px;
             margin: auto;
-            font-family: 'Inter', sans-serif;
         }
 
         .library-section {
+            background: #ffffffcc;
+            border-radius: 12px;
+            padding: 1.5rem;
             margin-bottom: 3rem;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
         }
 
         .section-header {
@@ -32,87 +42,213 @@
 
         .section-header h3 {
             font-size: 1.25rem;
-        }
-
-        .document-list {
-            display: flex;
-            gap: 1rem;
-            overflow-x: auto;
-            padding-bottom: 0.5rem;
-        }
-
-        .document-card {
-            background: #fff;
-            border: 1px solid #eaeaea;
-            border-radius: 6px;
-            padding: 1rem;
-            width: 200px;
-            flex-shrink: 0;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .document-card:hover {
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-        }
-
-        .doc-thumbnail {
-            font-size: 2rem;
-            text-align: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .doc-info h4 {
-            font-size: 1rem;
-            margin: 0;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            overflow: hidden;
-        }
-
-        .doc-info p {
-            font-size: 0.875rem;
-            color: #777;
-        }
-
-        .section-footer {
-            margin-top: 1rem;
-            text-align: right;
-        }
-
-        .section-footer button {
-            background-color: transparent;
-            border: none;
-            color: #007bff;
-            cursor: pointer;
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
+            font-weight: bold;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .section-header button {
             background-color: transparent;
             border: none;
-            color: #007bff;
+            color: #2575fc;
             cursor: pointer;
             font-size: 0.9rem;
         }
 
-        /* Ẩn thanh trượt ngang */
         .document-list {
             display: flex;
-            gap: 1rem;
+            gap: 1.2rem;
             overflow-x: auto;
             padding-bottom: 0.5rem;
-            scrollbar-width: none; /* Firefox */
+            scrollbar-width: none;         /* Firefox */
+            -ms-overflow-style: none;      /* IE 10+ */
         }
 
         .document-list::-webkit-scrollbar {
-            display: none; /* Chrome, Safari */
+            display: none;
+        }
+        .document-list::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 10px;
+        }
+
+        .document-list.empty-list {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 180px;
+        }
+
+        .document-list::-webkit-scrollbar {
+            display: none;
+        }
+
+        .document-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease-in-out;
+            overflow: hidden;
+            width: 260px; /* To hơn */
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .document-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .doc-thumbnail-wrapper {
+            padding: 1rem 1rem 0 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .doc-thumbnail-box {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            background-color: #f2f2f2;
+            border-radius: 16px;
+            padding: 4px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .doc-thumbnail-img {
+            width: 120%;  /* 👈 Zoom lớn hơn khung để tạo hiệu ứng "full" */
+            height: 120%;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+            border-radius: 12px;
+        }
+
+        .document-card:hover .doc-thumbnail-img {
+            transform: scale(1.03);
+        }
+
+        .doc-view-count {
+            position: absolute;
+            bottom: 6px;
+            right: 8px;
+            background-color: #e0e0e0;
+            color: #444;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        .doc-body {
+            padding: 0.75rem 1rem 1rem 1rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .doc-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.25rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .doc-subtitle {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 0.5rem;
+        }
+
+        .doc-rating {
+            font-size: 0.8rem;
+            color: #4CAF50;
+            display: flex;
+            align-items: center;
+            justify-content: center; /* ⭐ căn giữa */
+            gap: 6px;
+            margin-bottom: 0.75rem;
+        }
+
+        .doc-actions {
+            display: flex;
+            justify-content: center;
+        }
+
+        .save-btn {
+            background: #f0f4ff;
+            border: 1px solid #d6e4ff;
+            border-radius: 8px;
+            padding: 6px 0;
+            font-size: 0.8rem;
+            color: #357edd;
+            cursor: pointer;
+            width: 100%; /* ⭐ full chiều rộng card */
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .save-btn:hover {
+            background: #e1edff;
+        }
+
+        .doc-info h4 {
+            font-size: 1rem;
+            margin: 0.5rem 0 0.25rem 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .share-btn {
+            background: #f0f4ff;
+            border: 1px solid #d6e4ff;
+            border-radius: 8px;
+            padding: 6px 0;
+            font-size: 0.8rem;
+            color: #357edd;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .share-btn:hover {
+            background: #e1edff;
+        }
+
+        .doc-info p {
+            font-size: 0.875rem;
+            color: #777;
+            margin: 0;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -120,9 +256,7 @@
 <body>
 <div layout:fragment="content">
     <div class="library-container">
-        <h2>Thư viện của tôi</h2>
-
-        <!-- Đã xem gần đây -->
+        <!-- Sections -->
         <section class="library-section">
             <div class="section-header">
                 <h3>Đã xem gần đây</h3>
@@ -131,7 +265,6 @@
             <div class="document-list" id="recentDocsContainer"></div>
         </section>
 
-        <!-- Đề xuất cho bạn -->
         <section class="library-section">
             <div class="section-header">
                 <h3>Đề xuất cho bạn</h3>
@@ -140,7 +273,6 @@
             <div class="document-list" id="recommendedDocsContainer"></div>
         </section>
 
-        <!-- Đã tải lên -->
         <section class="library-section">
             <div class="section-header">
                 <h3>Đã tải lên</h3>
@@ -149,7 +281,6 @@
             <div class="document-list" id="uploadedDocsContainer"></div>
         </section>
 
-        <!-- Tài liệu yêu thích -->
         <section class="library-section">
             <div class="section-header">
                 <h3>Tài liệu yêu thích</h3>
@@ -158,7 +289,6 @@
             <div class="document-list" id="fav_list"></div>
         </section>
 
-        <!-- Từ khóa học đã theo dõi -->
         <section class="library-section">
             <div class="section-header">
                 <h3>Từ khóa học bạn theo dõi</h3>
@@ -174,7 +304,7 @@
             fetchSection("recommend", "recommendedDocsContainer");
             fetchSection("getDocumentsUpload", "uploadedDocsContainer");
             fetchSection("documentsByCourseFollowed", "followedCourseDocsContainer");
-            fetchSection('fav_list', 'fav_list');
+            fetchSection("fav_list", "fav_list");
         });
 
         let pageMap = {
@@ -186,43 +316,92 @@
         };
 
         function fetchSection(apiKey, containerId) {
-            loadMore(apiKey, containerId);
-        }
-
-        function loadMore(apiKey, containerId) {
             const page = pageMap[apiKey]++;
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<div style="margin:auto;"><div id="lottie-loading-${apiKey}" style="height: 120px;"></div></div>`;
+
+            lottie.loadAnimation({
+                container: document.getElementById(`lottie-loading-${apiKey}`),
+                renderer: 'svg',
+                loop: true,
+                autoplay: true,
+                path: '/assets/json/paper-loading.json'
+            });
+
             fetch(`/v1/api/documents/${apiKey}?page=${page}&size=6`, {
                 method: "GET",
                 credentials: "include"
             })
                 .then(res => res.json())
                 .then(res => {
-                    const container = document.getElementById(containerId);
-
-                    if (res.statusCode !== 200 || !res.data?.content) {
-                        container.innerHTML = `<p style="color: #999;">Không có tài liệu nào.</p>`;
+                    if (res.statusCode !== 200 || !res.data?.content || res.data.content.length === 0) {
+                        container.innerHTML = `
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+                            <div id="lottie-${apiKey}" style="height:150px;"></div>
+                            <p style="color:#999; margin-top: 10px;">Không có tài liệu nào.</p>
+                        </div>`;
+                        container.classList.add("empty-list");
+                        lottie.loadAnimation({
+                            container: document.getElementById(`lottie-${apiKey}`),
+                            renderer: 'svg',
+                            loop: true,
+                            autoplay: true,
+                            path: '/assets/json/empty.json'
+                        });
                         return;
                     }
 
-                    const docs = res.data.content;
-
-                    docs.forEach(doc => {
+                    container.innerHTML = "";
+                    res.data.content.forEach(doc => {
                         const div = document.createElement("div");
                         div.className = "document-card";
                         div.onclick = () => window.location.href = `/documents/${doc.documentId}`;
                         div.innerHTML = `
-                    <div class="doc-thumbnail">
-                        <img src="${doc.coverImageUrl || '/assets/svg/icons/laptop.svg'}" alt="cover" style="width:100%; height:120px; object-fit:cover; border-radius:4px;" />
-                    </div>
-                    <div class="doc-info">
-                        <h4>${doc.title}</h4>
-                        <p>${doc.courseName} • ${new Date(doc.uploadedDate).toLocaleDateString()}</p>
-                    </div>
-                `;
+                        <div class="doc-thumbnail-wrapper">
+                            <div class="doc-thumbnail-box">
+                                <img class="doc-thumbnail-img" src="${doc.coverImageUrl || '/assets/svg/icons/laptop.svg'}" alt="cover" />
+                                <div class="doc-view-count">${doc.viewCount || 1}</div>
+                            </div>
+                        </div>
+                        <div class="doc-body">
+                            <h4 class="doc-title" title="${doc.title}">${doc.title}</h4>
+                            <p class="doc-subtitle">${doc.courseName || 'Tài liệu học thuật'}</p>
+
+                            <div class="doc-rating">
+                                <i class="ri-thumb-up-line" style="color: #4CAF50;"></i>
+                                <span class="like-text">${(doc.likes * 100) / (doc.likes + doc.dislikes) || 0}% (${doc.likes || 0})</span>
+                            </div>
+
+                            <div class="doc-actions">
+                                <button class="share-btn" data-id="${doc.documentId}"><i class="ri-share-line"></i> Share</button>
+                            </div>
+                        </div>
+                    `;
                         container.appendChild(div);
+                        initShareButtons();
                     });
                 })
-                .catch(err => console.error(`Lỗi khi load ${apiKey}`, err));
+                .catch(err => {
+                    container.innerHTML = `<p style="color: red;">Lỗi khi tải tài liệu!</p>`;
+                    console.error(`Lỗi khi load ${apiKey}`, err);
+                });
+        }
+
+        function initShareButtons() {
+            document.querySelectorAll('.share-btn').forEach(btn => {
+                const docId = btn.getAttribute('data-id');
+                btn.onclick = function (e) {
+                    e.stopPropagation();
+                    const url = `${window.location.origin}/documents/${docId}`;
+                    navigator.clipboard.writeText(url)
+                        .then(() => {
+                            Swal.fire("Đã sao chép!", "Link tài liệu đã được lưu vào clipboard.", "success");
+                        })
+                        .catch(() => {
+                            Swal.fire("Lỗi", "Không thể sao chép đường dẫn!", "error");
+                        });
+                };
+            });
         }
     </script>
 </div>
