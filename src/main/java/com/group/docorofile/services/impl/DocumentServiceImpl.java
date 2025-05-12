@@ -245,21 +245,14 @@ public class DocumentServiceImpl implements iDocumentService {
 
     @Override
     public Page<UserDocumentDTO> getSearchSuggestions(String keyword) {
-        Pageable limitFive = PageRequest.of(0, 5); // Giới hạn top 5 gợi ý
+        Pageable limitFive = PageRequest.of(0, 5);
+        Page<DocumentEntity> page = documentRepository.searchSuggestions(keyword, limitFive);
 
-        // Tìm kiếm tài liệu theo từ khóa
-        Page<DocumentEntity> documentPage = documentRepository.findAll(
-                DocumentSpecification.searchByKeyword(keyword), limitFive
-        );
-
-        // Lọc tài liệu đã bị xóa
-        documentPage = (Page<DocumentEntity>) documentPage.filter(doc -> doc.getStatus().equals(EDocumentStatus.PUBLIC));
-
-        if (documentPage.isEmpty()) {
+        if (page.isEmpty()) {
             throw new NotFoundError("Không có gợi ý phù hợp!");
         }
 
-        return documentPage.map(DocumentMapper::toUserDTO);
+        return page.map(DocumentMapper::toUserDTO);
     }
 
     @Override

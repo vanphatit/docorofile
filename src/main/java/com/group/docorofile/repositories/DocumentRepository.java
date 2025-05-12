@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -38,5 +39,9 @@ public interface DocumentRepository extends JpaRepository<DocumentEntity, UUID>,
     List<DocumentEntity> findByAuthor_UserId(UUID userId);
 
     Page<DocumentEntity> findByTitleContainingIgnoreCase(String keyword, Pageable pageable);
+
+    @Query("SELECT d FROM DocumentEntity d WHERE LOWER(d.title) LIKE LOWER(CONCAT('%', :keyword, '%')) AND d.status NOT IN ('DELETED', 'DRAFT') ORDER BY d.uploadedDate DESC")
+    Page<DocumentEntity> searchSuggestions(@Param("keyword") String keyword, Pageable pageable);
+
 }
 
