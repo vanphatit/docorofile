@@ -29,6 +29,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.util.Streamable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -145,6 +146,11 @@ public class DocumentServiceImpl implements iDocumentService {
         var document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new NotFoundError("Tài liệu không tồn tại!"));
 
+        // Kiểm tra xem tài liệu có bị xóa không
+        if (document.getStatus() == EDocumentStatus.DELETED) {
+            return new NotFoundError("Tài liệu đã bị xóa!");
+        }
+
         try {
             // Tăng viewCount
             document.setViewCount(document.getViewCount() + 1);
@@ -193,7 +199,7 @@ public class DocumentServiceImpl implements iDocumentService {
 
         // Chỉ trả về các tài liệu đã duyệt/public (ví dụ: status = APPROVED)
         List<UserDocumentDTO> filtered = documents.stream()
-                .filter(doc -> doc.getStatus().equals("APPROVED"))
+                .filter(doc -> doc.getStatus().equals(EDocumentStatus.PUBLIC))
                 .map(DocumentMapper::toUserDTO)
                 .toList();
 
@@ -224,6 +230,7 @@ public class DocumentServiceImpl implements iDocumentService {
                 return new PageImpl<>(adminDocs.subList(start, end), PageRequest.of(page, size), adminDocs.size());
             } else {
                 List<UserDocumentDTO> userDocs = documents.stream()
+                        .filter(doc -> doc.getStatus().equals(EDocumentStatus.PUBLIC))
                         .map(DocumentMapper::toUserDTO)
                         .toList();
                 int start = Math.min(page * size, userDocs.size());
@@ -240,8 +247,13 @@ public class DocumentServiceImpl implements iDocumentService {
     public Page<UserDocumentDTO> getSearchSuggestions(String keyword) {
         Pageable limitFive = PageRequest.of(0, 5); // Giới hạn top 5 gợi ý
 
-        Page<DocumentEntity> documentPage = documentRepository
-                .findByTitleContainingIgnoreCase(keyword, limitFive);
+        // Tìm kiếm tài liệu theo từ khóa
+        Page<DocumentEntity> documentPage = documentRepository.findAll(
+                DocumentSpecification.searchByKeyword(keyword), limitFive
+        );
+
+        // Lọc tài liệu đã bị xóa
+        documentPage = (Page<DocumentEntity>) documentPage.filter(doc -> doc.getStatus().equals(EDocumentStatus.PUBLIC));
 
         if (documentPage.isEmpty()) {
             throw new NotFoundError("Không có gợi ý phù hợp!");
@@ -268,7 +280,10 @@ public class DocumentServiceImpl implements iDocumentService {
                 List<AdminDocumentDTO> pagedList = adDocDTO.subList(start, end);
                 return new PageImpl<>(pagedList, PageRequest.of(page, size), adDocDTO.size());
             } else {
-                List<UserDocumentDTO> userDocDTO = documents.stream().map(DocumentMapper::toUserDTO).toList();
+                List<UserDocumentDTO> userDocDTO = documents.stream()
+                        .filter(doc -> doc.getStatus().equals(EDocumentStatus.PUBLIC))
+                        .map(DocumentMapper::toUserDTO).toList();
+                // Lọc tài liệu đã bị xóa
                 int start = Math.min(page * size, userDocDTO.size());
                 int end = Math.min(start + size, userDocDTO.size());
                 List<UserDocumentDTO> pagedList = userDocDTO.subList(start, end);
@@ -580,6 +595,9 @@ public class DocumentServiceImpl implements iDocumentService {
         DocumentEntity document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new RuntimeException("Tài liệu không tồn tại"));
         Specification<DocumentEntity> spec = DocumentSpecification.relatedDocuments(document);
+        // Loại bỏ tài liệu đã bị xóa và draft
+        spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.notEqual(root.get("status"), EDocumentStatus.DELETED));
+        spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.notEqual(root.get("status"), EDocumentStatus.DRAFT));
         return documentRepository.findAll(spec, PageRequest.of(page, size));
     }
 
@@ -602,6 +620,10 @@ public class DocumentServiceImpl implements iDocumentService {
         List<UUID> viewedDocumentIds = documentViewRepository.findViewedDocumentsByMemberId(memberId);
 
         Specification<DocumentEntity> spec = DocumentSpecification.recommendDocuments(courseIds, viewedDocumentIds);
+
+        // Loại bỏ tài liệu đã bị xóa và draft
+        spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.notEqual(root.get("status"), EDocumentStatus.DELETED));
+        spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.notEqual(root.get("status"), EDocumentStatus.DRAFT));
 
         return documentRepository.findAll(spec, PageRequest.of(page, size));
     }
@@ -648,24 +670,33 @@ public class DocumentServiceImpl implements iDocumentService {
 
     @Override
     public List<DocumentEntity> getDocumentByCourseId(UUID courseId) {
-        return documentRepository.findByCourse_CourseId(courseId);
+        List<DocumentEntity> list = documentRepository.findByCourse_CourseId(courseId);
+        list.removeIf(document -> document.getStatus() == EDocumentStatus.DELETED || document.getStatus() == EDocumentStatus.DRAFT);
+        return list;
     }
 
     @Override
     public List<DocumentEntity> getDocumentByUniversityId(String univName) {
-        return documentRepository.findByCourse_University_UnivName(univName);
+        List<DocumentEntity> list = documentRepository.findByCourse_University_UnivName(univName);
+        list.removeIf(document -> document.getStatus() == EDocumentStatus.DELETED || document.getStatus() == EDocumentStatus.DRAFT);
+        return list;
     }
 
     @Override
     public List<DocumentEntity> getDocumentByUniversityAndCourse(String univName, String courseName) {
-        return documentRepository.findByCourse_University_UnivNameAndCourse_CourseName(univName, courseName);
+        List<DocumentEntity> list = documentRepository.findByCourse_University_UnivNameAndCourse_CourseName(univName, courseName);
+        list.removeIf(document -> document.getStatus() == EDocumentStatus.DELETED || document.getStatus() == EDocumentStatus.DRAFT);
+        return list;
     }
 
     @Override
     public Page<DocumentEntity> getDocumentByCourseAndFollowedByMember(UUID memberId, int page, int size) {
         try {
             List<UUID> courseIds = courseRepository.findFollowedCoursesByMemberId(memberId);
-            return documentRepository.findAll(DocumentSpecification.recommendDocuments(courseIds, null), PageRequest.of(page, size));
+            return documentRepository.findAll(DocumentSpecification.recommendDocuments(courseIds, null)
+                    .and((root, query, criteriaBuilder) -> criteriaBuilder.notEqual(root.get("status"), EDocumentStatus.DELETED)
+            ).and((root, query, criteriaBuilder) -> criteriaBuilder.notEqual(root.get("status"), EDocumentStatus.DRAFT)
+            ), PageRequest.of(page, size));
         } catch (RuntimeException e) {
             throw new InternalServerError(e.getMessage());
         }
@@ -675,6 +706,8 @@ public class DocumentServiceImpl implements iDocumentService {
     public Page<UserDocumentDTO> getDocumentByCourseAndFollowedByMemberForUI(UUID memberId, int page, int size) {
         try {
             Page<DocumentEntity> documents = getDocumentByCourseAndFollowedByMember(memberId, page, size);
+            documents.getContent().removeIf(document -> document.getStatus() == EDocumentStatus.DELETED || document.getStatus() == EDocumentStatus.DRAFT);
+
             return documents.map(DocumentMapper::toUserDTO);
         } catch (RuntimeException e) {
             throw new InternalServerError(e.getMessage());
