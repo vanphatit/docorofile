@@ -263,8 +263,8 @@
             console.log('✅ Current User Info:', result.data);
 
             // Cập nhật thông tin người dùng vào UI
-            document.getElementById('fullName').innerText = result.data.name || 'Người dùng';
-            document.getElementById('membershipName').innerText = result.data.current_plan || 'Thành viên';
+            document.getElementById('fullName').innerText = result.data.name || 'Khách';
+            document.getElementById('membershipName').innerText = result.data.current_plan || 'GUEST';
             if (result.data.role === 'ROLE_MODERATOR') {
                 document.getElementById('membershipName').innerText = 'Moderator';
                 document.getElementById('membershipName').classList.add('text-danger');
