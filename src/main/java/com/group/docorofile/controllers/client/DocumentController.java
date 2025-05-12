@@ -27,7 +27,11 @@ public class DocumentController {
     @PreAuthorize("hasAnyRole('ROLE_MEMBER')")
     @GetMapping("/uploads")
     public String viewUploads() {
-        return "document/document_uploads";
+        try {
+            return "document/document_uploads";
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi xử lý: " + e.getMessage());
+        }
     }
 
     @PreAuthorize("hasAnyRole('ROLE_MEMBER')")

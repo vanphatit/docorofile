@@ -115,7 +115,7 @@
                     </a>
                 </li>
                 <li id="li-upload" class="menu-item">
-                    <a href="/documents/uploads" class="menu-link">
+                    <a href="/documents/uploads" onclick="handleUploadClick(event)" class="menu-link">
                         <i class="menu-icon tf-icons ri-chat-upload-line"></i>
                         <div data-i18n="Upload">Upload</div>
                     </a>
@@ -221,6 +221,28 @@
 </div>
 
 <script>
+    function handleUploadClick(event) {
+        event.preventDefault(); // Không cho chuyển trang mặc định
+
+        fetch('/documents/uploads', {
+            method: 'GET',
+            credentials: 'include'
+        })
+            .then(res => {
+                if (res.status === 403) {
+                    window.location.href = '/error?status=403'; // Chuyển đến trang lỗi
+                } else if (res.ok) {
+                    window.location.href = '/documents/uploads'; // Cho phép chuyển nếu hợp lệ
+                } else {
+                    window.location.href = '/error?status=' + res.status;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                window.location.href = '/error?status=500';
+            });
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
         try {
             const response = await fetch('/v1/api/auth/current-user', {
