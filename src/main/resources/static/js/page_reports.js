@@ -87,7 +87,7 @@ function showReportModal(documentId) {
             console.log("Doc", doc)
             // Gán dữ liệu vào modal
             $.ajax({
-                url: `/v1/api/reports/${documentId}`, // Gọi API lấy danh sách chi tiết
+                url: `/v1/api/reports/${documentId}?isHard=false`, // Gọi API lấy danh sách chi tiết
                 type: 'GET',
                 dataType: 'json',
                 success: function(response) {
