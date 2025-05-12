@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Repository
 public interface DocumentRepository extends JpaRepository<DocumentEntity, UUID>, JpaSpecificationExecutor<DocumentEntity> {
-    @Query("SELECT COUNT(d) FROM DocumentEntity d WHERE DATE(d.uploadedDate) = :date AND d.author.userId = :memberId")
+    @Query("SELECT COUNT(d) FROM DocumentEntity d WHERE DATE(d.uploadedDate) = :date AND d.author.userId = :memberId AND d.status = 'PUBLIC'")
     int countDocumentUploadInDay (LocalDate date, UUID memberId);
 
     // Kiểm tra xem user đã tải lên tài liệu này chưa
