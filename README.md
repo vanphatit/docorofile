@@ -108,12 +108,12 @@ src/
 
 ## 🧑‍💻 Authors
 
-- Lê Văn Phát - 22110196  
-- Huỳnh Thanh Duy - 22110118  
-- Trần Như Quỳnh - 22110218  
-- Nguyễn Chí Thanh - 22110226
+- Lê Văn Phát
+- Huỳnh Thanh Duy
+- Trần Như Quỳnh 
+- Nguyễn Chí Thanh
 
-> University of Technology and Education HCMC – Faculty of Information Technology  
+> HCMC University of Technology and Education – Faculty of Information Technology  
 > Supervisor: Ph.D. Mai Anh Tho
 
 ---
