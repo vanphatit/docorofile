@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết khóa học</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        .document-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .document-card {
+            background: #fff;
+            border: 1px solid #eaeaea;
+            border-radius: 6px;
+            padding: 1rem;
+            width: 200px;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        document-card:hover {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .doc-thumbnail img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .doc-info h4 {
+            font-size: 1rem;
+            margin: 0;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .doc-info p {
+            font-size: 0.875rem;
+            color: #777;
+        }
+
+        h4.fw-bold {
+            color: #000;
+            font-size: 1.25rem;
+        }
+        .btn-circle-purple {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #8843e4;
+            background-color: white;
+            color: #8843e4;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn-circle-purple:hover {
+            background-color: #f5f0ff;
+        }
+
+        .btn-circle-purple:focus {
+            box-shadow: 0 0 0 0.25rem rgba(136, 67, 228, 0.25);
+        }
+
+        .arrow-icon {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: #8843e4;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container-fluid mt-4" layout:fragment="content">
+    <!-- HEADER KHÓA HỌC -->
+    <div class="rounded-3 mb-4 overflow-hidden">
+        <div class="p-4" style="background: linear-gradient(135deg, #e9fbe4 0%, #d6f5ca 100%);">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-white rounded-circle p-2 shadow-sm me-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                            <span style="font-size: 28px;">📁</span>
+                        </div>
+                        <div>
+                            <h3 class="mb-1 fw-bold" id="courseTitle">Tên Khóa Học</h3>
+                            <p class="mb-1 text-muted" id="universityName">Trường ABC</p>
+                            <div class="d-flex align-items-center mt-2">
+                                <div class="d-flex align-items-center me-3">
+                                    <span class="bg-white rounded-pill px-2 py-1 shadow-sm d-inline-flex align-items-center">
+                                        <span style="color: #36a635;">📄</span>
+                                        <span class="ms-1 fw-medium"><span id="totalDocuments">0</span> tài liệu</span>
+                                    </span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <span class="bg-white rounded-pill px-2 py-1 shadow-sm d-inline-flex align-items-center">
+                                        <span style="color: #8843e4;">👥</span>
+                                        <span class="ms-1 fw-medium"><span id="totalFollowers">0</span> sinh viên</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mt-3 mt-lg-0 text-lg-end">
+                    <div id="followBtnWrapper">
+                        <!-- Nút Follow sẽ render ở đây -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mb-5">
+
+        <h4 class="fw-bold mt-4">Tài liệu thuộc khóa học</h4>
+        <div class="document-list" id="docsByCourse"></div>
+        <div class="d-flex justify-content-between align-items-center mt-3" id="paginationByCourse" style="display: none;">
+            <button class="btn btn-circle-purple" onclick="changePage('course', -1)">
+                <svg class="arrow-icon" viewBox="0 0 24 24">
+                    <path d="M15 6l-6 6 6 6"></path>
+                </svg>
+            </button>
+            <span class="text-muted">Trang <span id="pageByCourse">1</span></span>
+            <button class="btn btn-circle-purple" onclick="changePage('course', 1)">
+                <svg class="arrow-icon" viewBox="0 0 24 24">
+                    <path d="M9 6l6 6-6 6"></path>
+                </svg>
+            </button>
+        </div>
+
+        <h4 class="fw-bold mt-5">Tài liệu đã yêu thích</h4>
+        <div class="document-list" id="docsLiked"></div>
+        <!-- Liked -->
+        <div class="d-flex justify-content-between align-items-center mt-3" id="paginationLiked" style="display: none;">
+            <button class="btn btn-circle-purple" onclick="changePage('liked', -1)">
+                <svg class="arrow-icon" viewBox="0 0 24 24">
+                    <path d="M15 6l-6 6 6 6"></path>
+                </svg>
+            </button>
+            <span class="text-muted">Trang <span id="pageLiked">1</span></span>
+            <button class="btn btn-circle-purple" onclick="changePage('liked', 1)">
+                <svg class="arrow-icon" viewBox="0 0 24 24">
+                    <path d="M9 6l6 6-6 6"></path>
+                </svg>
+            </button>
+        </div>
+
+
+        <h4 class="fw-bold mt-5">Tài liệu liên quan</h4>
+        <div class="document-list" id="docsRelated"></div>
+        <!-- Related -->
+        <div class="d-flex justify-content-between align-items-center mt-3" id="paginationRelated" style="display: none;">
+            <button class="btn btn-circle-purple" onclick="changePage('related', -1)">
+                <svg class="arrow-icon" viewBox="0 0 24 24">
+                    <path d="M15 6l-6 6 6 6"></path>
+                </svg>
+            </button>
+            <span class="text-muted">Trang <span id="pageRelated">1</span></span>
+            <button class="btn btn-circle-purple" onclick="changePage('related', 1)">
+                <svg class="arrow-icon" viewBox="0 0 24 24">
+                    <path d="M9 6l6 6-6 6"></path>
+                </svg>
+            </button>
+        </div>
+
+
+    </div>
+
+    <a href="/member/courses" class="btn btn-outline-secondary btn-sm mb-2">
+        ← Quay lại danh sách khóa học
+    </a>
+
+
+
+</div>
+
+<div layout:fragment="scripts">
+    <script>
+        let pageByCourse = 0;
+        let pageLiked = 0;
+        let pageRelated = 0;
+        const pageSize = 6;
+
+        const courseId = new URLSearchParams(window.location.search).get("courseId");
+        let courseName = "";
+        const followApi = "/v1/api/follow";
+
+        function followCourse(courseId, courseName) {
+            $.post(`${followApi}?courseId=${courseId}`)
+                .done(() => {
+                    showToast(`Đã theo dõi khóa học <b>${courseName}</b>`, "success");
+                    setTimeout(() => location.reload(), 1000);
+                })
+                .fail(err => {
+                    showToast(err.responseJSON?.message || "Lỗi theo dõi khóa học", "error");
+                });
+        }
+
+        function unfollowCourse(courseId, courseName) {
+            $.ajax({
+                url: `${followApi.replace("/follow", "/unfollow")}?courseId=${courseId}`,
+                type: 'DELETE'
+            })
+                .done(() => {
+                    showToast(`Đã bỏ theo dõi khóa học <b>${courseName}</b>`, "warning");
+                    setTimeout(() => location.reload(), 1000);
+                })
+                .fail(err => {
+                    showToast(err.responseJSON?.message || "Lỗi bỏ theo dõi khóa học", "error");
+                });
+        }
+
+        function renderFollowBtn(courseId, courseName, isFollowed) {
+            const wrapper = document.getElementById("followBtnWrapper");
+            const btnHtml = isFollowed
+                ? `<button class="btn shadow-sm position-relative"
+                      style="background-color: white; border: 2px solid #dc3545; color: #dc3545; border-radius: 50px; padding: 8px 20px; font-weight: 500; min-width: 120px;"
+                      onclick="unfollowCourse('${courseId}', '${courseName}')">
+                      <i class="bi bi-x-circle me-1"></i> Unfollow
+                   </button>`
+                : `<button class="btn shadow-sm position-relative"
+                      style="background-color: white; border: 2px solid #8843e4; color: #8843e4; border-radius: 50px; padding: 8px 20px; font-weight: 500; min-width: 120px;"
+                      onclick="followCourse('${courseId}', '${courseName}')">
+                      <i class="bi bi-plus-circle me-1"></i> Follow
+                   </button>`;
+            wrapper.innerHTML = btnHtml;
+        }
+
+        function reloadFollowStatus() {
+            fetch(`/v1/api/followed`)
+                .then(res => res.json())
+                .then(res => {
+                    const followedCourses = res.data || [];
+                    const isFollowed = followedCourses.some(c => c.courseId === courseId);
+                    renderFollowBtn(courseId, courseName, isFollowed);
+                });
+        }
+
+        function showToast(message, type = "success") {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: type,
+                html: message,
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true
+            });
+        }
+
+        function loadFollowStatusAndDocuments() {
+            const container = document.getElementById("documentList");
+            container.innerHTML = `<p class="text-muted">Đang tải tài liệu...</p>`;
+
+            fetch(`/v1/api/course/documents?courseId=${courseId}`)
+                .then(res => res.json())
+                .then(res => {
+                    container.innerHTML = "";
+                    const documents = res.data || [];
+
+                    if (res.statusCode === 200 && documents.length > 0) {
+                        courseName = documents[0].courseName || "Khóa học";
+                        reloadFollowStatus();
+
+                        documents.forEach(doc => {
+                            const div = document.createElement("div");
+                            div.className = "document-card";
+                            div.onclick = () => window.location.href = `/documents/${doc.documentId}`;
+                            div.innerHTML = `
+                                <div class="doc-thumbnail">
+                                    <img src="${doc.coverImageUrl || '/assets/svg/icons/laptop.svg'}" alt="cover" />
+                                </div>
+                                <div class="doc-info">
+                                    <h4>${doc.title}</h4>
+                                    <p>${doc.courseName} • ${new Date(doc.uploadedDate).toLocaleDateString()}</p>
+                                </div>
+                            `;
+                            container.appendChild(div);
+                        });
+                    } else {
+                        container.innerHTML = `<p class="text-muted">Không có tài liệu nào.</p>`;
+                    }
+                })
+                .catch(() => {
+                    container.innerHTML = `<p class="text-danger">Lỗi khi tải dữ liệu tài liệu.</p>`;
+                });
+        }
+
+
+        function loadCourseHeader() {
+            fetch(`/v1/api/course/detail?courseId=${courseId}`)
+                .then(res => res.json())
+                .then(res => {
+                    const course = res.data;
+                    if (!course) return;
+
+                    document.getElementById("courseTitle").textContent = course.courseName;
+                    document.getElementById("universityName").textContent = course.universityName;
+                    document.getElementById("totalDocuments").textContent = course.totalDocuments || 0;
+                    document.getElementById("totalFollowers").textContent = course.totalFollowers || 0;
+                });
+        }
+
+
+
+        function loadSectionDocuments(type, targetId, baseUrl, page, paginationId, pageLabelId) {
+            const container = document.getElementById(targetId);
+            const pagination = document.getElementById(paginationId);
+            const pageDisplay = document.getElementById(pageLabelId);
+
+            container.innerHTML = `<p class="text-muted">Đang tải...</p>`;
+            pagination.style.display = "none";
+
+            // Kiểm tra nếu có ? thì nối bằng &, không thì nối bằng ?
+            const url = baseUrl.includes('?')
+                ? `${baseUrl}&page=${page}&size=${pageSize}`
+                : `${baseUrl}?page=${page}&size=${pageSize}`;
+
+            fetch(url)
+                .then(res => res.json())
+                .then(res => {
+                    container.innerHTML = "";
+                    const documents = res.data?.content || res.data || [];
+
+                    if (documents.length === 0) {
+                        container.innerHTML = `<p class="text-muted">Không có tài liệu.</p>`;
+                        return;
+                    }
+
+                    documents.forEach(doc => {
+                        const div = document.createElement("div");
+                        div.className = "document-card";
+                        div.onclick = () => window.location.href = `/documents/${doc.documentId}`;
+                        div.innerHTML = `
+                    <div class="doc-thumbnail">
+                        <img src="${doc.coverImageUrl || '/assets/svg/icons/laptop.svg'}" />
+                    </div>
+                    <div class="doc-info">
+                        <h4 class="text-dark fw-semibold">${doc.title}</h4>
+                        <p>${doc.courseName} • ${new Date(doc.uploadedDate).toLocaleDateString()}</p>
+                    </div>`;
+                        container.appendChild(div);
+                    });
+
+                    pagination.style.display = "flex";
+                    pageDisplay.textContent = page + 1;
+                })
+                .catch(() => {
+                    container.innerHTML = `<p class="text-danger">Lỗi khi tải tài liệu ${type}.</p>`;
+                });
+        }
+
+
+
+
+
+        function changePage(type, direction) {
+            if (type === 'course') {
+                pageByCourse += direction;
+                if (pageByCourse < 0) pageByCourse = 0;
+                loadSectionDocuments("thuộc khóa", "docsByCourse", `/v1/api/course/documents?courseId=${courseId}`, pageByCourse, "paginationByCourse", "pageByCourse");
+            } else if (type === 'liked') {
+                pageLiked += direction;
+                if (pageLiked < 0) pageLiked = 0;
+                loadSectionDocuments("yêu thích", "docsLiked", `/v1/api/documents/fav_list`, pageLiked, "paginationLiked", "pageLiked");
+            } else if (type === 'related') {
+                pageRelated += direction;
+                if (pageRelated < 0) pageRelated = 0;
+                loadSectionDocuments("liên quan", "docsRelated", `/v1/api/documents/recommend`, pageRelated, "paginationRelated", "pageRelated");
+            }
+        }
+
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadCourseHeader();
+            reloadFollowStatus();
+            loadSectionDocuments("thuộc khóa", "docsByCourse", `/v1/api/course/documents?courseId=${courseId}`, pageByCourse, "paginationByCourse", "pageByCourse");
+            loadSectionDocuments("yêu thích", "docsLiked", `/v1/api/documents/fav_list`, pageLiked, "paginationLiked", "pageLiked");
+            loadSectionDocuments("liên quan", "docsRelated", `/v1/api/documents/recommend`, pageRelated, "paginationRelated", "pageRelated");
+            loadFollowStatusAndDocuments();
+        });
+
+    </script>
+</div>
+</body>
+</html>

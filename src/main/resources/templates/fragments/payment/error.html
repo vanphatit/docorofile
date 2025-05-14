@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Lỗi - Tài khoản đã Premium</title>
+</head>
+<body>
+<section layout:fragment="content">
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh">
+        <div class="status-box text-center fail">
+            <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+            <div class="d-flex justify-content-center">
+                <div class="text-center">
+                    <lottie-player
+                            src="/assets/json/error.json"
+                            background="transparent"
+                            speed="1"
+                            style="width: 200px; height: 200px; display: inline-block; margin-bottom: 1rem;"
+                            loop autoplay>
+                    </lottie-player>
+                </div>
+            </div>
+
+            <div class="status-code">Bạn đã là thành viên Premium</div>
+            <p class="message">Bạn không thể nâng cấp thêm nữa.</p>
+
+            <a href="/" class="btn d-grid w-100" style="margin-top:30px; color: #dc2626; border: 1px solid #dc2626;">
+                Go to home
+            </a>
+        </div>
+    </div>
+
+    <style>
+        .status-box {
+            background-color: #fff;
+            border: 1px solid #e0f2fe;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 550px;
+            width: 100%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .status-code {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #5c61e6;
+            margin-top: 0.5rem;
+        }
+
+        .message {
+            font-size: 1.1rem;
+            color: #444;
+        }
+
+        .fail .status-code {
+            color: #dc2626;
+        }
+
+        .fail .message {
+            /*color: #991b1b;*/
+            color: #000;
+        }
+
+        .fail {
+            border-color: #fecaca;
+            background-color: #fff1f2;
+        }
+    </style>
+</section>
+</body>
+</html>

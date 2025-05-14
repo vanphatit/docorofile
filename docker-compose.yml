@@ -1,0 +1,46 @@
+services:
+
+  mysql:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: docorofile
+      MYSQL_USER: docorofile
+      MYSQL_PASSWORD: 12312345
+    ports:
+      - "3305:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - docorofile_net
+
+  docorofile_app:
+    build: .
+    ports:
+      - "9091:9091"
+    volumes:
+      - ./uploads:/app/uploads
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+    depends_on:
+      - mysql
+    networks:
+      - docorofile_net
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/www/certbot:/var/www/certbot
+    command: certonly --webroot -w /var/www/certbot --keep-until-expiring --email phatnet3@gmail.com -d docorofile.phatit.id.vn --agree-tos
+
+volumes:
+  db_data:
+  certbot-ssl:
+  certbot-challenge:
+
+networks:
+  docorofile_net:
+    driver: bridge

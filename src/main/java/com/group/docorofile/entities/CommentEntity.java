@@ -1,30 +1,58 @@
 package com.group.docorofile.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.github.f4b6a3.uuid.UuidCreator;
-import com.group.docorofile.enums.EUserRole;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
+@SuperBuilder
 @Table(name = "comments")
 @Getter @Setter @Builder
 @NoArgsConstructor @AllArgsConstructor
-public class CommentEntity {
+public class CommentEntity implements Serializable {
     @Id
-    private UUID commentId = UuidCreator.getTimeOrdered();
-    private String content;
-    private boolean isDeleted;
-    private Date createdOn;
-    private Date modifiedOn;
+    private UUID commentId;
 
-    @ManyToOne
-    @JoinColumn(name = "document_id")
+    private String content;
+
+    @ManyToOne(optional = false)
+    private MemberEntity author;
+
+    @ManyToOne(optional = false)
     private DocumentEntity document;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    private LocalDateTime createdOn;
+    private LocalDateTime deletedOn;
+
+    // Quan hệ đệ quy: Bình luận có thể có cha (optional)
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "parent_comment_id")
+    @ToString.Exclude
+    @JsonBackReference
+    private CommentEntity parentComment;
+
+    // Danh sách các bình luận con (replies)
+    @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<CommentEntity> replies = new ArrayList<>();
+
+    @PrePersist
+    public void prePersist() {
+        if (this.commentId == null) {
+            this.commentId = UuidCreator.getTimeOrdered();
+        }
+        if (this.createdOn == null) {
+            this.createdOn = LocalDateTime.now();
+        }
+    }
 }

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/auth/layout-auth}">
+<body>
+<div layout:fragment="content" class="card-body mt-1">
+    <h4 class="mb-1">Verify your email ✉️</h4>
+    <p class="text-start mb-0">
+        Account activation link sent to your email address: <span class="h6" th:text="${email}">hello@example.com</span>
+        Please
+        follow the link inside to continue.
+    </p>
+    <p class="text-center mb-0">
+        Didn't get the mail?
+        <a href="javascript:void(0);"> Resend </a>
+    </p>
+</div>
+
+</body>
+</html>

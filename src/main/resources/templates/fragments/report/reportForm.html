@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+<div class="container-fluid mt-3" layout:fragment="content">
+    <!-- Modal -->
+    <div id="reportFormModal" class="modal fade" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-simple modal-enable-otp modal-dialog-centered">
+            <div class="modal-content">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-body p-0">
+                    <div class="text-center mb-6">
+                        <h4 class="mb-2">BÁO CÁO TÀI LIỆU</h4>
+                        <p>Có phải tài liệu này đang có vấn đề không?</p>
+                    </div>
+                    <form id="enableOTPForm" class="row g-5" onsubmit="return false">
+                        <div class="col-12">
+                            <div class="input-group input-group-merge">
+                                <div class="form-floating form-floating-outline">
+                                    <textarea id="modalReport" name="modalReport"
+                                              class="form-control phone-number-otp-mask" rows="6"></textarea>
+                                    <label for="modalReport">Nội dung</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 d-flex flex-wrap justify-content-center gap-4 row-gap-4">
+                            <button type="submit" class="btn btn-primary">Báo cáo</button>
+                            <button type="reset" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+<div layout:fragment="scripts">
+    <script>
+        const docId = '1f025cb6-ef3f-6ec9-95e9-ebdd6c5b1bc0';
+        const userId = '1f01dd4a-40c7-6ce1-a7ef-1d4bf3de14b1';
+
+        document.getElementById('btnReport').addEventListener('click', function () {
+            var myModal = new bootstrap.Modal(document.getElementById('reportFormModal'));
+            myModal.show();
+        });
+
+        $('#enableOTPForm').on('submit', function (e) {
+            e.preventDefault();
+
+            const reportDetail = $('#modalReport').val();
+
+            $.ajax({
+                url: '/v1/api/reports/create',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    reportedDocId: docId,
+                    reporterId: userId,
+                    detail: reportDetail
+                }),
+                success: function (response) {
+                    alert("Báo cáo thành công!");
+                    $('#modalReport').val('');
+                    var modal = bootstrap.Modal.getInstance(document.getElementById('reportFormModal'));
+                    modal.hide();
+                },
+                error: function (xhr) {
+                    alert("Có lỗi xảy ra: " + xhr.responseText);
+                }
+            });
+        });
+    </script>
+</div>
+</body>
+</html>

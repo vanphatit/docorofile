@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title layout:fragment="title">Trò chuyện</title>
+</head>
+<body>
+<div class="layout-wrapper layout-navbar-full layout-horizontal layout-without-menu">
+    <div class="layout-container container-fluid" layout:fragment="content">
+        <!-- Content -->
+        <div class="container-xxl flex-grow-1 container-p-y">
+            <div class="app-chat card overflow-hidden">
+                <div class="row g-0">
+                    <!-- Chat & Contacts - will be loaded dynamically -->
+                    <div id="chat-contacts-wrapper" class="col app-chat-contacts app-sidebar flex-grow-0 overflow-hidden border-end">
+                        <div class="text-center p-5">Loading...</div>
+                    </div>
+                    <!-- /Chat contacts -->
+                    <!-- Chat History -->
+                    <div class="col app-chat-history">
+                        <div class="chat-history-wrapper">
+                            <div class="chat-history-header border-bottom">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex overflow-hidden align-items-center">
+                                        <div class="flex-shrink-0 avatar avatar-group">
+                                            <span class="avatar-initial rounded-circle bg-label-primary fs-5" id="room-avatar">#</span>
+                                        </div>
+                                        <div class="chat-contact-info flex-grow-1 ms-4">
+                                            <h6 class="m-0 fw-bold" id="room-title">Tên phòng</h6>
+                                            <small class="text-muted" id="room-members">-- thành viên</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chat-history-body">
+                                <ul class="list-unstyled chat-history">
+                                    <!-- Message List -->
+                                </ul>
+                            </div>
+                            <!-- Chat message form -->
+                            <div class="chat-history-footer">
+                                <form class="form-send-message d-flex justify-content-between align-items-center">
+                                    <input
+                                            class="form-control message-input me-4 shadow-none"
+                                            placeholder="Type your message here..." />
+                                    <div class="message-actions d-flex align-items-center">
+                                        <button class="btn btn-primary d-flex send-msg-btn">
+                                            <span class="align-middle">Gửi</span>
+                                            <i class="ri-send-plane-line ri-16px ms-md-2 ms-0"></i>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /Chat History -->
+                    <div class="app-overlay"></div>
+                </div>
+            </div>
+        </div>
+        <!--/ Content -->
+        <div class="content-backdrop fade"></div>
+    </div>
+</div>
+<div layout:fragment="scripts">
+    <script th:src="@{/js/app-chat.js}"></script>
+    <script>
+        window.currentUserId = '[[${currentUser.userId}]]';
+        if (![[${hasGroupChat}]]) {
+            document.getElementById("no-group-message").style.display = "block";
+            document.getElementById("chat-history-container").style.display = "none";
+        } else {
+            document.getElementById("no-group-message").style.display = "none";
+            document.getElementById("chat-history-container").style.display = "block";
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</div>
+</body>
+</html>

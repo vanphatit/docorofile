@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en"
+      class="light-style layout-navbar-fixed layout-menu-fixed layout-compact"
+      data-theme="theme-default" data-assets-path="../../assets/"
+      data-template="vertical-menu-template" data-style="light"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý tài liệu</title>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+    <style>
+        .badge-status {
+            padding: 0.35em 0.65em;
+            border-radius: 0.25rem;
+            font-size: 0.8em;
+            font-weight: 500;
+            color: white;
+        }
+        .status-PUBLIC { background-color: #28a745; }
+        .status-DRAFT { background-color: #6c757d; }
+        .status-FLAGGED { background-color: #ffc107; }
+        .status-DELETED { background-color: #dc3545; }
+
+        .highlight-likes { background-color: #fff3cd; }
+        .highlight-dislikes { background-color: #f8d7da; }
+        .highlight-views { background-color: #d1ecf1; }
+        .highlight-report { background-color: #f8d7da; border-left: 4px solid #dc3545; }
+    </style>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="container py-4">
+        <h3 class="mb-3">Quản lý tài liệu</h3>
+
+        <div class="row g-2 mb-3">
+            <div class="col-md"><input type="date" class="form-control" id="filterUploadDate"></div>
+            <div class="col-md"><select id="filterUniversity" class="form-select"></select></div>
+            <div class="col-md"><select id="filterCourse" class="form-select"></select></div>
+            <div class="col-md">
+                <select id="filterStatus" class="form-select">
+                    <option value="">-- Trạng thái --</option>
+                    <option value="PUBLIC">Public</option>
+                    <option value="DRAFT">Draft</option>
+                    <option value="FLAGGED">Flagged</option>
+                    <option value="DELETED">Deleted</option>
+                </select>
+            </div>
+            <div class="col-md">
+                <select id="sortBy" class="form-select">
+                    <option value="">-- Sắp xếp theo --</option>
+                    <option value="likes">Lượt thích</option>
+                    <option value="dislikes">Lượt không thích</option>
+                    <option value="views">Lượt xem</option>
+                    <option value="newest">Mới nhất</option>
+                    <option value="oldest">Cũ nhất</option>
+                    <option value="report">Lượt báo cáo</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-datatable table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Tiêu đề</th>
+                        <th>Khóa học</th>
+                        <th>Trường</th>
+                        <th>Trạng thái</th>
+                        <th>Lượt xem</th>
+                        <th>Thích</th>
+                        <th>Không thích</th>
+                        <th>Report</th>
+                        <th>Ngày upload</th>
+                        <th>Hành động</th>
+                    </tr>
+                    </thead>
+                    <tbody id="adminDocumentTableBody"></tbody>
+                </table>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div id="adminInfo" class="dataTables_info" role="status" aria-live="polite"></div>
+                </div>
+                <div class="col-md-6 d-flex justify-content-end">
+                    <ul class="pagination" id="adminPagination"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script th:inline="javascript">
+        let currentPage = 0;
+        let totalPages = 1;
+
+        async function fetchFilterData() {
+            const [courses, universities] = await Promise.all([
+                fetch("/v1/api/courses/all").then(res => res.json()),
+                fetch("/v1/api/universities/tags").then(res => res.json())
+            ]);
+
+            const courseSelect = document.getElementById("filterCourse");
+            courseSelect.innerHTML = '<option value="">-- Khóa học --</option>';
+            (courses.data || []).forEach(c => {
+                courseSelect.innerHTML += `<option value="${c.courseId}">${c.courseName}</option>`;
+            });
+
+            const universitySelect = document.getElementById("filterUniversity");
+            universitySelect.innerHTML = '<option value="">-- Trường --</option>';
+            (universities.data || []).forEach(u => {
+                universitySelect.innerHTML += `<option value="${u.univId}">${u.univName}</option>`;
+            });
+        }
+
+        function confirmDelete(id) {
+            Swal.fire({
+                title: "Xóa tài liệu?",
+                text: "Bạn muốn xóa mềm hay xóa cứng?",
+                icon: "warning",
+                showDenyButton: true,
+                showCancelButton: true,
+                confirmButtonText: "Xóa mềm",
+                denyButtonText: "Xóa cứng",
+                cancelButtonText: "Hủy"
+            }).then(result => {
+                if (result.isConfirmed) {
+                    deleteDocument(id, false);
+                } else if (result.isDenied) {
+                    deleteDocument(id, true);
+                }
+            });
+        }
+
+        function deleteDocument(id, hard) {
+            fetch(`/v1/api/documents/delete/${id}?isHard=${hard}`, { method: "DELETE" })
+                .then(res => res.json())
+                .then(res => {
+                    Swal.fire("Thành công", res.message || "Đã xóa tài liệu", "success");
+                    loadDocuments(currentPage); // refresh
+                });
+        }
+
+        function buildFilterUrl(page = 0) {
+            const keyword = new URLSearchParams(window.location.search).get("keyword")?.trim() || "";
+            const universityId = document.getElementById("filterUniversity").value;
+            const courseId = document.getElementById("filterCourse").value;
+            const status = document.getElementById("filterStatus").value;
+            const uploadDate = document.getElementById("filterUploadDate").value;
+            const sort = document.getElementById("sortBy").value;
+
+            const urlBase = keyword || universityId || courseId || status || uploadDate || sort
+                ? "/v1/api/documents/filter"
+                : "/v1/api/documents/list";
+
+            let url = `${urlBase}?page=${page}&size=10`;
+            if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
+            if (universityId) url += `&universityId=${universityId}`;
+            if (courseId) url += `&courseId=${courseId}`;
+            if (status) url += `&status=${status}`;
+            if (uploadDate) url += `&uploadDate=${uploadDate}T00:00:00`;
+            if (sort === 'views') url += `&sortByViews=true`;
+            if (sort === 'likes') url += `&sortByLikes=true`;
+            if (sort === 'dislikes') url += `&sortByDisLike=true`;
+            if (sort === 'newest') url += `&sortByNewest=true`;
+            if (sort === 'oldest') url += `&sortByOldest=true`;
+            if (sort === 'report') url += `&sortByReportCount=true`;
+
+            return url;
+        }
+
+        function renderPagination() {
+            const pagination = document.getElementById("adminPagination");
+            pagination.innerHTML = "";
+            for (let i = 0; i < totalPages; i++) {
+                const li = document.createElement("li");
+                li.className = "page-item" + (i === currentPage ? " active" : "");
+                li.innerHTML = `<a class="page-link" href="#">${i + 1}</a>`;
+                li.onclick = () => {
+                    currentPage = i;
+                    loadDocuments(currentPage);
+                };
+                pagination.appendChild(li);
+            }
+        }
+
+        function loadDocuments(page = 0) {
+            fetch(buildFilterUrl(page), { credentials: 'include' })
+                .then(res => res.json())
+                .then(res => {
+                    const docs = res.data?.content || res.data || [];
+                    currentPage = res.data?.number || 0;
+                    totalPages = res.data?.totalPages || 1;
+
+                    const tbody = document.getElementById("adminDocumentTableBody");
+                    tbody.innerHTML = "";
+
+                    const sort = document.getElementById("sortBy").value;
+
+                    if (docs.length === 0) {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `<td colspan="11" class="text-center text-muted">Không tìm thấy tài liệu nào phù hợp.</td>`;
+                        tbody.appendChild(row);
+                        document.getElementById("adminInfo").textContent = "";
+                        document.getElementById("adminPagination").innerHTML = "";
+                        return;
+                    }
+
+                    docs.forEach((doc, i) => {
+                        let highlight = "";
+                        if (sort === "likes" && i < 10) highlight = "highlight-likes";
+                        if (sort === "dislikes" && i < 10) highlight = "highlight-dislikes";
+                        if (sort === "views" && i < 10) highlight = "highlight-views";
+                        if (sort === "report" && i < 10) highlight = "highlight-report";
+
+                        const row = document.createElement("tr");
+                        row.className = highlight;
+                        row.innerHTML = `
+                            <td>${i + 1 + page * 10}</td>
+                            <td>${doc.title}</td>
+                            <td>${doc.courseName}</td>
+                            <td>${doc.universityName}</td>
+                            <td><span class="badge-status status-${doc.status}">${doc.status}</span></td>
+                            <td>${doc.views}</td>
+                            <td>${doc.likes}</td>
+                            <td>${doc.dislikes}</td>
+                            <td>${doc.reportCount}</td>
+                            <td>${new Date(doc.uploadedDate).toLocaleDateString()}</td>
+                            <td>
+                              <div class="d-flex gap-2 justify-content-center">
+                                <a href="/documents/${doc.documentId}" class="btn btn-sm btn-outline-primary">Xem</a>
+                                <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('${doc.documentId}')">Xóa</button>
+                              </div>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+
+                    document.getElementById("adminInfo").textContent = `Hiển thị ${docs.length} tài liệu trong tổng ${res.data?.totalElements || docs.length}`;
+                    renderPagination();
+                });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchFilterData().then(() => {
+                ["filterCourse", "filterUniversity", "filterStatus", "sortBy", "filterUploadDate"]
+                    .forEach(id => document.getElementById(id).addEventListener("change", () => loadDocuments(0)));
+                // Nếu có truyền keyword qua URL
+                const keyword = new URLSearchParams(window.location.search).get("keyword")?.trim() || "";
+                if (keyword) {
+                    // Nếu muốn giữ trong ô input (tùy design)
+                    const searchBox = document.querySelector('input[type="search"]');
+                    if (searchBox) searchBox.value = keyword;
+                }
+                loadDocuments(0);
+            });
+        });
+    </script>
+</div>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en"
+      class="light-style layout-navbar-fixed layout-menu-fixed layout-compact"
+      data-theme="theme-default" data-assets-path="../../assets/"
+      data-template="vertical-menu-template" data-style="light"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Tìm kiếm tài liệu</title>
+    <style>
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .document-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+        .document-card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .document-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .document-card img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+        }
+        .document-card .info {
+            padding: 1rem;
+        }
+        .document-card .info h4 {
+            margin: 0;
+            font-size: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .document-card .info p {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container py-4">
+        <h2>Tìm kiếm và Lọc tài liệu</h2>
+        <div class="filter-bar">
+            <select class="form-select" id="filterUniversity" style="width: 180px;"></select>
+            <select class="form-select" id="filterCourse" style="width: 180px;"></select>
+            <select class="form-select" id="sortOption" style="width: 150px;">
+                <option value="">-- Sắp xếp --</option>
+                <option value="views">Lượt xem</option>
+                <option value="likes">Lượt thích</option>
+                <option value="dislikes">Lượt không thích</option>
+            </select>
+        </div>
+
+        <div class="document-grid" id="searchResults"></div>
+    </div>
+
+    <script th:inline="javascript">
+        let currentPage = 0;
+        let isLoading = false;
+        let totalPages = 1;
+
+        function loadUniversities() {
+            return fetch('/v1/api/universities/tags')
+                .then(res => res.json())
+                .then(data => {
+                    const select = document.getElementById('filterUniversity');
+                    select.innerHTML = '<option value="">-- Trường --</option>';
+                    (data.data || []).forEach(u => {
+                        const opt = document.createElement('option');
+                        opt.value = u.univId;
+                        opt.textContent = u.univName;
+                        select.appendChild(opt);
+                    });
+                });
+        }
+
+        function loadCourses() {
+            return fetch('/v1/api/courses/all')
+                .then(res => res.json())
+                .then(data => {
+                    const select = document.getElementById('filterCourse');
+                    select.innerHTML = '<option value="">-- Khóa học --</option>';
+                    (data.data || []).forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.courseId;
+                        opt.textContent = c.courseName;
+                        select.appendChild(opt);
+                    });
+                });
+        }
+
+        function buildUrl(page) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const keyword = urlParams.get("keyword")?.trim() || "";
+            const universityId = document.getElementById('filterUniversity').value;
+            const courseId = document.getElementById('filterCourse').value;
+            const sort = document.getElementById('sortOption').value;
+
+            let url = `/v1/api/documents/filter?page=${page}&size=12`;
+
+            if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
+            if (courseId) url += `&courseId=${courseId}`;
+            if (universityId) url += `&universityId=${universityId}`;
+            if (sort === 'views') url += `&sortByViews=true`;
+            if (sort === 'likes') url += `&sortByLikes=true`;
+            if (sort === 'dislikes') url += `&sortByDisLike=true`;
+
+            return url;
+        }
+
+        function loadDocuments(page) {
+            if (isLoading || page >= totalPages) return;
+            isLoading = true;
+
+            const url = buildUrl(page);
+            fetch(url, { credentials: 'include' })
+                .then(res => res.json())
+                .then(res => {
+                    const grid = document.getElementById("searchResults");
+
+                    if (!res.data || !Array.isArray(res.data.content)) {
+                        if (page === 0) {
+                            grid.innerHTML = "<p>Không tìm thấy tài liệu nào phù hợp.</p>";
+                        }
+                        totalPages = 0;
+                        return;
+                    }
+
+                    const docs = res.data.content;
+                    if (page === 0 && docs.length === 0) {
+                        grid.innerHTML = "<p>Không tìm thấy tài liệu nào phù hợp.</p>";
+                        totalPages = 0;
+                        return;
+                    }
+
+                    totalPages = res.data.totalPages;
+                    currentPage = res.data.number;
+
+                    docs.forEach(doc => {
+                        const card = document.createElement('div');
+                        card.className = 'document-card';
+                        card.onclick = () => window.location.href = `/documents/${doc.documentId}`;
+                        card.innerHTML = `
+                            <img src="${doc.coverImageUrl || '/assets/svg/icons/laptop.svg'}" />
+                            <div class="info">
+                                <h4>${doc.title}</h4>
+                                <p>${doc.courseName} • ${new Date(doc.uploadedDate).toLocaleDateString()}</p>
+                            </div>
+                        `;
+                        grid.appendChild(card);
+                    });
+                })
+                .finally(() => {
+                    isLoading = false;
+                });
+        }
+
+        function resetAndLoad() {
+            currentPage = 0;
+            totalPages = 1;
+            document.getElementById("searchResults").innerHTML = "";
+            loadDocuments(0);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            Promise.all([loadUniversities(), loadCourses()]).then(() => {
+                ["filterUniversity", "filterCourse", "sortOption"].forEach(id => {
+                    document.getElementById(id).addEventListener("change", () => {
+                        resetAndLoad();
+                    });
+                });
+
+                resetAndLoad();
+            });
+
+            window.addEventListener("scroll", () => {
+                if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight - 100) {
+                    loadDocuments(currentPage + 1);
+                }
+            });
+        });
+    </script>
+</div>
+</body>
+</html>

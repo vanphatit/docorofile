@@ -1,0 +1,303 @@
+<!doctype html>
+
+<html lang="en" class="light-style layout-navbar-fixed layout-menu-fixed layout-compact" dir="ltr"
+      data-theme="theme-default" data-assets-path="../../assets/" data-template="vertical-menu-template"
+      data-style="light"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"
+>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+    <title>Document Detail</title>
+
+    <meta name="description" content="" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" th:href="@{/assets/img/favicon/favicon.ico}" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&ampdisplay=swap"
+          rel="stylesheet" />
+
+    <!-- Icons -->
+    <link rel="stylesheet" th:href="@{/assets/vendor/fonts/remixicon/remixicon.css}" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/fonts/flag-icons.css}" />
+
+    <!-- Menu waves for no-customizer fix -->
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/node-waves/node-waves.css}" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" th:href="@{/assets/vendor/css/rtl/core.css}" class="template-customizer-core-css" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/css/rtl/theme-default.css}" class="template-customizer-theme-css" />
+    <link rel="stylesheet" th:href="@{/assets/css/demo.css}" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css}" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/typeahead-js/typeahead.css}" />
+    <link rel="stylesheet" th:href="@{/assets/vendor/libs/plyr/plyr.css}" />
+
+    <!-- Page CSS -->
+    <link rel="stylesheet" th:href="@{/assets/vendor/css/pages/app-academy-details.css}" />
+
+    <!-- Helpers -->
+    <script th:src="@{/assets/vendor/js/helpers.js}"></script>
+    <script th:src="@{/assets/js/config.js}"></script>
+
+    <!-- Custom -->
+    <style>
+        #pdf-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .pdf-page {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 24px;
+            max-width: 100%;
+        }
+
+        .sticky-sidebar {
+            position: sticky;
+            top: 80px;
+            align-self: flex-start;
+        }
+
+        .scroll-row::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scroll-row {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;     /* Firefox */
+        }
+
+    </style>
+</head>
+
+<body>
+<div th:attr="data-id=${id}" layout:fragment="content" id="documentInfo" class="container-xxl flex-grow-1 container-p-y">
+    <div class="document-page-wrapper">
+        <!-- Thông tin tài liệu (Sticky) -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h4 class="mb-3">Thông tin tài liệu</h4>
+                <h5 id="documentTitle">Document Title</h5>
+
+                <div class="row mb-4">
+                    <div class="col-sm-6">
+                        <p class="mb-1 fw-semibold text-muted">Tác giả:</p>
+                        <p id="documentAuthor">Tên tác giả</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <p class="mb-1 fw-semibold text-muted">Ngày tải lên:</p>
+                        <p id="documentUpload">01/01/2024</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <p class="mb-1 fw-semibold text-muted">Khóa học:</p>
+                        <p id="documentCourse">Course Name</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <p class="mb-1 fw-semibold text-muted">Trường:</p>
+                        <p id="documentUniv">University Name</p>
+                    </div>
+                </div>
+
+                <!-- Likes / Dislikes -->
+                <div class="row align-items-center">
+                    <div class="col-sm-6">
+                        <div class="d-flex gap-4">
+                            <div class="text-center">
+                                <i id="likeBtn" class="ri-thumb-up-line ri-24px text-success"></i>
+                                <div id="documentLikes">0</div>
+                            </div>
+                            <div class="text-center">
+                                <i id="dislikeBtn" class="ri-thumb-down-line ri-24px text-danger"></i>
+                                <div id="documentDislikes">0</div>
+                            </div>
+                            <div class="text-center">
+                                <i class="ri-eye-line ri-24px text-muted"></i>
+                                <div id="documentView">0</div>
+                            </div>
+                            <!-- Share -->
+                            <div class="text-center">
+                                <i id="shareBtn" class="ri-share-line ri-24px text-info" style="cursor: pointer;" onclick="handleShare()"></i>
+                                <div>Share</div>
+                            </div>
+                            <!-- Favorite -->
+                            <div class="text-center">
+                                <i id="favBtn" class="ri-heart-line ri-24px text-pink" style="cursor: pointer;" onclick="toggleFavorite(this)"></i>
+                                <div>Save</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 d-flex justify-content-end gap-2 mt-3 mt-sm-0">
+                        <button class="btn btn-outline-danger" id="reportBtn">
+                            <i class="ri-flag-line"></i> Báo cáo
+                        </button>
+                        <button class="btn btn-primary" id="downloadBtn">
+                            <i class="ri-download-line"></i> Tải xuống
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr class="my-4" />
+        <!-- PDF Viewer -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="mb-3">Tài liệu PDF</h5>
+                <div id="pdf-container">
+                    <iframe id="pdf-frame" src="" width="100%" height="600px" style="border: none;"></iframe>
+                </div>
+            </div>
+        </div>
+        <hr class="my-4" />
+        <!-- Comments -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>Các bình luận</h5>
+                <div id="commentList"></div>
+                <h5 class="mt-3">Bình luận</h5>
+                <form id="commentForm">
+                    <input type="hidden" id="parentCommentId" name="parentCommentId" />
+                    <textarea id="commentInput" class="form-control mb-2" rows="3" placeholder="Nhập bình luận..."></textarea>
+                    <button type="submit" class="btn btn-primary">Gửi</button>
+                </form>
+            </div>
+        </div>
+        <hr class="my-4" />
+        <!-- Related Documents -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="mb-3">Tài liệu liên quan</h5>
+                <div class="scroll-row d-flex flex-nowrap overflow-auto gap-3 px-2 py-3" id="relatedDocumentsContainer">
+                    <!-- JS render card -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Report Modal -->
+    <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form id="reportForm" class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reportModalLabel">BÁO CÁO TÀI LIỆU</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Có phải tài liệu này đang có vấn đề không?</p>
+                    <textarea id="reportContent" class="form-control" rows="4" placeholder="Nội dung" required></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Gửi</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", () => {
+            const reportBtn = document.getElementById("reportBtn");
+            const reportForm = document.getElementById("reportForm");
+
+            reportBtn.addEventListener("click", () => {
+                fetch('/v1/api/auth/current-user', {
+                    method: 'POST',
+                    credentials: 'include'
+                })
+                    .then(res => {
+                        if (!res.ok) throw new Error("Guest");
+                        return res.json();
+                    })
+                    .then(user => {
+                        const modal = new bootstrap.Modal(document.getElementById("reportModal"));
+                        modal.show();
+                    })
+                    .catch(() => {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Bạn chưa đăng nhập',
+                            text: 'Vui lòng đăng nhập để báo cáo tài liệu.',
+                            showCancelButton: true,
+                            confirmButtonText: 'Đăng nhập',
+                            cancelButtonText: 'Đóng'
+                        }).then(result => {
+                            if (result.isConfirmed) {
+                                window.location.href = `/auth/login?returnTo=${encodeURIComponent(window.location.pathname)}`;
+                            }
+                        });
+                    });
+            });
+
+            reportForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const content = document.getElementById("reportContent").value.trim();
+                const documentId = document.getElementById("documentInfo").getAttribute("data-id");
+
+                if (!content) return;
+
+                fetch(`/v1/api/reports/create`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({
+                        reportedDocId: documentId,
+                        detail: content
+                    })
+                })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (res.statusCode === 201) {
+                            const modal = bootstrap.Modal.getInstance(document.getElementById("reportModal"));
+                            modal.hide();
+                            document.getElementById("reportContent").value = "";
+                            Swal.fire("Thành công", "Báo cáo của bạn đã được gửi.", "success");
+                        } else {
+                            Swal.fire("Lỗi", res.message || "Không gửi được báo cáo", "error");
+                        }
+                    })
+                    .catch(() => Swal.fire("Lỗi", "Có lỗi xảy ra khi gửi báo cáo", "error"));
+            });
+        });
+    </script>
+</div>
+    <!-- / Content -->
+
+    <div class="content-backdrop fade"></div>
+<!-- Content wrapper -->
+
+<!-- Overlay -->
+<div class="layout-overlay layout-menu-toggle"></div>
+
+<!-- Drag Target Area To SlideIn Menu On Small Screens -->
+<div class="drag-target"></div>
+<!-- / Layout wrapper -->
+
+<!-- Core JS -->
+<script th:src="@{/assets/vendor/libs/jquery/jquery.js}"></script>
+<script th:src="@{/assets/vendor/libs/popper/popper.js}"></script>
+<script th:src="@{/assets/vendor/js/bootstrap.js}"></script>
+<script th:src="@{/assets/vendor/libs/node-waves/node-waves.js}"></script>
+<script th:src="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js}"></script>
+<script th:src="@{/assets/vendor/libs/hammer/hammer.js}"></script>
+<script th:src="@{/assets/vendor/libs/i18n/i18n.js}"></script>
+<script th:src="@{/assets/vendor/libs/typeahead-js/typeahead.js}"></script>
+<script th:src="@{/assets/vendor/js/menu.js}"></script>
+
+<!-- Vendors JS -->
+<script th:src="@{/assets/vendor/libs/plyr/plyr.js}"></script>
+
+<!-- Main JS -->
+<script th:src="@{/assets/js/main.js}"></script>
+<script th:src="@{/assets/js/app-academy-course-details.js}"></script>
+</body>
+
+</html>

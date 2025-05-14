@@ -3,25 +3,45 @@ package com.group.docorofile.entities;
 import com.github.f4b6a3.uuid.UuidCreator;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
-import java.util.Date;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
+@SuperBuilder
 @Table(name = "messages")
-@Getter @Setter @Builder
-@NoArgsConstructor @AllArgsConstructor
-public class MessageEntity {
+public class MessageEntity implements Serializable {
+
     @Id
-    private UUID messageId = UuidCreator.getTimeOrdered();
+    private UUID messageId;
+
+    @ManyToOne
+    @JoinColumn(name = "sender_id", nullable = false) // Khóa ngoại trỏ đến MemberEntity
+    private MemberEntity sender;
+
+    @ManyToOne
+    @JoinColumn(name = "chatroom_id", nullable = false) // Khóa ngoại trỏ đến ChatRoomEntity
+    private ChatRoomEntity chatRoom;
+
+    @Column(nullable = false, columnDefinition = "TEXT") // Lưu nội dung tin nhắn
     private String content;
-    private Date sentAt;
 
-    @ManyToOne
-    @JoinColumn(name = "chat_id")
-    private ChatEntity chat;
+    @Column(nullable = false)
+    private LocalDateTime sentAt;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity sender;
+    @PrePersist
+    public void prePersist() {
+        if (this.messageId == null) {
+            this.messageId = UuidCreator.getTimeOrdered();
+        }
+        if (this.sentAt == null) {
+            this.sentAt = LocalDateTime.now();
+        }
+    }
 }

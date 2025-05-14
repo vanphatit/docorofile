@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title layout:fragment="title">Chi tiết khóa học</title>
+</head>
+<body>
+<div class="container mt-4" layout:fragment="content">
+    <h2>Chi tiết khóa học</h2>
+
+    <p><strong>Tên khóa học:</strong> <span th:text="${course.courseName}">Lập trình Web</span></p>
+    <p><strong>Trường:</strong> <span th:text="${course.universityName}">ĐH Bách Khoa</span></p>
+    <p><strong>Mô tả:</strong> <span th:text="${course.description}">Khoá học nền tảng...</span></p>
+
+
+    <a class="btn btn-secondary mt-3" th:href="@{/admin/courses}">← Quay lại danh sách</a>
+</div>
+</body>
+</html>

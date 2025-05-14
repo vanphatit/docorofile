@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Details</title>
+    <style>
+        /* Custom styles for the details page */
+        .details-container {
+            min-height: 100vh;
+            background-color: #F1F0FB;
+            padding: 2rem 1rem;
+        }
+
+        .inner-container {
+            max-width: 64rem;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo img {
+            height: 3rem;
+            filter: brightness(0);
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .title h1 {
+            font-size: 1.875rem;
+            font-weight: 500;
+        }
+
+        .title h1 .highlight {
+            color: #9b87f5;
+        }
+
+        .title p {
+            color: #4B5563;
+            margin-top: 0.25rem;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .step-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .step-circle {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .step-active {
+            background-color: #9b87f5;
+        }
+
+        .step-inactive {
+            background-color: #D1D5DB;
+        }
+
+        .step-label {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            font-weight: 500;
+        }
+
+        .step-label-active {
+            color: inherit;
+        }
+
+        .step-label-inactive {
+            color: #6B7280;
+        }
+
+        .step-line {
+            flex: 1;
+            height: 0.25rem;
+            margin: 0 0.5rem;
+            background-color: #D1D5DB;
+        }
+
+        .step-line-active {
+            background-color: #9b87f5;
+        }
+
+        .step-line-inactive {
+            background-color: #D1D5DB;
+        }
+
+        .document-progress {
+            margin-bottom: 1rem;
+            background-color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .document-counter {
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar-container {
+            height: 0.5rem;
+            width: 100%;
+            background-color: #E5E7EB;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: #9b87f5;
+            border-radius: 9999px;
+            transition: width 0.3s ease;
+        }
+
+        .document-form {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid #E5E7EB;
+            margin-bottom: 1.5rem;
+        }
+
+        .file-item {
+            padding: 0.75rem;
+            background-color: #F9FAFB;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .file-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            background-color: #F1F0FB;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+
+        .file-icon svg {
+            color: #9b87f5;
+        }
+
+        .file-details h3 {
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin: 0 0 0.25rem 0;
+        }
+
+        .file-details p {
+            font-size: 0.75rem;
+            color: #6B7280;
+            margin: 0;
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .form-group {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .form-input-wrapper {
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            margin-right: 0.75rem;
+            color: #9CA3AF;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            flex: 1;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #9b87f5;
+            box-shadow: 0 0 0 1px #9b87f5;
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-help {
+            font-size: 0.75rem;
+            color: #9b87f5;
+        }
+
+        .edit-button {
+            margin-left: 0.5rem;
+            color: #9b87f5;
+            background: none;
+            border: none;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid #D1D5DB;
+            color: #4B5563;
+            margin-right: 1rem;
+        }
+
+        .btn-outline:hover {
+            background-color: #F9FAFB;
+        }
+
+        .btn-primary {
+            background-color: #9b87f5;
+            border: none;
+            color: white;
+            padding: 0.5rem 2rem;
+        }
+
+        .btn-primary:hover {
+            background-color: #8a74e8;
+        }
+
+        .footer-text {
+            text-align: center;
+            color: #6B7280;
+            font-size: 0.875rem;
+            max-width: 42rem;
+            margin: 0 auto;
+        }
+
+        .error-message {
+            color: #EF4444;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .error-message.visible {
+            display: block;
+        }
+
+        @media (min-width: 640px) {
+            .details-container {
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="details-container">
+        <div class="inner-container">
+            <!-- Title -->
+            <div th:replace="fragments/document/title-section :: titleSection"></div>
+
+            <!-- Progress Steps -->
+            <div th:replace="fragments/document/progress-steps :: progressSteps(${2})"></div>
+
+            <!-- Document Progress -->
+            <div class="document-progress">
+                <h2 class="document-counter" id="documentCounterText">Loading...</h2>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="documentProgressBar" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Document Form -->
+            <form id="documentForm" class="document-form">
+                <!-- File Item Preview -->
+                <div class="file-item">
+                    <div class="file-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <line x1="10" y1="9" x2="8" y2="9"></line>
+                        </svg>
+                    </div>
+                    <div class="file-details">
+                        <h3 id="fileName">Document_name.pdf</h3>
+                        <p id="fileSize">123KB</p>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <!-- University Field -->
+                    <div class="form-group">
+                        <label class="form-label" for="university">University</label>
+                        <div class="form-input-wrapper">
+                            <div class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 22V8l10-5 10 5v14M4 12v10M12 12v10M20 12v10M12 7v5"/>
+                                </svg>
+                            </div>
+                            <select id="university" name="university" class="form-select" required>
+                                <option value="">Select university</option>
+                            </select>
+                        </div>
+                        <div class="error-message" id="universityError">Please enter your university</div>
+                    </div>
+
+                    <!-- Course Field -->
+                    <div class="form-group">
+                        <label class="form-label" for="course">Course</label>
+                        <div class="form-input-wrapper">
+                            <div class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                                </svg>
+                            </div>
+                            <select id="course" name="course" class="form-select" required>
+                                <option value="">Select course</option>
+                            </select>
+                        </div>
+                        <div class="error-message" id="courseError">Please enter the course name</div>
+                    </div>
+
+                    <!-- Title Field -->
+                    <div class="form-group">
+                        <label class="form-label" for="title">Title</label>
+                        <input type="text" id="title" name="title" class="form-input" placeholder="Please give your document a descriptive and clear title" required>
+                        <p class="form-help">Please give your document a descriptive and clear title</p>
+                        <div class="error-message" id="titleError">Please enter a title</div>
+                    </div>
+
+                    <!-- Description Field -->
+                    <div class="form-group">
+                        <label class="form-label" for="description">Description</label>
+                        <textarea id="description" name="description" class="form-textarea" placeholder="Add a description (optional)"></textarea>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Navigation Buttons -->
+            <div class="button-container">
+                <button type="button" id="prevButton" class="btn btn-outline">Back to Upload</button>
+                <button type="button" id="nextButton" class="btn btn-primary">Next Document</button>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get document IDs from URL
+            const parsedIds = /*[[${documentIds}]]*/ '[]';
+            const documentIds = JSON.parse(parsedIds);
+            const totalDocuments = documentIds.length;
+
+            // If no documents, redirect to upload page
+            if (totalDocuments === 0) {
+                window.location.href = '/documents/uploads';
+                return;
+            }
+
+            // Document tracking
+            let currentDocIndex = 0;
+            const formData = {};
+
+            // Load metadata for university & course
+            fetch('/v1/api/documents/metadata')
+                .then(res => res.json())
+                .then(res => {
+                    const data = res.data || {};
+                    const universitySelect = document.getElementById('university');
+                    const courseSelect = document.getElementById('course');
+
+                    // Load universities
+                    Object.keys(data).forEach(univ => {
+                        const opt = document.createElement('option');
+                        opt.value = univ;
+                        opt.textContent = univ;
+                        universitySelect.appendChild(opt);
+                    });
+
+                    // Khi chọn university thì load course
+                    universitySelect.addEventListener('change', function () {
+                        const selectedUniv = this.value;
+                        const courses = data[selectedUniv] || [];
+
+                        courseSelect.innerHTML = '<option value="">-- Select Course --</option>';
+                        courses.forEach(course => {
+                            const opt = document.createElement('option');
+                            opt.value = course;
+                            opt.textContent = course;
+                            courseSelect.appendChild(opt);
+                        });
+                    });
+                });
+
+            // Initialize form data for each document
+            documentIds.forEach(id => {
+                formData[id] = {
+                    university: '',
+                    course: '',
+                    title: '',
+                    description: ''
+                };
+            });
+
+            // Get elements
+            const documentForm = document.getElementById('documentForm');
+            const prevButton = document.getElementById('prevButton');
+            const nextButton = document.getElementById('nextButton');
+            const documentCounterText = document.getElementById('documentCounterText');
+            const progressBar = document.getElementById('documentProgressBar');
+
+            // Set initial values
+            updateProgressBar();
+            loadDocumentInfo(documentIds[currentDocIndex]);
+            updateButtonLabels();
+
+            // Event listeners
+            prevButton.addEventListener('click', handlePrevious);
+            nextButton.addEventListener('click', handleNext);
+
+            // Listen for form field changes
+            const formFields = documentForm.querySelectorAll('input, select, textarea');
+            formFields.forEach(field => {
+                field.addEventListener('change', function() {
+                    const currentDocId = documentIds[currentDocIndex];
+                    formData[currentDocId][field.name] = field.value;
+                });
+            });
+
+            // Handle next button click
+            function handleNext() {
+                // Validate current form
+                if (validateForm()) {
+                    // Save current form data
+                    saveFormData();
+
+                    // If we're on the last document, submit all
+                    if (currentDocIndex === totalDocuments - 1) {
+                        submitAllForms();
+                    } else {
+                        // Move to next document
+                        currentDocIndex++;
+                        loadFormData();
+                        updateDocumentCounter();
+                        updateButtonLabels();
+
+                        // Scroll to top
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                }
+            }
+
+            // Handle previous button click
+            function handlePrevious() {
+                // Save current form data
+                saveFormData();
+
+                if (currentDocIndex > 0) {
+                    // Move to previous document
+                    currentDocIndex--;
+                    loadFormData();
+                    updateDocumentCounter();
+                    updateButtonLabels();
+
+                    // Scroll to top
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    // Return to upload page
+                    window.location.href = '/documents/uploads';
+                }
+            }
+
+            // Save current form data
+            function saveFormData() {
+                const currentDocId = documentIds[currentDocIndex];
+
+                formData[currentDocId] = {
+                    university: document.getElementById('university').value,
+                    course: document.getElementById('course').value,
+                    title: document.getElementById('title').value,
+                    description: document.getElementById('description').value
+                };
+            }
+
+            // Load form data for current document
+            function loadFormData() {
+                const currentDocId = documentIds[currentDocIndex];
+                const currentDocData = formData[currentDocId];
+
+                document.getElementById('university').value = currentDocData.university || '';
+                document.getElementById('course').value = currentDocData.course || '';
+                document.getElementById('title').value = currentDocData.title || '';
+                document.getElementById('description').value = currentDocData.description || '';
+
+                // Load document info
+                loadDocumentInfo(currentDocId);
+            }
+
+            // Load document information (name and size)
+            function loadDocumentInfo(docId) {
+                console.log("Calling loadDocumentInfo for:", docId);
+                fetch(`/v1/api/documents/view/${docId}`)
+                    .then(res => {
+                        if (!res.ok) throw new Error("Failed to fetch");
+                        return res.json();
+                    })
+                    .then(doc => {
+                        const documentData = doc.data;
+                        const fileUrl = documentData.fileUrl || "Unknown";
+                        const fileName = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
+                        const fileSize = documentData.fileSize || "Unknown";
+
+                        document.getElementById('fileName').textContent = fileName;
+                        document.getElementById('fileSize').textContent = fileSize;
+
+                        // Hiển thị: TieuLuan_XuLyAnh.pdf (1 of X)
+                        documentCounterText.textContent =
+                            `${fileName} (${currentDocIndex + 1} of ${totalDocuments})`;
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        document.getElementById('fileName').textContent = "Error loading file";
+                        document.getElementById('fileSize').textContent = "-";
+                        documentCounterText.textContent =
+                            `Document ${currentDocIndex + 1} of ${totalDocuments}`;
+                    });
+            }
+
+            // Update document counter and progress bar
+            function updateDocumentCounter() {
+                updateProgressBar();
+                // Tên file và counter đã hiển thị trong loadDocumentInfo()
+            }
+
+            // Update progress bar
+            function updateProgressBar() {
+                const progress = ((currentDocIndex + 1) / totalDocuments) * 100;
+                progressBar.style.width = `${progress}%`;
+            }
+
+            // Update button labels based on current position
+            function updateButtonLabels() {
+                if (currentDocIndex === 0) {
+                    prevButton.textContent = 'Back to Upload';
+                } else {
+                    prevButton.textContent = 'Previous Document';
+                }
+
+                if (currentDocIndex === totalDocuments - 1) {
+                    nextButton.textContent = 'Submit All';
+                } else {
+                    nextButton.textContent = 'Next Document';
+                }
+            }
+
+            // Validate form
+            function validateForm() {
+                let isValid = true;
+                const requiredFields = ['university', 'course', 'title', 'description'];
+
+                // Reset error messages
+                document.querySelectorAll('.error-message').forEach(el => {
+                    el.classList.remove('visible');
+                });
+
+                // Check each required field
+                requiredFields.forEach(field => {
+                    const input = document.getElementById(field);
+                    const errorElement = document.getElementById(`${field}Error`);
+
+                    if (!input.value.trim()) {
+                        errorElement.classList.add('visible');
+                        isValid = false;
+                    }
+                });
+
+                return isValid;
+            }
+
+            // Submit all forms
+            function submitAllForms() {
+                nextButton.textContent = 'Submitting...';
+                nextButton.disabled = true;
+
+                const payload = documentIds.map(id => ({
+                    documentId: id,
+                    title: formData[id].title,
+                    description: formData[id].description,
+                    nameCourse: formData[id].course,
+                    nameUniversity: formData[id].university
+                }));
+
+                fetch('/v1/api/documents/upload-metadata', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(payload)
+                })
+                    .then(async res => {
+                        const contentType = res.headers.get("Content-Type");
+
+                        if (!res.ok) {
+                            // Nếu là lỗi 400 từ server trả JSON
+                            if (contentType && contentType.includes("application/json")) {
+                                const error = await res.json();
+                                await Swal.fire({
+                                    icon: 'error',
+                                    title: 'Upload failed',
+                                    text: error.message || `Lỗi ${res.status}`
+                                });
+                            } else {
+                                // Nếu là lỗi không phải JSON (ví dụ: HTML template lỗi)
+                                window.location.href = `/error?status=${res.status}`;
+                            }
+
+                            nextButton.disabled = false;
+                            nextButton.textContent = 'Submit All';
+                            throw new Error('Metadata upload failed');
+                        }
+
+                        return res.json();
+                    })
+                    .then(res => {
+                        const result = res.data;
+                        localStorage.setItem('uploadedDocuments', JSON.stringify(result.documents));
+                        localStorage.setItem('addedTurns', result.addedTurns?.toString() || '0');
+                        localStorage.setItem('downloadLimit', result.totalDownloadLimit?.toString() || '0');
+
+                        const returnTo = new URLSearchParams(window.location.search).get("returnTo");
+                        const nextUrl = returnTo ? `/documents/success?returnTo=${encodeURIComponent(returnTo)}` : '/documents/success';
+                        window.location.href = nextUrl;
+                    })
+                    .catch(err => {
+                        console.error('Submit error:', err);
+                        // Không cần Swal ở đây nữa nếu đã hiện ở trên
+                        if (!Swal.isVisible()) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Failed to submit metadata. Please try again.'
+                            });
+                        }
+                        nextButton.disabled = false;
+                        nextButton.textContent = 'Submit All';
+                    });
+        }
+        });
+    </script>
+</div>
+</body>
+</html>

@@ -1,0 +1,627 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Document</title>
+    <style>
+        /* Custom styles for the upload page */
+        .upload-container {
+            min-height: 100vh;
+            background-color: #F1F0FB;
+            padding: 2rem 1rem;
+        }
+
+        .inner-container {
+            max-width: 64rem;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo img {
+            height: 3rem;
+            filter: brightness(0);
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .title h1 {
+            font-size: 1.875rem;
+            font-weight: 500;
+        }
+
+        .title h1 .highlight {
+            color: #9b87f5;
+        }
+
+        .title p {
+            color: #4B5563;
+            margin-top: 0.25rem;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .step-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .step-circle {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .step-active {
+            background-color: #9b87f5;
+        }
+
+        .step-inactive {
+            background-color: #D1D5DB;
+        }
+
+        .step-label {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            font-weight: 500;
+        }
+
+        .step-label-active {
+            color: inherit;
+        }
+
+        .step-label-inactive {
+            color: #6B7280;
+        }
+
+        .step-line {
+            flex: 1;
+            height: 0.25rem;
+            margin: 0 0.5rem;
+            background-color: #D1D5DB;
+        }
+
+        .step-line-active {
+            background-color: #9b87f5;
+        }
+
+        .step-line-inactive {
+            background-color: #D1D5DB;
+        }
+
+        .upload-area {
+            border: 2px dashed #D1D5DB;
+            border-radius: 0.5rem;
+            padding: 2.5rem;
+            margin-bottom: 1.5rem;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 250px;
+            transition: all 0.3s;
+        }
+
+        .upload-area.dragging {
+            border-color: #9b87f5;
+            background-color: #F1F0FB;
+        }
+
+        .upload-icon-container {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 9999px;
+            background-color: #F1F0FB;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .upload-icon {
+            color: #9b87f5;
+            width: 2rem;
+            height: 2rem;
+        }
+
+        .upload-heading {
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-subtext {
+            color: #6B7280;
+            margin-bottom: 1rem;
+        }
+
+        .browse-button {
+            background-color: #9b87f5;
+            color: white;
+            font-weight: 500;
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .browse-button:hover {
+            background-color: #8a74e8;
+        }
+
+        .supported-files {
+            color: #9CA3AF;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+
+        .trial-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .trial-section {
+                flex-direction: row;
+                justify-content: center;
+            }
+
+            .upload-container {
+                padding: 2rem;
+            }
+        }
+
+        .trial-text {
+            color: #4B5563;
+        }
+
+        .trial-button {
+            background-color: #FEF7CD;
+            color: black;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .trial-button:hover {
+            background-color: #f9eea9;
+        }
+
+        .footer-text {
+            text-align: center;
+            color: #6B7280;
+            font-size: 0.875rem;
+            max-width: 42rem;
+            margin: 0 auto;
+        }
+
+        /* Hide the file input */
+        .file-input {
+            display: none;
+        }
+
+        /* Loader animation and container */
+        .loader-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .loader-container.active {
+            display: flex;
+        }
+
+        .file-list {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 1rem;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding: 0.5rem;
+            background-color: #f9f9f9;
+            border-radius: 0.25rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .file-icon {
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #e2e8f0;
+            border-radius: 0.25rem;
+            margin-right: 0.75rem;
+        }
+
+        .file-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .file-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-size {
+            font-size: 0.75rem;
+            color: #6B7280;
+        }
+
+        .file-progress {
+            width: 100%;
+            height: 0.25rem;
+            background-color: #e2e8f0;
+            border-radius: 9999px;
+            overflow: hidden;
+            margin-top: 0.25rem;
+        }
+
+        .file-progress-bar {
+            height: 100%;
+            background-color: #9b87f5;
+            border-radius: 9999px;
+            transition: width 0.3s ease;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 2.5rem;
+            height: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .spinner:after {
+            content: " ";
+            display: block;
+            width: 1.75rem;
+            height: 1.75rem;
+            margin: 0.375rem;
+            border-radius: 50%;
+            border: 0.25rem solid #9b87f5;
+            border-color: #9b87f5 transparent #9b87f5 transparent;
+            animation: spinner 1.2s linear infinite;
+        }
+
+        @keyframes spinner {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .upload-initial-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .loading-text {
+            font-weight: 500;
+            color: #4B5563;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="upload-container">
+        <div class="inner-container">
+            <!-- Title -->
+            <div th:replace="fragments/document/title-section :: titleSection"></div>
+
+            <!-- Progress Steps -->
+            <div th:replace="fragments/document/progress-steps :: progressSteps(${1})"></div>
+
+            <!-- Drag & Drop Area -->
+            <div id="uploadArea" class="upload-area">
+                <!-- Initial upload content -->
+                <div id="uploadInitialContent" class="upload-initial-content">
+                    <div class="upload-icon-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="upload-icon">
+                            <path d="m18 15-6-6-6 6"/>
+                            <path d="M12 9v12"/>
+                        </svg>
+                    </div>
+                    <h3 class="upload-heading">Drag & Drop files</h3>
+                    <p class="upload-subtext">Or if you prefer</p>
+
+                    <button id="browseButton" class="browse-button">Browse my files</button>
+                    <input id="fileInput" type="file" class="file-input" accept=".pdf,.doc,.docx" multiple>
+
+                    <p class="supported-files">Supported files: pdf, docx, ppt</p>
+                </div>
+
+                <!-- Loader content (hidden by default) -->
+                <div id="loaderContainer" class="loader-container">
+                    <div id="uploadSuccess" style="display: none; flex-direction: column; align-items: center;">
+                        <div id="successLottie" style="width: 120px; height: 120px;"></div>
+                        <p class="success-text">Upload completed!</p>
+                    </div>
+
+                    <div class="spinner"></div>
+                    <p class="loading-text">Uploading files...</p>
+
+
+                    <!-- Files list with progress -->
+                    <div id="fileList" class="file-list">
+                        <!-- File items will be added here dynamically -->
+                    </div>
+                </div>
+                <button id="nextButton" class="browse-button" style="margin-top: 1.5rem; display: none;">Next</button>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.0/lottie.min.js"></script>
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const browseButton = document.getElementById('browseButton');
+            const uploadInitialContent = document.getElementById('uploadInitialContent');
+            const loaderContainer = document.getElementById('loaderContainer');
+            const fileList = document.getElementById('fileList');
+            const nextButton = document.getElementById('nextButton');
+            let uploadedIds = [];
+
+            // Browse button click
+            browseButton.addEventListener('click', function() {
+                fileInput.click();
+            });
+
+            // File selection change
+            fileInput.addEventListener('change', function(e) {
+                if (fileInput.files && fileInput.files.length > 0) {
+                    handleFiles(fileInput.files);
+                }
+            });
+
+            // Drag and drop events
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('dragging');
+            });
+
+            uploadArea.addEventListener('dragleave', function() {
+                uploadArea.classList.remove('dragging');
+            });
+
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragging');
+
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    handleFiles(e.dataTransfer.files);
+                }
+            });
+
+            // Handle files function
+            async function handleFiles(files) {
+                // Show loader, hide initial content
+                uploadInitialContent.style.display = 'none';
+                loaderContainer.classList.add('active');
+
+                // Clear previous file list
+                fileList.innerHTML = '';
+                uploadedIds = [];
+
+                const formData = new FormData();
+                const progressControllers = [];
+
+                // Process each file
+                Array.from(files).forEach((file, index) => {
+                    formData.append('files', file);
+
+                    // Create file item element
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+
+                    // File extension
+                    const extension = file.name.split('.').pop().toLowerCase();
+
+                    // File icon based on type
+                    let fileIconHtml = '';
+                    if (extension === 'pdf') {
+                        fileIconHtml = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 15v-4"></path><path d="M12 15v-6"></path><path d="M15 15v-2"></path></svg>';
+                    } else if (extension === 'docx') {
+                        fileIconHtml = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>';
+                    } else {
+                        fileIconHtml = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>';
+                    }
+
+                    // Format file size
+                    const fileSize = formatBytes(file.size);
+
+                    fileItem.innerHTML = `
+                            <div class="file-icon">
+                                ${fileIconHtml}
+                            </div>
+                            <div class="file-info">
+                                <div class="file-name">${file.name}</div>
+                                <div class="file-size">${fileSize}</div>
+                                <div class="file-progress">
+                                    <div class="file-progress-bar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        `;
+
+                    fileList.appendChild(fileItem);
+
+                    const progressBar = fileItem.querySelector('.file-progress-bar');
+                    const controller = simulateProgressUntilComplete(progressBar);
+                    progressControllers.push(controller);
+                });
+
+                try {
+                    const res = await fetch('/v1/api/documents/upload-files', {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'include'
+                    });
+
+                    const contentType = res.headers.get("Content-Type");
+
+                    if (!res.ok) {
+                        // Nếu là HTML (ví dụ lỗi 500 → template)
+                        if (contentType && contentType.includes("text/html")) {
+                            window.location.href = `/error?status=${res.status}`;
+                            return;
+                        }
+
+                        // Nếu là JSON lỗi custom (BadRequestError,...)
+                        const errorData = await res.json().catch(() => ({}));
+                        await Swal.fire({
+                            icon: 'error',
+                            title: 'Upload failed',
+                            text: errorData.message || `Lỗi ${res.status}`
+                        });
+                        location.reload();
+                        return;
+                    }
+
+                    // Nếu OK → parse JSON kết quả
+                    const data = await res.json();
+
+                    if (data.data && Array.isArray(data.data)) {
+                        uploadedIds = data.data;
+
+                        progressControllers.forEach(ctrl => ctrl.finish());
+                        document.querySelector('.spinner').style.display = 'none';
+                        document.querySelector('.loading-text').style.display = 'none';
+                        document.getElementById('uploadSuccess').style.display = 'flex';
+
+                        lottie.loadAnimation({
+                            container: document.getElementById('successLottie'),
+                            renderer: 'svg',
+                            loop: true,
+                            autoplay: true,
+                            path: '/assets/json/success.json'
+                        });
+
+                        nextButton.style.display = 'inline-block';
+                    } else {
+                        await Swal.fire({
+                            icon: 'error',
+                            title: 'Upload failed',
+                            text: 'Server returned an unexpected response.'
+                        });
+
+                        location.reload();
+                    }
+                } catch (err) {
+                    console.error('Error uploading files:', err);
+                    await Swal.fire({
+                        icon: 'error',
+                        title: 'Upload error',
+                        text: err.message || 'Đã xảy ra lỗi không xác định.'
+                    });
+
+                    location.reload();
+                }
+            }
+
+            // Format bytes to human readable format
+            function formatBytes(bytes, decimals = 2) {
+                if (bytes === 0) return '0 Bytes';
+
+                const k = 1024;
+                const dm = decimals < 0 ? 0 : decimals;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+            }
+
+            function simulateProgressUntilComplete(progressBar) {
+                let progress = 0;
+                const interval = 20;
+                const incrementAmount = Math.random() * 2 + 1;
+
+                const progressInterval = setInterval(() => {
+                    if (progress < 95) {
+                        progress += incrementAmount;
+                        progressBar.style.width = progress + '%';
+                    }
+                }, interval);
+
+                return {
+                    finish: () => {
+                        clearInterval(progressInterval);
+                        progressBar.style.width = '100%';
+                    }
+                };
+            }
+
+            nextButton.addEventListener('click', function() {
+                if (uploadedIds.length > 0) {
+                    const query = uploadedIds.map(id => `ids=${encodeURIComponent(id)}`).join("&");
+                    const returnTo = new URLSearchParams(window.location.search).get("returnTo");
+                    const nextUrl = returnTo
+                        ? `/documents/metadata-form?${query}&returnTo=${encodeURIComponent(returnTo)}`
+                        : `/documents/metadata-form?${query}`;
+                    window.location.href = nextUrl;
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No files uploaded',
+                        text: 'Please upload files before proceeding!'
+                    });
+                }
+            });
+        });
+    </script>
+</div>
+</body>
+</html>

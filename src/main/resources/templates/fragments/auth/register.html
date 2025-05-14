@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/auth/layout-auth}">
+<body>
+<div layout:fragment="content">
+    <h4 class="mb-1">Adventure starts here 🚀</h4>
+    <p class="mb-5">Your journey to better file management begins here.</p>
+
+    <form id="formAuthentication" class="mb-5" th:action="@{/auth/register}"
+          th:method="post" th:object="${createUserRequest}">
+        <div class="form-floating form-floating-outline mb-4">
+            <input type="text" class="form-control" id="fullName" name="fullName"
+                   placeholder="Full name" th:field="*{fullName}" required/>
+            <label for="fullName">Full Name</label>
+        </div>
+
+        <div class="form-floating form-floating-outline mb-4">
+            <input type="email" class="form-control" id="email" name="email"
+                   placeholder="Email" required th:field="*{email}"/>
+            <label for="email">Email</label>
+        </div>
+
+        <div class="form-floating form-floating-outline mb-4">
+            <input type="password" class="form-control" id="password" name="password"
+                   placeholder="Password" required th:field="*{password}"/>
+            <label for="password">Password</label>
+        </div>
+
+        <div class="form-floating form-floating-outline mb-4">
+            <input type="password" class="form-control" id="rePassword" name="rePassword"
+                   placeholder="Repeat Password" required/>
+            <label for="rePassword">Repeat Password</label>
+        </div>
+
+        <div class="form-floating form-floating-outline mb-4">
+            <select class="form-select" id="universityName" name="universityName"
+                    required th:field="*{universityName}">
+            </select>
+            <label for="universityName">University</label>
+        </div>
+
+        <div class="form-check mt-2 mb-4">
+            <input class="form-check-input" type="checkbox" id="terms" name="terms" required/>
+            <label class="form-check-label" for="terms">
+                I agree to <a href="#">privacy policy & terms</a>
+            </label>
+        </div>
+
+        <input type="hidden" name="userType" value="MEMBER"/>
+        <button class="btn btn-primary d-grid w-100">Sign up</button>
+    </form>
+
+    <p class="text-center">
+        <span>Already have an account?</span>
+        <a href="/auth/login">
+            <span>Sign in instead</span>
+        </a>
+    </p>
+
+    <div class="divider my-5">
+        <div class="divider-text">or</div>
+    </div>
+
+    <div class="d-flex justify-content-center gap-2">
+        <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-facebook">
+            <i class="tf-icons ri-facebook-fill"></i>
+        </a>
+
+        <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-twitter">
+            <i class="tf-icons ri-twitter-fill"></i>
+        </a>
+
+        <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-github">
+            <i class="tf-icons ri-github-fill"></i>
+        </a>
+
+        <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-google-plus">
+            <i class="tf-icons ri-google-fill"></i>
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/auth/layout-auth}">
+<body>
+<div layout:fragment="content">
+    <h4 class="mb-1">Welcome back 👋</h4>
+    <p class="mb-5">Please sign-in to your account and start the adventure.</p>
+
+    <form id="formAuthentication" class="mb-5" th:action="@{/auth/login}"
+          th:method="post" th:object="${loginRequest}">
+
+        <div class="form-floating form-floating-outline mb-4">
+            <input type="email" class="form-control" id="email" name="email"
+                   placeholder="Email" required th:field="*{email}"/>
+            <label for="email">Email</label>
+        </div>
+
+        <div class="form-floating form-floating-outline mb-4">
+            <input type="password" class="form-control" id="password" name="password"
+                   placeholder="Password" required th:field="*{password}"/>
+            <label for="password">Password</label>
+        </div>
+
+        <input type="hidden" name="userType" value="MEMBER"/>
+
+        <p class="text-center">
+            <a href="/auth/forgot-password">Forgot password?</a>
+            <span>Let me help you!</span>
+        </p>
+
+        <button class="btn btn-primary d-grid w-100">Login</button>
+    </form>
+
+    <p class="text-center">
+        <span>New to our platform?</span>
+        <a href="/auth/register">
+            <span>Create an account</span>
+        </a>
+    </p>
+
+    <div class="divider my-5">
+        <div class="divider-text">or</div>
+    </div>
+
+    <div class="d-flex justify-content-center gap-2">
+        <a href="/oauth2/authorization/google" class="btn btn-icon rounded-circle btn-text-google-plus">
+            <i class="tf-icons ri-google-fill"></i>
+        </a>
+    </div>
+</div>
+</body>
+</html>

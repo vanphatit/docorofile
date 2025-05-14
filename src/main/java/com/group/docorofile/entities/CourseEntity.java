@@ -3,20 +3,36 @@ package com.group.docorofile.entities;
 import com.github.f4b6a3.uuid.UuidCreator;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
+import java.io.Serializable;
+import java.util.List;
 import java.util.UUID;
 
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "courses")
-@Getter @Setter @Builder
-@NoArgsConstructor @AllArgsConstructor
-public class CourseEntity {
+public class CourseEntity implements Serializable {
     @Id
-    private UUID courseId = UuidCreator.getTimeOrdered();
+    private UUID courseId;
+
     private String courseName;
     private String description;
 
     @ManyToOne
-    @JoinColumn(name = "uni_id")
     private UniversityEntity university;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FollowCourseEntity> followers;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.courseId == null) {
+            this.courseId = UuidCreator.getTimeOrdered();
+        }
+    }
 }
