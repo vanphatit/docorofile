@@ -6,7 +6,7 @@ let stompClient = null;
 let currentSubscription = null;
 
 function connectWebSocket() {
-  const socket = new SockJS("https://docorofile.phatit.id.vn/ws");
+  const socket = new SockJS("http://localhost:9091/ws");
   stompClient = Stomp.over(socket);
   stompClient.connect({}, () => {
     console.log("WebSocket connected");
