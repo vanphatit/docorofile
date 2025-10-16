@@ -2,6 +2,7 @@ package com.group.docorofile.controllers;
 
 import com.group.docorofile.models.users.CreateUserRequest;
 import com.group.docorofile.models.users.LoginRequest;
+import com.group.docorofile.utils.JsonUtils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpEntity;
@@ -24,6 +25,8 @@ import java.util.UUID;
 
 @Controller
 public class AuthController {
+
+    private JsonUtils jsonUtils = new JsonUtils();
 
     @GetMapping("/auth/register")
     public String register(Model m) {
@@ -98,7 +101,8 @@ public class AuthController {
                 return "fragments/auth/login";
             }
         } catch (Exception e) {
-            m.addAttribute("error", e.getMessage());
+            String errorMessage = jsonUtils.extractMessageFromException(e.getMessage());
+            m.addAttribute("error", errorMessage);
             return "fragments/auth/login";
         }
     }
@@ -183,7 +187,8 @@ public class AuthController {
                 return "fragments/auth/register";
             }
         } catch (Exception e) {
-            model.addAttribute("error", e.getMessage());
+            String errorMessage = jsonUtils.extractMessageFromException(e.getMessage());
+            model.addAttribute("error", errorMessage);
             return "fragments/auth/register";
         }
     }
@@ -220,7 +225,8 @@ public class AuthController {
                 return "fragments/auth/login";
             }
         } catch (Exception e) {
-            m.addAttribute("error", "Exception: " + e.getMessage());
+            String errorMessage = jsonUtils.extractMessageFromException(e.getMessage());
+            m.addAttribute("error", errorMessage);
             m.addAttribute("loginRequest", new LoginRequest()); // tránh lỗi Thymeleaf
             return "fragments/auth/login";
         }

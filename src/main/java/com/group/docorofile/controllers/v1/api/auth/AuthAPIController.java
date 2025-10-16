@@ -150,6 +150,16 @@ public class AuthAPIController {
 
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestParam("email") String email, @RequestParam("newPassword") String newPassword) {
+        if(email == null || email.isEmpty()) {
+            BadRequestError error = new BadRequestError("Email không được để trống.");
+            return ResponseEntity.badRequest().body(error);
+        }
+
+        if(newPassword == null || newPassword.isEmpty()) {
+            BadRequestError error = new BadRequestError("Mật khẩu mới không được để trống.");
+            return ResponseEntity.badRequest().body(error);
+        }
+
         var optUser = userServiceImpl.findByEmail(email);
         if(optUser.isEmpty()) {
             BadRequestError error = new BadRequestError("Không tìm thấy user với email: " + email);
