@@ -24,8 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class ReportServiceImpl implements iReportService {
@@ -101,17 +100,45 @@ public class ReportServiceImpl implements iReportService {
     }
 
     public ResultPaginationDTO getReportDetailsByDocumentId(UUID documentId, Pageable pageable) {
-        Page<String> pageResult = reportRepository.findReportDetailsByDocumentId(documentId, pageable);
+        Page<Object[]> pageResult = reportRepository.findReportDetailsByDocumentId(documentId, pageable);
 
+        // Tạo metadata cho phân trang
         ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
         meta.setPage(pageResult.getNumber());
         meta.setPageSize(pageResult.getSize());
         meta.setPages(pageResult.getTotalPages());
         meta.setTotal(pageResult.getTotalElements());
 
+        List<String> details = pageResult.getContent().stream()
+                .map(row -> (String) row[0]) // cột 0 là detail
+                .toList();
+
+        List<String> statuses = pageResult.getContent().stream()
+                .map(row -> {
+                    if (row == null || row.length < 2 || row[1] == null) return null;
+                    Object s = row[1];
+                    if (s instanceof Enum<?>) {
+                        return ((Enum<?>) s).name();
+                    } else {
+                        return s.toString();
+                    }
+                })
+                .filter(Objects::nonNull)
+                .distinct() // tránh trùng lặp nếu có
+                .toList();
+
+        // Nếu có danh sách status thì lấy phần tử đầu tiên, nếu không thì null
+        String status = statuses.isEmpty() ? null : statuses.get(0);
+
+        // Gộp dữ liệu vào result
+        Map<String, Object> result = new HashMap<>();
+        result.put("details", details);
+        result.put("status", status);
+
+        // Trả về DTO
         ResultPaginationDTO resultPaginationDTO = new ResultPaginationDTO();
         resultPaginationDTO.setMeta(meta);
-        resultPaginationDTO.setResult(pageResult.getContent());
+        resultPaginationDTO.setResult(result);
 
         return resultPaginationDTO;
     }
