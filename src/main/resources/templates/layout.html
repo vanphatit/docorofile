@@ -323,8 +323,9 @@
             console.error('❌ Lỗi khi lấy thông tin người dùng:', err);
 
             // Cập nhật thông tin người dùng vào UI
-            document.getElementById('fullName').innerText = 'Người dùng';
-            document.getElementById('membershipName').innerText = 'Thành viên';
+            document.getElementById('profile-component').classList.add('d-none');
+            // document.getElementById('fullName').innerText = 'Người dùng';
+            // document.getElementById('membershipName').innerText = 'Thành viên';
 
             // 👉 Hide protected dropdown items
             const protectedItems = [
