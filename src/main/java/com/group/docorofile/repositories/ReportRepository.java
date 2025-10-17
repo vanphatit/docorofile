@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -34,7 +35,6 @@ public interface ReportRepository extends JpaRepository<ReportEntity, UUID> {
 
     List<ReportEntity> findByReportedDoc_DocumentId(UUID documentId);
 
-    @Query("SELECT r.detail FROM ReportEntity r WHERE r.reportedDoc.documentId = :documentId ORDER BY r.createdOn DESC")
-    Page<String> findReportDetailsByDocumentId(UUID documentId, Pageable pageable);
-
+    @Query("SELECT r.detail, r.status FROM ReportEntity r WHERE r.reportedDoc.documentId = :documentId ORDER BY r.createdOn DESC")
+    Page<Object[]> findReportDetailsByDocumentId(@Param("documentId") UUID documentId, Pageable pageable);
 }
