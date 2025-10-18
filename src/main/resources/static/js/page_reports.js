@@ -86,25 +86,15 @@ function showReportModal(documentId) {
         type: 'GET',
         dataType: 'json',
         success: function (doc) {
+            console.log("Doc", doc)
             // Gán dữ liệu vào modal
             $.ajax({
                 url: `/v1/api/reports/${documentId}?isHard=false`, // Gọi API lấy danh sách chi tiết
                 type: 'GET',
                 dataType: 'json',
                 success: function(response) {
-                    const currentStatus = response.result.status;
-
-                    // Nếu là DECLINED hoặc RESOLVED → khóa combobox
-                    if (currentStatus === "DECLINED" || currentStatus === "RESOLVED") {
-                        $("#statusSelect").prop("disabled", true);
-                        $("#updateStatusBtn").prop("disabled", true);
-                    }
-                    // Nếu là IN_PROGRESS → không cho quay về PENDING
-                    else if (currentStatus === "IN_PROGRESS") {
-                        $("#statusSelect").find('option[value="PENDING"]').prop("disabled", true);
-                    }
-                    if (Array.isArray(response.result.details)) {
-                        const details = response.result.details; // Dữ liệu chi tiết từ response.result
+                    if (Array.isArray(response.result)) {
+                        const details = response.result; // Dữ liệu chi tiết từ response.result
                         const detailListHtml = details.map(detail => `<li>${detail}</li>`).join('');
                         $("#detailList").html(detailListHtml); // Đưa danh sách chi tiết vào modal
                         renderPaginationControls(documentId, response.meta);
@@ -116,7 +106,6 @@ function showReportModal(documentId) {
                     showToast("Không thể tải chi tiết tài liệu", "danger");
                 }
             });
-
             $("#modalImage").attr("src", doc.data.coverImageUrl);
 
             document.getElementById("viewDocBtn").addEventListener("click", function () {
@@ -187,6 +176,8 @@ function showReportModal(documentId) {
             } else {
                 console.error("Modal element not found");
             }
+            // const modal = new bootstrap.Modal(document.getElementById('reportModal'));
+            // modal.show();
         },
         error: function (err) {
             showToast("Không thể tải chi tiết báo cáo", "danger")
