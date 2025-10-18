@@ -1,6 +1,9 @@
 package com.group.docorofile.utils;
 
+import org.springframework.beans.factory.annotation.Value;
+
 public class JsonUtils {
+
     public String extractMessageFromException(String exceptionMessage) {
         try {
             // Find the JSON part in the exception message
@@ -23,9 +26,9 @@ public class JsonUtils {
             }
 
             // Fallback to original message if parsing fails
-            return "Registration failed.";
+            return "Failed.";
         } catch (Exception e) {
-            return "Registration failed.";
+            return "Failed.";
         }
     }
 }

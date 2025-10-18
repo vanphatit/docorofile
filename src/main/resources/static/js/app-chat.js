@@ -18,7 +18,7 @@ function escapeHTML(str) {
 
 // Kết nối WebSocket
 function connectWebSocket() {
-  const socket = new SockJS("http://localhost:9091/ws");
+  const socket = new SockJS("https://localhost:9091/ws");
   stompClient = Stomp.over(socket);
   stompClient.connect({}, () => {
     console.log("WebSocket connected");

@@ -5,6 +5,7 @@ import com.group.docorofile.models.users.LoginRequest;
 import com.group.docorofile.utils.JsonUtils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -27,6 +28,9 @@ import java.util.UUID;
 public class AuthController {
 
     private JsonUtils jsonUtils = new JsonUtils();
+
+    @Value("${api.base-url}")
+    private String API_BASE_URL;
 
     @GetMapping("/auth/register")
     public String register(Model m) {
@@ -56,7 +60,7 @@ public class AuthController {
         try {
             // Call REST API endpoint (API nội bộ)
             RestTemplate restTemplate = new RestTemplate();
-            String url = "http://localhost:9091/v1/api/auth/logout";
+            String url = API_BASE_URL +  "v1/api/auth/logout";
             ResponseEntity<Map> res = restTemplate.postForEntity(url, null, Map.class);
 
             Cookie cookie = new Cookie("JWT", null);
@@ -77,7 +81,9 @@ public class AuthController {
         try {
             // Call REST API endpoint (API nội bộ)
             RestTemplate restTemplate = new RestTemplate();
-            String url = "http://localhost:9091/v1/api/auth/login";
+            String url = API_BASE_URL + "v1/api/auth/login";
+
+            System.out.println("API URL: " + url);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -111,7 +117,7 @@ public class AuthController {
     public String verifyEmail(@RequestParam("code") String code, @RequestParam("email") String email, Model model) {
         // Call REST API endpoint (API nội bộ)
         RestTemplate restTemplate = new RestTemplate();
-        String url = "http://localhost:9091/v1/api/auth/verify-email?code=" + code + "&email=" + email;
+        String url = API_BASE_URL + "v1/api/auth/verify-email?code=" + code + "&email=" + email;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -136,7 +142,7 @@ public class AuthController {
                                 Model model) {
         // Call REST API endpoint (API nội bộ)
         RestTemplate restTemplate = new RestTemplate();
-        String url = "http://localhost:9091/v1/api/auth/reset-password?code=" + code + "&email=" + email + "&newPassword=" + newPassword;
+        String url = API_BASE_URL + "v1/api/auth/reset-password?code=" + code + "&email=" + email + "&newPassword=" + newPassword;
         HttpHeaders headers = new HttpHeaders();
 
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -169,7 +175,7 @@ public class AuthController {
         try {
             // Call REST API endpoint (API nội bộ)
             RestTemplate restTemplate = new RestTemplate();
-            String url = "http://localhost:9091/v1/api/users/newMember";
+            String url = API_BASE_URL + "v1/api/users/newMember";
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -197,7 +203,7 @@ public class AuthController {
     public String loginGoogle(OAuth2AuthenticationToken oauth2Token, Model m, HttpServletResponse response) {
         try {
             RestTemplate restTemplate = new RestTemplate();
-            String url = "http://localhost:9091/v1/api/auth/login/oauth2";
+            String url = API_BASE_URL + "v1/api/auth/login/oauth2";
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);

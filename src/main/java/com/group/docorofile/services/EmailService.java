@@ -7,6 +7,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 import java.util.Map;
@@ -18,11 +19,14 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
+    @Value("${api.base-url}")
+    private String API_BASE_URL;
+
     // Chú ý: phải khởi tạo map để tránh NullPointerException
     private Map<String, String> emailTokenMap = new ConcurrentHashMap<>();
 
     public void sendVerificationEmail(String to, String verificationCode) throws MessagingException {
-        String url = "http://localhost:9091/auth/verify-email?code=" + verificationCode + "&email=" + to;
+        String url = API_BASE_URL + "auth/verify-email?code=" + verificationCode + "&email=" + to;
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
         helper.setTo(to);
@@ -41,7 +45,7 @@ public class EmailService {
     }
 
     public void sendResetPasswordEmail(String to, String code, String password) throws MessagingException {
-        String url = "http://localhost:9091/auth/reset-password?code=" + code + "&email=" + to + "&newPassword=" + password;
+        String url = API_BASE_URL + "auth/reset-password?code=" + code + "&email=" + to + "&newPassword=" + password;
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
         helper.setTo(to);
