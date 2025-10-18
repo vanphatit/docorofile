@@ -39,7 +39,7 @@ public class SecurityConfig {
                     .ignoringRequestMatchers(
                         "/v1/api/**",  // Exclude all API endpoints from CSRF
                         "/oauth2/authorization/**",
-                        "/member/payment/vn-pay-callback"
+                        "/member/payment/**" // Exclude all payment endpoints from CSRF
                     )
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
