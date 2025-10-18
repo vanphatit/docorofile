@@ -19,6 +19,9 @@ public class OAuth2LoginConfig {
     @Value("${spring.security.oauth2.client.registration.google.client-secret}")
     private String GOOGLE_CLIENT_SECRET;
 
+    @Value("${api.base-url}")
+    private String API_BASE_URL;
+
     @Bean
     public ClientRegistrationRepository clientRegistrationRepository() {
         return new InMemoryClientRegistrationRepository(this.googleClientRegistration());
@@ -30,7 +33,7 @@ public class OAuth2LoginConfig {
                 .clientSecret(GOOGLE_CLIENT_SECRET)
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .redirectUri("http://localhost:9091/login/oauth2/code/{registrationId}")
+                .redirectUri(API_BASE_URL +  "login/oauth2/code/{registrationId}")
                 .scope("openid", "profile", "email", "address", "phone")
                 .authorizationUri("https://accounts.google.com/o/oauth2/v2/auth")
                 .tokenUri("https://www.googleapis.com/oauth2/v4/token")
