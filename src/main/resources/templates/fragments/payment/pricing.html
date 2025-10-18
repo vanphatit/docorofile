@@ -94,6 +94,8 @@
                                     </ul>
 
                                     <form action="/member/payment/vn-pay" method="post">
+                                        <!-- CSRF Token -->
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                         <input type="hidden" name="amount" value="80000" />
                                         <button id="freePlanBtn" type="submit" class="btn btn-outline-success d-grid w-100">Your Current Plan</button>
                                     </form>
@@ -130,6 +132,8 @@
 
 
                                     <form action="/member/payment/vn-pay" method="post">
+                                        <!-- CSRF Token -->
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                         <input type="hidden" name="amount" value="80000" />
                                         <button id="premiumPlanBtn" type="submit" class="btn btn-outline-primary d-grid w-100">Upgrade</button>
                                     </form>

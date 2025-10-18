@@ -9,6 +9,10 @@
 
     <form id="formAuthentication" class="mb-5" th:action="@{/auth/register}"
           th:method="post" th:object="${createUserRequest}">
+          
+        <!-- CSRF Token -->
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        
         <div class="form-floating form-floating-outline mb-4">
             <input type="text" class="form-control" id="fullName" name="fullName"
                    placeholder="Full name" th:field="*{fullName}" required/>
