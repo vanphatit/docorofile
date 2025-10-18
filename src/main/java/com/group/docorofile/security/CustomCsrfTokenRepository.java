@@ -23,12 +23,12 @@ public class CustomCsrfTokenRepository implements CsrfTokenRepository {
     private String parameterName = DEFAULT_CSRF_PARAMETER_NAME;
     private String headerName = DEFAULT_CSRF_HEADER_NAME;
     private String cookieName = DEFAULT_CSRF_COOKIE_NAME;
-    private boolean cookieHttpOnly = false;
+    private boolean cookieHttpOnly = true; // Should be true for better security
     private String cookiePath;
     private String cookieDomain;
     private Boolean secure;
     private int cookieMaxAge = -1;
-    private String sameSite = "Lax";
+    private String sameSite = "Strict"; // More secure than Lax
 
     @Override
     public CsrfToken generateToken(HttpServletRequest request) {
@@ -43,11 +43,11 @@ public class CustomCsrfTokenRepository implements CsrfTokenRepository {
         cookie.setPath(StringUtils.hasLength(this.cookiePath) ? this.cookiePath : this.getRequestContext(request));
         cookie.setMaxAge((token != null) ? this.cookieMaxAge : 0);
         cookie.setHttpOnly(this.cookieHttpOnly);
-        
+
         if (StringUtils.hasLength(this.cookieDomain)) {
             cookie.setDomain(this.cookieDomain);
         }
-        
+
         response.addCookie(cookie);
     }
 
