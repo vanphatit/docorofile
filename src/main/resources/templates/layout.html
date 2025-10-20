@@ -14,57 +14,57 @@
     <meta name="_csrf_parameter" th:content="${_csrf.parameterName}" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" th:href="@{/images/logo.png}" />
-<!--    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">-->
-    <link rel="icon" type="image/x-icon" th:href="@{/images/logo.png}" />
+    <Link th:attr="nonce=${cspNonce}" rel="icon" type="image/x-icon" th:href="@{/images/logo.png}" />
+<!--    <Link th:attr="nonce=${cspNonce}" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">-->
+    <Link th:attr="nonce=${cspNonce}" rel="icon" type="image/x-icon" th:href="@{/images/logo.png}" />
 
     <!-- Fonts -->
-    <link rel="preconnect" th:href="@{https://fonts.googleapis.com}" />
-    <link rel="preconnect" th:href="@{https://fonts.gstatic.com}" crossorigin />
-    <!--    <link-->
+    <Link th:attr="nonce=${cspNonce}" rel="preconnect" th:href="@{https://fonts.googleapis.com}" />
+    <Link th:attr="nonce=${cspNonce}" rel="preconnect" th:href="@{https://fonts.gstatic.com}" crossorigin />
+    <!--    <Link th:attr="nonce=${cspNonce}"-->
     <!--            th:href="@{https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&ampdisplay=swap}"-->
     <!--            rel="stylesheet" />-->
 
     <!-- Icons -->
-    <link rel="stylesheet" th:href="@{/assets/vendor/fonts/remixicon/remixicon.css}" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/fonts/flag-icons.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/fonts/remixicon/remixicon.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/fonts/flag-icons.css}" />
 
     <!-- Menu waves for no-customizer fix -->
-    <link rel="stylesheet" th:href="@{/assets/vendor/libs/node-waves/node-waves.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/libs/node-waves/node-waves.css}" />
 
     <!-- Core CSS -->
-    <link rel="stylesheet" th:href="@{/assets/vendor/css/rtl/core.css}" class="template-customizer-core-css" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/css/rtl/theme-default.css}"
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/css/rtl/core.css}" class="template-customizer-core-css" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/css/rtl/theme-default.css}"
         class="template-customizer-theme-css" />
-    <link rel="stylesheet" th:href="@{/assets/css/demo.css}" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/css/pages/front-page.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/css/demo.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/css/pages/front-page.css}" />
 
     <!-- Vendors CSS -->
-    <link rel="stylesheet" th:href="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css}" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/libs/typeahead-js/typeahead.css}" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css}" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css}" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css}" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/libs/datatables-checkboxes-jquery/datatables.checkboxes.css}" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/libs/select2/select2.css}" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/libs/@form-validation/form-validation.css}" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/libs/animate-css/animate.css}" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/libs/sweetalert2/sweetalert2.css}" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/libs/tagify/tagify.css}" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/libs/nouislider/nouislider.css}" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/libs/swiper/swiper.css}" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/libs/dropzone/dropzone.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/libs/typeahead-js/typeahead.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/libs/datatables-checkboxes-jquery/datatables.checkboxes.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/libs/select2/select2.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/libs/@form-validation/form-validation.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/libs/animate-css/animate.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/libs/sweetalert2/sweetalert2.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/libs/tagify/tagify.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/libs/nouislider/nouislider.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/libs/swiper/swiper.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/libs/dropzone/dropzone.css}" />
 
     <!-- Page CSS -->
-    <link rel="stylesheet" th:href="@{/assets/vendor/css/pages/page-user-view.css}" />
-    <link rel="stylesheet" th:href="@{/assets/vendor/css/pages/app-chat.css}" />
-    <link th:href="@{/assets/css/remixicon.css}" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/assets/vendor/css/pages/front-page-landing.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/css/pages/page-user-view.css}" />
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/css/pages/app-chat.css}" />
+    <Link th:attr="nonce=${cspNonce}" th:href="@{/assets/css/remixicon.css}" rel="stylesheet">
+    <Link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/css/pages/front-page-landing.css}" />
 
     <!-- Helpers -->
-    <script th:src="@{/assets/vendor/js/helpers.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/js/helpers.js}"></script>
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
-    <script th:src="@{/assets/js/config.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/js/config.js}"></script>
 </head>
 
 <body>
@@ -225,7 +225,7 @@
         </div>
     </div>
 
-    <script>
+    <script th:attr="nonce=${cspNonce}">
         function handleUploadClick(event) {
             event.preventDefault(); // Không cho chuyển trang mặc định
 
@@ -366,12 +366,12 @@
             }
         });
     </script>
-    <script th:src="@{/assets/pdfjs/pdf.min.js}"></script>
-    <script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/pdfjs/pdf.min.js}"></script>
+    <script th:attr="nonce=${cspNonce}">
         pdfjsLib.GlobalWorkerOptions.workerSrc = '/assets/pdfjs/pdf.worker.min.js';
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
+    <script th:attr="nonce=${cspNonce}" src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script th:attr="nonce=${cspNonce}">
         document.addEventListener("DOMContentLoaded", function () {
             const docElem = document.getElementById('documentInfo');
             if (!docElem) return;
@@ -879,52 +879,52 @@
 
     <!-- Core JS -->
     <!-- build:js assets/vendor/js/core.js -->
-    <script th:src="@{/assets/vendor/libs/jquery/jquery.js}"></script>
-    <script th:src="@{/assets/vendor/libs/popper/popper.js}"></script>
-    <script th:src="@{/assets/vendor/js/bootstrap.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/libs/jquery/jquery.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/libs/popper/popper.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/js/bootstrap.js}"></script>
 
     <!-- CSRF Protection for AJAX requests -->
-    <script th:src="@{/js/csrf-protection.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/js/csrf-protection.js}"></script>
 
-    <script th:src="@{/assets/vendor/libs/node-waves/node-waves.js}"></script>
-    <script th:src="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js}"></script>
-    <script th:src="@{/assets/vendor/libs/hammer/hammer.js}"></script>
-    <script th:src="@{/assets/vendor/libs/i18n/i18n.js}"></script>
-    <script th:src="@{/assets/vendor/libs/typeahead-js/typeahead.js}"></script>
-    <script th:src="@{/assets/vendor/js/menu.js}"></script>
-    <script th:src="@{/assets/js/forms-file-upload.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/libs/node-waves/node-waves.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/libs/hammer/hammer.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/libs/i18n/i18n.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/libs/typeahead-js/typeahead.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/js/menu.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/js/forms-file-upload.js}"></script>
 
     <!-- endbuild -->
 
     <!-- Vendors JS -->
-    <script th:src="@{/assets/vendor/libs/moment/moment.js}"></script>
-    <script th:src="@{/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js}"></script>
-    <script th:src="@{/assets/vendor/libs/select2/select2.js}"></script>
-    <script th:src="@{/assets/vendor/libs/@form-validation/popular.js}"></script>
-    <script th:src="@{/assets/vendor/libs/@form-validation/bootstrap5.js}"></script>
-    <script th:src="@{/assets/vendor/libs/@form-validation/auto-focus.js}"></script>
-    <script th:src="@{/assets/vendor/libs/cleavejs/cleave.js}"></script>
-    <script th:src="@{/assets/vendor/libs/cleavejs/cleave-phone.js}"></script>
-    <script th:src="@{/assets/vendor/libs/sweetalert2/sweetalert2.js}"></script>
-    <script th:src="@{/assets/vendor/libs/tagify/tagify.js}"></script>
-    <script th:src="@{/assets/vendor/libs/nouislider/nouislider.js}"></script>
-    <script th:src="@{/assets/vendor/libs/swiper/swiper.js}"></script>
-    <script th:src="@{/assets/vendor/js/menu.js}"></script>
-    <script th:src="@{/assets/vendor/libs/dropzone/dropzone.js}"></script>
-    <script th:src="@{/assets/js/forms-file-upload.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/libs/moment/moment.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/libs/select2/select2.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/libs/@form-validation/popular.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/libs/@form-validation/bootstrap5.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/libs/@form-validation/auto-focus.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/libs/cleavejs/cleave.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/libs/cleavejs/cleave-phone.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/libs/sweetalert2/sweetalert2.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/libs/tagify/tagify.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/libs/nouislider/nouislider.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/libs/swiper/swiper.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/js/menu.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/vendor/libs/dropzone/dropzone.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/js/forms-file-upload.js}"></script>
 
     <!-- Main JS -->
-    <script th:src="@{/assets/js/main.js}"></script>
-    <script th:src="@{/assets/js/front-main.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/js/main.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/js/front-main.js}"></script>
 
     <!-- Page JS -->
-    <script th:src="@{/assets/js/front-page-landing.js}"></script>
-    <script th:src="@{/assets/js/app-user-list.js}"></script>
-    <script th:src="@{/assets/js/modal-edit-user.js}"></script>
-    <script th:src="@{/assets/js/app-user-view.js}"></script>
-    <script th:src="@{/assets/js/app-user-view-account.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/js/front-page-landing.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/js/app-user-list.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/js/modal-edit-user.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/js/app-user-view.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/assets/js/app-user-view-account.js}"></script>
 
-    <script th:inline="javascript">
+    <script th:attr="nonce=${cspNonce}" th:inline="javascript">
         document.addEventListener('DOMContentLoaded', function () {
             const toastEl = document.getElementById('bootstrapToast');
             const toastTitle = document.getElementById('toastTitle');
@@ -956,7 +956,7 @@
     <!-- Hook cho scripts riêng từng trang -->
     <div layout:fragment="scripts"></div>
 
-    <script th:src="@{/js/dropdown_notifications.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/js/dropdown_notifications.js}"></script>
 
 </body>
 
