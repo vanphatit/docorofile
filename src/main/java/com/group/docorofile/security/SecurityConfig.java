@@ -14,6 +14,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
@@ -109,6 +114,31 @@ public class SecurityConfig {
         @Bean
         public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
                 return authConfig.getAuthenticationManager();
+        }
+
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+            CorsConfiguration cfg = new CorsConfiguration();
+
+            // Chỉ cho origin WHITELIST – không dùng *
+            cfg.setAllowedOrigins(List.of(
+                    "http://localhost:9091",
+                    "https://localhost:9091",
+                    "https://cdn.jsdelivr.net",
+                    "https://unpkg.com"
+            ));
+            cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+            cfg.setAllowedHeaders(List.of("Authorization","Content-Type","X-Requested-With"));
+            cfg.setAllowCredentials(true);
+            cfg.setMaxAge(3600L);
+
+            UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+
+            // CHỈ bật CORS cho các API được gọi từ browser
+            source.registerCorsConfiguration("/api/public/**", cfg);
+
+            // Không đăng ký cho /admin/**, /internal/** → mặc định KHÔNG CORS
+            return source;
         }
 
         @Bean
