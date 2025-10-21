@@ -6,8 +6,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Chi tiết khóa học</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <style>
+    <link th:attr="nonce=${cspNonce}" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style th:attr="nonce=${cspNonce}">
         .document-list {
             display: flex;
             flex-wrap: wrap;
@@ -195,7 +195,7 @@
 </div>
 
 <div layout:fragment="scripts">
-    <script>
+    <script th:attr="nonce=${cspNonce}">
         let pageByCourse = 0;
         let pageLiked = 0;
         let pageRelated = 0;

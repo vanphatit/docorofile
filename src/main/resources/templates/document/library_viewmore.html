@@ -10,9 +10,9 @@
     <meta charset="UTF-8">
     <title>Xem thêm</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
-    <link rel="stylesheet" th:href="@{/assets/vendor/fonts/remixicon/remixicon.css}" />
-    <script src="https://unpkg.com/lottie-web@5.7.4/build/player/lottie.min.js"></script>
-    <style>
+    <link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/vendor/fonts/remixicon/remixicon.css}" />
+    <script th:attr="nonce=${cspNonce}" src="https://unpkg.com/lottie-web@5.7.4/build/player/lottie.min.js"></script>
+    <style th:attr="nonce=${cspNonce}">
         body {
             background: linear-gradient(135deg, #f0f4ff, #e6ecff);
             font-family: 'Inter', sans-serif;
@@ -185,7 +185,7 @@
         </section>
     </div>
 
-    <script th:inline="javascript">
+    <script th:attr="nonce=${cspNonce}" th:inline="javascript">
         const type = new URLSearchParams(window.location.search).get("type") || "history";
         const titleMap = {
             history: "Tài liệu đã xem gần đây",

@@ -9,7 +9,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Tìm kiếm tài liệu</title>
-    <style>
+    <style th:attr="nonce=${cspNonce}">
         .filter-bar {
             display: flex;
             flex-wrap: wrap;
@@ -72,7 +72,7 @@
         <div class="document-grid" id="searchResults"></div>
     </div>
 
-    <script th:inline="javascript">
+    <script th:attr="nonce=${cspNonce}" th:inline="javascript">
         let currentPage = 0;
         let isLoading = false;
         let totalPages = 1;

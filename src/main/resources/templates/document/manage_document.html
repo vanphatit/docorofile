@@ -9,8 +9,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Quản lý tài liệu</title>
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
-    <style>
+    <link th:attr="nonce=${cspNonce}" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+    <style th:attr="nonce=${cspNonce}">
         .badge-status {
             padding: 0.35em 0.65em;
             border-radius: 0.25rem;
@@ -94,8 +94,8 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script th:inline="javascript">
+    <script th:attr="nonce=${cspNonce}" src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script th:attr="nonce=${cspNonce}" th:inline="javascript">
         let currentPage = 0;
         let totalPages = 1;
 

@@ -7,6 +7,7 @@ layout:decorate="~{layout}">
   <!-- Hero: Start -->
   <section id="landingHero" class="section-py landing-hero position-relative">
     <img
+            th:attr="nonce=${cspNonce}"
             th:src="@{/assets/img/front-pages/backgrounds/hero-bg-light.png}"
             alt="hero background"
             class="position-absolute top-0 start-0 w-100 h-100 z-n1"
@@ -23,6 +24,7 @@ layout:decorate="~{layout}">
         <a href="/" target="_blank">
           <div class="hero-dashboard-img text-center">
             <img
+                    th:attr="nonce=${cspNonce}"
                     th:src="@{/assets/img/front-pages/landing-page/img.png}"
                     alt="hero dashboard"
                     class="animation-img"
@@ -39,6 +41,7 @@ layout:decorate="~{layout}">
     <div class="container">
       <h6 class="text-center d-flex justify-content-center align-items-center mb-6">
         <img
+                th:attr="nonce=${cspNonce}"
                 th:src="@{/assets/img/front-pages/icons/section-tilte-icon.png}"
                 alt="section title icon"
                 class="me-3" />
@@ -53,7 +56,7 @@ layout:decorate="~{layout}">
       <div class="features-icon-wrapper row gx-0 gy-12 gx-sm-6 mt-n4 mt-sm-0">
         <div class="col-lg-4 col-sm-6 text-center features-icon-box">
           <div class="features-icon mb-4">
-            <img th:src="@{/assets/img/front-pages/icons/ri--flag-line.png}" alt="flag line" />
+            <img th:attr="nonce=${cspNonce}" th:src="@{/assets/img/front-pages/icons/ri--flag-line.png}" alt="flag line" />
           </div>
           <h5 class="mb-2">Community Flagging</h5>
           <p class="features-icon-description">
@@ -62,7 +65,7 @@ layout:decorate="~{layout}">
         </div>
         <div class="col-lg-4 col-sm-6 text-center features-icon-box">
           <div class="features-icon mb-4">
-            <img th:src="@{/assets/img/front-pages/icons/ri--search-2-line.png}" alt="search" />
+            <img th:attr="nonce=${cspNonce}" th:src="@{/assets/img/front-pages/icons/ri--search-2-line.png}" alt="search" />
           </div>
           <h5 class="mb-2">Smart Search</h5>
           <p class="features-icon-description">
@@ -71,7 +74,7 @@ layout:decorate="~{layout}">
         </div>
         <div class="col-lg-4 col-sm-6 text-center features-icon-box">
           <div class="features-icon mb-4">
-            <img th:src="@{/assets/img/front-pages/icons/ri--brain-line.png}" alt="brain" />
+            <img th:attr="nonce=${cspNonce}" th:src="@{/assets/img/front-pages/icons/ri--brain-line.png}" alt="brain" />
           </div>
           <h5 class="mb-2">Smart Moderation</h5>
           <p class="features-icon-description">
@@ -80,7 +83,7 @@ layout:decorate="~{layout}">
         </div>
         <div class="col-lg-4 col-sm-6 text-center features-icon-box">
           <div class="features-icon mb-4">
-            <img th:src="@{/assets/img/front-pages/icons/ri--user-star-line.png}" alt="user star" />
+            <img th:attr="nonce=${cspNonce}" th:src="@{/assets/img/front-pages/icons/ri--user-star-line.png}" alt="user star" />
           </div>
           <h5 class="mb-2">Contributor Recognition	</h5>
           <p class="features-icon-description">

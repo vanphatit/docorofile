@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Trang lỗi</title>
     <script th:attr="nonce=${cspNonce}" th:src="@{/assets/js/lottie-player.js}"></script>
-    <style>
+    <style th:attr="nonce=${cspNonce}">
         * {
             margin: 0;
             padding: 0;

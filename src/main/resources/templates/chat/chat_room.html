@@ -76,7 +76,7 @@
     </div>
 </div>
 <div layout:fragment="scripts">
-    <script th:src="@{/js/app-chat.js}"></script>
+    <script th:attr="nonce=${cspNonce}" th:src="@{/js/app-chat.js}"></script>
     <script>
         window.currentUserId = '[[${currentUser.userId}]]';
         if (![[${hasGroupChat}]]) {
@@ -87,10 +87,10 @@
             document.getElementById("chat-history-container").style.display = "block";
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js" type="module"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script th:attr="nonce=${cspNonce}" src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script th:attr="nonce=${cspNonce}" src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script th:attr="nonce=${cspNonce}" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js" type="module"></script>
+    <script th:attr="nonce=${cspNonce}" src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </div>
 </body>
 </html>

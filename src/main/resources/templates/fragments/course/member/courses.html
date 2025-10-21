@@ -63,9 +63,9 @@
 
     <!-- Scripts -->
     <div layout:fragment="scripts">
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script th:src="@{/js/page_member_courses.js}"></script>
+        <script th:attr="nonce=${cspNonce}" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script th:attr="nonce=${cspNonce}" src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script th:attr="nonce=${cspNonce}" th:src="@{/js/page_member_courses.js}"></script>
     </div>
 </div>
 

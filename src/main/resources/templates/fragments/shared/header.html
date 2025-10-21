@@ -2,10 +2,10 @@
      th:fragment="header" style="padding-left: 20px; padding-right: 20px;"
      id="layout-navbar">
 
-    <link rel="stylesheet" th:href="@{/assets/css/search-suggestion.css}" />
+    <link th:attr="nonce=${cspNonce}" rel="stylesheet" th:href="@{/assets/css/search-suggestion.css}" />
 
     <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
-        <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
+        <a class="nav-item nav-link px-0 me-xl-6">
             <i class="ri-menu-fill ri-22px"></i>
         </a>
     </div>
@@ -85,7 +85,7 @@
 
             <!-- User -->
             <li class="nav-item navbar-dropdown dropdown-user dropdown">
-                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                <a class="nav-link dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                     <div class="avatar avatar-online">
                         <img src="../../assets/img/avatars/1.png" alt class="rounded-circle"/>
                     </div>
@@ -132,7 +132,7 @@
             <!--/ User -->
         </ul>
     </div>
-    <script th:inline="javascript">
+    <script th:attr="nonce=${cspNonce}">
         document.addEventListener("DOMContentLoaded", () => {
             const input = document.getElementById("globalSearchInput");
             const suggestionsBox = document.getElementById("globalSearchSuggestions");

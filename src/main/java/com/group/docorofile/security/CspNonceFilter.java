@@ -29,15 +29,14 @@ public class CspNonceFilter extends OncePerRequestFilter {
                 "default-src 'self'",
                 "base-uri 'self'",
                 "frame-ancestors 'none'",
-                "script-src 'self' 'nonce-{nonce}'",      // {nonce} sẽ được thay bên dưới
-                "style-src 'self' 'nonce-{nonce}'",       // nếu còn inline style nhỏ; nếu không cần thì bỏ
-                "img-src 'self' data: blob:",
-                "font-src 'self' data:",
+                "script-src 'self' 'nonce-{nonce}' https://code.jquery.com https://cdn.jsdelivr.net https://unpkg.com",
+                "style-src 'self' 'nonce-{nonce}' https://fonts.googleapis.com https://cdn.jsdelivr.net",
+                "img-src 'self' data: blob: https://cdn.jsdelivr.net https://unpkg.com",
+                "font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net",
                 "connect-src 'self'",
                 "object-src 'none'",
                 "form-action 'self'",
-                "upgrade-insecure-requests"
-        ).replace("{nonce}", nonce); // thay nonce động cho request này
+                "upgrade-insecure-requests").replace("{nonce}", nonce); // thay nonce động cho request này
 
         res.setHeader("Content-Security-Policy", csp);
         chain.doFilter(req, res);

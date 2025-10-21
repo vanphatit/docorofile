@@ -13,9 +13,9 @@
         </p>
     </div>
 
-    <script th:inline="javascript">
+    <script th:attr="nonce=${cspNonce}" th:inline="javascript">
         document.addEventListener('DOMContentLoaded', () => {
-            fetch('/v1/api/users/download-turn-info', {credentials: 'include'})
+            fetch('/v1/api/users/download-turn-info', { credentials: 'include' })
                 .then(res => res.json())
                 .then(res => {
                     const currentLimit = parseInt(res.data || '0');

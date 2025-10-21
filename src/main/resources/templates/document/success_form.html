@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document Submission Success</title>
-    <style>
+    <style th:attr="nonce=${cspNonce}">
         /* Custom styles for the success page */
         .success-container {
             min-height: 100vh;
@@ -495,7 +495,7 @@
         </div>
     </div>
 
-    <script th:inline="javascript">
+    <script th:attr="nonce=${cspNonce}" th:inline="javascript">
         document.addEventListener('DOMContentLoaded', function () {
             const returnTo = new URLSearchParams(window.location.search).get("returnTo");
             const btnWrapper = document.getElementById("backBtnWrapper");

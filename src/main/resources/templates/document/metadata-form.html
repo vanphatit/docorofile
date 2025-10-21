@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document Details</title>
-    <style>
+    <style th:attr="nonce=${cspNonce}">
         /* Custom styles for the details page */
         .details-container {
             min-height: 100vh;
@@ -408,7 +408,7 @@
         </div>
     </div>
 
-    <script th:inline="javascript">
+    <script th:attr="nonce=${cspNonce}" th:inline="javascript">
         document.addEventListener('DOMContentLoaded', function() {
             // Get document IDs from URL
             const parsedIds = /*[[${documentIds}]]*/ '[]';
